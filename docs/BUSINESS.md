@@ -1,0 +1,115 @@
+# Product Requirements
+
+## Purpose
+
+This project is the site owner's personal website. It combines a personal
+presentation page with a publishing and archive area for the owner's material.
+
+The site is intended primarily for reading and viewing. It is not a social
+network, a public publishing platform, or a general-purpose CMS.
+
+## Audience and roles
+
+### Anonymous visitor
+
+An anonymous visitor can:
+
+- view the About page;
+- browse public projects;
+- view all items in public projects;
+- open the guest login page.
+
+Anonymous access is read-only.
+
+### Guest
+
+A guest is a trusted visitor using shared access provided by the site owner.
+A guest can do everything available to an anonymous visitor and can also view
+private projects and their items.
+
+Guest access is read-only. Guests cannot create, edit, upload, or delete
+content. Separate guest profiles are not required.
+
+### Administrator
+
+The administrator is the site owner. The administrator can:
+
+- create and manage projects;
+- create and edit project items;
+- upload media used by the content;
+- mark projects as public or private;
+- manage the site through an administrative interface.
+
+## Main areas
+
+### About
+
+The root page presents the site owner. It may contain biographical information,
+contacts, photographs, and other personal presentation blocks.
+
+Most of this page is expected to be relatively static. Individual parts may be
+made editable when there is a practical need.
+
+### Content
+
+The Content area contains material created by the site owner, including
+articles, notes, photographs, reviews, long-form text, and media publications.
+
+The Content landing page shows projects, not a single feed mixing unrelated
+items. Each project is an independent collection with its own list of material
+and may use a presentation suited to its purpose.
+
+### Login
+
+The site provides a login page matching its own interface. Its main purpose is
+to give trusted visitors access to private projects. Ordinary visitors should
+not be directed to an administrative login screen.
+
+## Content organization
+
+Content follows this hierarchy:
+
+```text
+Content -> Project -> Item
+```
+
+A project determines:
+
+- the collection to which an item belongs;
+- whether the collection is public or private;
+- the general presentation of its material.
+
+An item contains the actual material, such as text, images, video, or a
+combination of media. The exact set of project and item formats will evolve as
+real content is added.
+
+## Visibility
+
+Visibility is defined at project level:
+
+- public projects and all their items are available without authentication;
+- private projects and all their items are hidden from anonymous visitors;
+- authenticated guests can view both public and private projects.
+
+Items do not have independent visibility settings. Per-item visibility should
+only be introduced if a future product requirement needs it.
+
+## Interaction model
+
+The site is consumption-oriented. The initial product does not include:
+
+- public registration;
+- comments;
+- likes or reactions;
+- visitor-created content;
+- editing by guests;
+- separate guest accounts or profiles.
+
+These features should not be assumed merely because they are common on blogs or
+publishing platforms.
+
+## User experience
+
+The public interface must be usable and visually coherent on desktop and mobile
+devices. Detailed visual design and the presentation of individual project
+types will be defined separately as the corresponding content is designed.
