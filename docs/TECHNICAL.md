@@ -60,6 +60,9 @@ Frontend filtering is presentation logic, not a security boundary.
 ## Backend
 
 The backend uses Python, Django, Graphene, PostgreSQL, and Django Admin.
+User-facing backend labels use Django gettext localization, with Russian
+translations stored in the repository and compiled during development or
+deployment builds.
 
 Backend domain code is grouped into two Django applications: `core` contains
 shared models such as uploaded files, while `projects` contains projects and
@@ -103,25 +106,29 @@ other session-authenticated writes.
 
 ## Content domain
 
-The stable conceptual model is:
+The project domain currently uses these models:
 
 ```text
 Project
-    visibility: public | private
-    presentation_type
+    name
+    link: unique string
+    cover -> File
+    content_type -> ContentType
+    is_public
+    order
 
-ContentItem
-    project -> Project
+ContentType
+    name
+    code: unique string
 ```
 
 A project is an independent content collection. It owns the visibility and
 presentation context inherited by its items. A content item belongs to exactly
 one project and contains the material required by that project's presentation.
 
-The exact model fields and the storage strategy for heterogeneous content are
-intentionally deferred until the first concrete project types are designed.
-Avoid a generic page builder or universal CMS schema without a demonstrated
-need.
+The model for project items and the storage strategy for heterogeneous content
+remain deferred until the first concrete item types are designed. Avoid a
+generic page builder or universal CMS schema without a demonstrated need.
 
 The backend should expose an explicit presentation type. The frontend should
 map that type to a known Vue component. Keep this mapping simple and visible in

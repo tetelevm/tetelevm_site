@@ -53,6 +53,11 @@ builder without an explicit requirement.
 - Store secrets and production credentials in environment configuration, never
   in the repository.
 
+## Temporary rules
+
+- Do not create or update migrations after model changes.
+- Do not update localization files.
+
 ## Verification
 
 Test behavior in proportion to its risk. Backend coverage should prioritize
