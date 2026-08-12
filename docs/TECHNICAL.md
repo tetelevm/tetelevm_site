@@ -61,6 +61,10 @@ Frontend filtering is presentation logic, not a security boundary.
 
 The backend uses Python, Django, Graphene, PostgreSQL, and Django Admin.
 
+Backend domain code is grouped into two Django applications: `core` contains
+shared models such as uploaded files, while `projects` contains projects and
+their content items.
+
 Django Admin is the primary authoring interface. A broad set of administrative
 GraphQL mutations is therefore unnecessary. The GraphQL schema should remain
 small and be expanded in response to actual frontend use cases.
@@ -157,6 +161,13 @@ pages such as `/`, `/login/`, and `/content/` do not use this prefix.
 Initial uploads are managed through Django Admin and stored on persistent VPS
 storage. Production deployment must preserve uploaded files independently of
 container replacement.
+
+Uploaded files are represented by the `File` model. Its primary key is a UUID,
+while the stored filename consists of the upload date and original filename,
+for example `2026-08-12_video.mov`. `MEDIA_URL` is `/files/`, so the model's
+`link` property returns the storage URL for that filename. Django serves these
+URLs only in debug mode; production must serve `MEDIA_ROOT` at `/files/`
+through the reverse proxy.
 
 External embeds or media providers may be added when a concrete content type
 requires them. They are not part of the initial infrastructure.
