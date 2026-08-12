@@ -9,7 +9,7 @@ from .models import File
 
 
 class FileModelTests(TestCase):
-    def test_upload_uses_date_and_original_filename(self):
+    def test_upload_uses_date_and_original_filename(self) -> None:
         with tempfile.TemporaryDirectory() as media_root:
             with override_settings(MEDIA_ROOT=media_root, MEDIA_URL="/files/"):
                 with patch(
