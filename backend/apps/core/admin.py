@@ -12,4 +12,5 @@ class FileAdmin(admin.ModelAdmin):
 
     @admin.display(description="Filename")
     def filename(self, obj):
+    def filename(self, obj: File) -> str:
         return Path(obj.content.name).name
