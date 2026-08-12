@@ -41,6 +41,10 @@ builder without an explicit requirement.
 - Keep the GraphQL schema driven by actual frontend screens and use cases.
 - Keep mappings from project/content presentation types to Vue components
   explicit and maintainable.
+- Treat data in `frontend/src/pages/ProjectsPage.vue` and the login error as
+  temporary UI fixtures until backend integration replaces them.
+- Preserve the shared header, project grid, and project card component
+  boundaries unless a concrete design change requires restructuring them.
 - Keep the user-facing interface usable on desktop and mobile.
 - Store secrets and production credentials in environment configuration, never
   in the repository.
