@@ -2,12 +2,11 @@
 
 ## Scope and status
 
-The repository currently contains a working development foundation: Django,
-Graphene, Vue, Vite, PostgreSQL, and Docker Compose. The frontend includes a
-static Projects page prototype built from reusable navigation, grid, and card
-components. Separate Vue routes exist for About, Projects, and Login. Domain
-models, API integration, authentication, media handling, tests, and production
-deployment are still to be implemented.
+The repository contains a working development foundation: Django, Graphene,
+Vue, Vue Router, Vite, PostgreSQL, and Docker Compose. The first frontend
+prototype is implemented and builds successfully. Domain models, GraphQL data
+integration, authentication, media handling, tests, and production deployment
+are still to be implemented.
 
 This document describes the intended architecture. A capability mentioned here
 should not be treated as already implemented unless it exists in the codebase.
@@ -89,7 +88,9 @@ Do not introduce JWT or a custom authentication framework without a client or
 deployment requirement that makes session authentication unsuitable.
 
 Authorization must be enforced in backend query resolution. Anonymous GraphQL
-requests must not reveal private projects or items belonging to them.
+requests must not reveal private projects or items belonging to them. The
+frontend renders only the projects returned by the backend and must not be
+responsible for filtering private data.
 
 CSRF protection is required for login, logout, and every state-changing
 operation. The current GraphQL endpoint is a read-only scaffold and is CSRF
@@ -166,6 +167,37 @@ The frontend uses Vue, Vue Router, and Vite. Public pages, including login,
 belong to Vue. Different project types may use different components, but the
 application should not become a runtime page-builder.
 
+The current router implements:
+
+```text
+/                Empty About page
+/content/        Projects prototype
+/login/          Guest login prototype
+```
+
+The shared frontend building blocks are:
+
+- `AppHeader` for navigation and a page-specific action slot;
+- `LanguageSwitch` for the About-page `ru/en` control;
+- `LoginLink` for the Projects-page login icon;
+- `ProjectGrid` for a responsive grid of at most three cards per row;
+- `ProjectCard` for public and visually locked project states.
+
+Projects currently come from temporary data in `ProjectsPage.vue`. Covers use
+generated color placeholders until backend media is available. The temporary
+array includes private-card examples only to demonstrate their visual state.
+In the integrated application, anonymous users will never receive those
+projects from GraphQL.
+
+The login form currently simulates an invalid-credentials response after every
+submission. The language switch stores its selection only in component state
+and does not translate or persist content. Both are UI contracts awaiting
+backend and localization integration.
+
+Global frontend styling uses a dark `#202020` background and system sans-serif
+font stack. Page-specific styles remain scoped to Vue components. The favicon
+is stored in `frontend/public/favicon.ico`.
+
 Frontend testing should be proportional to the amount of meaningful client-side
 logic. Static presentation does not require exhaustive component tests.
 
@@ -189,6 +221,10 @@ Local development uses the root `compose.yaml` with three services:
 - `frontend` for the Vite development server;
 - `backend` for the Django development server;
 - `db` for PostgreSQL.
+
+The frontend service runs `npm install` before Vite because `node_modules` is a
+persistent Docker volume. This keeps newly added package dependencies in sync
+without requiring manual volume removal.
 
 The production target is a conventional VPS using Docker Compose, persistent
 PostgreSQL and media volumes, and a reverse proxy that terminates HTTPS and
@@ -218,3 +254,14 @@ The following are intentionally unresolved:
 - production application server and reverse proxy;
 - backup and deployment procedures;
 - which About-page fields, if any, should be editable.
+
+## Suggested next stage
+
+The next coherent milestone is backend-driven Projects and authentication:
+
+1. define the minimal `Project` model and Django Admin configuration;
+2. expose only projects visible to the current user through GraphQL;
+3. add authorization tests before exposing any private project data or items;
+4. replace the temporary array in `ProjectsPage.vue` with a GraphQL query;
+5. implement session login and logout with correct CSRF handling;
+6. connect the login form and header state to the authenticated session.
