@@ -50,6 +50,8 @@ contacts, photographs, and other personal presentation blocks.
 Most of this page is expected to be relatively static. Individual parts may be
 made editable when there is a practical need.
 
+The About page provides a compact `ru/en` language switch in its header.
+
 ### Content
 
 The Content area contains material created by the site owner, including
