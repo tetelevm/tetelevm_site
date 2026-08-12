@@ -19,6 +19,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "graphene_django",
+    "apps.core",
+    "apps.projects",
 ]
 
 MIDDLEWARE = [
@@ -71,6 +73,8 @@ USE_TZ = True
 
 STATIC_URL = "_static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_URL = "/files/"
+MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 GRAPHENE = {"SCHEMA": "config.schema.schema"}

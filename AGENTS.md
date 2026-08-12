@@ -38,6 +38,10 @@ builder without an explicit requirement.
 
 ## Implementation boundaries
 
+- Add type annotations to functions and methods. Use
+  `from __future__ import annotations` where it keeps annotations simple.
+- Docstrings are optional for straightforward functions and classes. Add them
+  when they clarify complex or non-obvious logic.
 - Keep the GraphQL schema driven by actual frontend screens and use cases.
 - Keep mappings from project/content presentation types to Vue components
   explicit and maintainable.
