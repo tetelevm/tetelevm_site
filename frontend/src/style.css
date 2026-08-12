@@ -1,19 +1,45 @@
 :root {
-  color: #202124;
-  background: #f7f7f5;
-  font-family: Inter, system-ui, sans-serif;
+  color: #f4f4f4;
+  background: #202020;
+  font-family: "Segoe UI", "Helvetica Neue", Arial, system-ui, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 20rem;
+  background: #202020;
 }
 
 body {
+  min-width: 20rem;
+  min-height: 100vh;
   margin: 0;
 }
 
-main {
-  max-width: 48rem;
-  margin: 15vh auto;
-  padding: 2rem;
+a {
+  color: inherit;
 }
 
-a {
-  color: #3157a4;
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  margin: -1px;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }

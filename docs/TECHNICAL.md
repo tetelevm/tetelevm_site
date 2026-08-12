@@ -3,8 +3,10 @@
 ## Scope and status
 
 The repository currently contains a working development foundation: Django,
-Graphene, Vue, Vite, PostgreSQL, and Docker Compose. The domain models,
-authentication flow, application routes, media handling, tests, and production
+Graphene, Vue, Vite, PostgreSQL, and Docker Compose. The frontend includes a
+static Projects page prototype built from reusable navigation, grid, and card
+components. Separate Vue routes exist for About, Projects, and Login. Domain
+models, API integration, authentication, media handling, tests, and production
 deployment are still to be implemented.
 
 This document describes the intended architecture. A capability mentioned here
@@ -160,9 +162,9 @@ requires them. They are not part of the initial infrastructure.
 
 ## Frontend
 
-The frontend uses Vue and Vite. Public pages, including login, belong to Vue.
-Different project types may use different components, but the application
-should not become a runtime page-builder.
+The frontend uses Vue, Vue Router, and Vite. Public pages, including login,
+belong to Vue. Different project types may use different components, but the
+application should not become a runtime page-builder.
 
 Frontend testing should be proportional to the amount of meaningful client-side
 logic. Static presentation does not require exhaustive component tests.
