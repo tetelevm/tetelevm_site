@@ -18,6 +18,16 @@ Prefer the smallest straightforward Django/Vue solution that satisfies the
 documented requirement. Do not turn deferred decisions into permanent
 architecture before a concrete feature requires them.
 
+Critically evaluate proposed architecture, data flows, storage strategies, and
+other open-ended technical ideas before implementing them. Be direct about
+weak assumptions, operational costs, security or data-integrity risks, and
+likely maintenance problems. Offer simpler or safer alternatives and explain
+the relevant trade-offs; do not treat the user's initial design as settled
+merely because they proposed it. This extra scrutiny is not required for clear,
+bounded implementation instructions such as creating a specified model,
+template, field, or view, unless the requested implementation creates a
+material risk or conflicts with the documented product.
+
 Do not add speculative infrastructure or product features. In particular, do
 not introduce Redis, Celery, message brokers, Kubernetes, JWT, a custom
 authentication framework, complex RBAC, per-item permissions, or a generic page
