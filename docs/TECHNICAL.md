@@ -119,16 +119,25 @@ Project
 
 ContentType
     name
-    code: unique string
+    code: string
+
+Post
+    project -> Project
+    number: unique within project
+    link: projects/<project link>/<number>
+    optional name and text
+    optional main_file -> File
+    extra: JSON
+    optional related_post -> Post
+    files -> File through ordered PostFile
 ```
 
 A project is an independent content collection. It owns the visibility and
-presentation context inherited by its items. A content item belongs to exactly
-one project and contains the material required by that project's presentation.
-
-The model for project items and the storage strategy for heterogeneous content
-remain deferred until the first concrete item types are designed. Avoid a
-generic page builder or universal CMS schema without a demonstrated need.
+presentation context inherited by its posts. A post belongs to exactly one
+project; its number determines its position and is unique within that project.
+Additional post files are connected through `PostFile`, which stores their
+order. Avoid a generic page builder or universal CMS schema without a
+demonstrated need.
 
 The backend should expose an explicit presentation type. The frontend should
 map that type to a known Vue component. Keep this mapping simple and visible in
