@@ -181,9 +181,12 @@ container replacement.
 Uploaded files are represented by the `File` model. Its primary key is a UUID,
 while the stored filename consists of the upload date and original filename,
 for example `2026-08-12_video.mov`. `MEDIA_URL` is `/files/`, so the model's
-`link` property returns the storage URL for that filename. Django serves these
-URLs only in debug mode; production must serve `MEDIA_ROOT` at `/files/`
-through the reverse proxy.
+`link` property returns the storage URL for that filename. Uploaded images also
+receive a metadata-free JPEG preview, constrained to 1200 pixels on each axis
+and stored as `<file UUID>.jpg`. For images, `link` points to the preview and
+`link_full` points to the original; non-images use the original as `link` and
+have no `link_full`. Django serves these URLs only in debug mode; production
+must serve `MEDIA_ROOT` at `/files/` through the reverse proxy.
 
 External embeds or media providers may be added when a concrete content type
 requires them. They are not part of the initial infrastructure.
