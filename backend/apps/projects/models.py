@@ -41,3 +41,92 @@ class Project(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class Post(models.Model):
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="posts",
+        verbose_name=_("Project"),
+    )
+    number = models.PositiveIntegerField(_("Number"))
+    name = models.CharField(_("Name"), max_length=255, blank=True)
+    text = models.TextField(_("Text"), blank=True)
+    main_file = models.ForeignKey(
+        File,
+        on_delete=models.SET_NULL,
+        related_name="main_for_posts",
+        verbose_name=_("Main file"),
+        blank=True,
+        null=True,
+    )
+    extra = models.JSONField(_("Extra"), default=dict, blank=True)
+    related_post = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        related_name="referenced_by_posts",
+        verbose_name=_("Related post"),
+        blank=True,
+        null=True,
+    )
+    files = models.ManyToManyField(
+        File,
+        through="PostFile",
+        related_name="posts",
+        verbose_name=_("Files"),
+        blank=True,
+    )
+
+    class Meta:
+        ordering = ("number", "id")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("project", "number"),
+                name="unique_post_number_per_project",
+            ),
+        ]
+        verbose_name = _("Post")
+        verbose_name_plural = _("Posts")
+
+    @property
+    def link(self) -> str:
+        return f"projects/{self.project.link}/{self.number}"
+
+    def __str__(self) -> str:
+        label = self.name or self.number
+        return f"{self.project}: {label}"
+
+
+class PostFile(models.Model):
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name="post_files",
+        verbose_name=_("Post"),
+    )
+    file = models.ForeignKey(
+        File,
+        on_delete=models.PROTECT,
+        related_name="post_files",
+        verbose_name=_("File"),
+    )
+    order = models.PositiveIntegerField(_("Order"), default=0)
+
+    class Meta:
+        ordering = ("order", "id")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("post", "file"),
+                name="unique_file_per_post",
+            ),
+            models.UniqueConstraint(
+                fields=("post", "order"),
+                name="unique_file_order_per_post",
+            ),
+        ]
+        verbose_name = _("Post file")
+        verbose_name_plural = _("Post files")
+
+    def __str__(self) -> str:
+        return f"{self.post}: {self.file}"
