@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import ContentType, Post, PostFile, Project
+from .models import ContentType, Post, PostFile, Project, Tag
 
 
 @admin.register(ContentType)
@@ -11,10 +11,23 @@ class ContentTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ("name", "link", "content_type", "is_public", "order")
-    list_editable = ("is_public", "order")
-    list_filter = ("is_public", "content_type")
+    list_display = (
+        "name",
+        "link",
+        "content_type",
+        "status",
+        "is_public",
+        "order",
+    )
+    list_editable = ("status", "is_public", "order")
+    list_filter = ("status", "is_public", "content_type")
     search_fields = ("name", "link")
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ("name", "code")
+    search_fields = ("name", "code")
 
 
 class PostFileInline(admin.TabularInline):
@@ -30,4 +43,5 @@ class PostAdmin(admin.ModelAdmin):
     search_fields = ("name", "text")
     ordering = ("project", "number")
     raw_id_fields = ("main_file", "related_post")
+    filter_horizontal = ("tags",)
     inlines = (PostFileInline,)

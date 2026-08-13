@@ -115,11 +115,16 @@ Project
     cover -> File
     content_type -> ContentType
     is_public
+    status: open | paused | closed
     order
 
 ContentType
     name
     code: string
+
+Tag
+    code: unique string
+    name
 
 Post
     project -> Project
@@ -130,6 +135,7 @@ Post
     extra: JSON
     optional related_post -> Post
     files -> File through ordered PostFile
+    tags -> Tag
 ```
 
 A project is an independent content collection. It owns the visibility and
@@ -138,6 +144,10 @@ project; its number determines its position and is unique within that project.
 Additional post files are connected through `PostFile`, which stores their
 order. Avoid a generic page builder or universal CMS schema without a
 demonstrated need.
+
+Project status describes its lifecycle and does not control authorization.
+Visibility for anonymous and authenticated visitors continues to depend only
+on `is_public`.
 
 The backend should expose an explicit presentation type. The frontend should
 map that type to a known Vue component. Keep this mapping simple and visible in
