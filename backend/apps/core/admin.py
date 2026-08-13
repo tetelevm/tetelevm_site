@@ -8,7 +8,7 @@ from .models import File
 
 @admin.register(File)
 class FileAdmin(admin.ModelAdmin):
-    readonly_fields = ("id", "uploaded_at")
+    readonly_fields = ("id", "preview", "uploaded_at")
     list_display = ("id", "filename", "uploaded_at")
 
     @admin.display(description=_("Filename"))
