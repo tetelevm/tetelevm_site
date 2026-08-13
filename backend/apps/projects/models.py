@@ -19,6 +19,11 @@ class ContentType(models.Model):
 
 
 class Project(models.Model):
+    class Status(models.TextChoices):
+        OPEN = "open", _("Open")
+        PAUSED = "paused", _("Paused")
+        CLOSED = "closed", _("Closed")
+
     name = models.CharField(_("Name"), max_length=255)
     link = models.CharField(_("Link"), max_length=64, unique=True)
     cover = models.ForeignKey(
@@ -32,12 +37,31 @@ class Project(models.Model):
         verbose_name=_("Content type"),
     )
     is_public = models.BooleanField(_("Public"), default=True)
+    status = models.CharField(
+        _("Status"),
+        max_length=16,
+        choices=Status.choices,
+        default=Status.OPEN,
+    )
     order = models.PositiveIntegerField(_("Order"), default=0)
 
     class Meta:
         ordering = ("order", "id")
         verbose_name = _("Project")
         verbose_name_plural = _("Projects")
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Tag(models.Model):
+    code = models.CharField(_("Code"), max_length=64, unique=True)
+    name = models.CharField(_("Name"), max_length=64)
+
+    class Meta:
+        ordering = ("name", "id")
+        verbose_name = _("Tag")
+        verbose_name_plural = _("Tags")
 
     def __str__(self) -> str:
         return self.name
@@ -75,6 +99,12 @@ class Post(models.Model):
         through="PostFile",
         related_name="posts",
         verbose_name=_("Files"),
+        blank=True,
+    )
+    tags = models.ManyToManyField(
+        Tag,
+        related_name="posts",
+        verbose_name=_("Tags"),
         blank=True,
     )
 
