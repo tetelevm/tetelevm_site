@@ -3,8 +3,7 @@
 Personal website built with Django REST Framework and Vue.
 
 The first frontend prototype is complete. It includes a responsive Projects
-page, an empty About page, and a guest login form. Backend domain logic and
-frontend-to-backend integration are the next development stage.
+page, an empty About page, session login, and backend-driven project pages.
 
 ## Start development
 
@@ -42,7 +41,7 @@ Implemented Vue routes:
 
 - `/` — empty About page with a non-persistent `ru/en` UI switch;
 - `/content/` — responsive project card grid loaded from the REST API;
-- `/login/` — login form UI with a temporary simulated error state.
+- `/login/` — session login form for guests and administrators.
 
 The Projects page supports ordinary and visually private project cards. Private
 examples currently exist only as design fixtures; the backend will omit them
@@ -51,7 +50,6 @@ login link, grid, and card components. The favicon is served from
 `frontend/public/favicon.ico`.
 
 The following frontend behavior is intentionally not implemented yet:
-- real login, logout, and session state;
 - persistent localization or translated content;
 - project list and item detail pages;
 - real project images and backend media.
