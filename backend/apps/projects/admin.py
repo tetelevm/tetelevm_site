@@ -1,12 +1,6 @@
 from django.contrib import admin
 
-from .models import ContentType, Post, PostFile, Project, Tag
-
-
-@admin.register(ContentType)
-class ContentTypeAdmin(admin.ModelAdmin):
-    list_display = ("name", "code")
-    search_fields = ("name", "code")
+from .models import Post, PostFile, Project, Tag
 
 
 @admin.register(Project)
@@ -14,13 +8,14 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "link",
-        "content_type",
+        "post_type",
+        "post_list_type",
         "status",
         "is_public",
         "order",
     )
     list_editable = ("status", "is_public", "order")
-    list_filter = ("status", "is_public", "content_type")
+    list_filter = ("status", "is_public", "post_type", "post_list_type")
     search_fields = ("name", "link")
 
 

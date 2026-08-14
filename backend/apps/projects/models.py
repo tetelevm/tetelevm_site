@@ -6,16 +6,28 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.models import File
 
 
-class ContentType(models.Model):
-    name = models.CharField(_("Name"), max_length=255)
-    code = models.CharField(_("Code"), max_length=64)
+class PostType(models.TextChoices):
+    POST = "post", _("Post")
+    PHOTO = "photo", _("Photo")
+    TRAVEL = "travel", _("Travel")
+    TEXT = "text", _("Text")
+    TEXT_MD = "text_md", _("Markdown text")
+    DOOR = "door", _("Door")
+    REVIEW = "review", _("Review")
+    PLASTICINE = "plasticine", _("Plasticine")
+    ABANDONED = "abandoned", _("Abandoned")
 
-    class Meta:
-        verbose_name = _("Content type")
-        verbose_name_plural = _("Content types")
 
-    def __str__(self) -> str:
-        return self.name
+class PostListType(models.TextChoices):
+    POST = "post", _("Post")
+    PHOTO = "photo", _("Photo")
+    TRAVEL = "travel", _("Travel")
+    TEXT = "text", _("Text")
+    TEXT_MD = "text_md", _("Markdown text")
+    DOOR = "door", _("Door")
+    REVIEW = "review", _("Review")
+    PLASTICINE = "plasticine", _("Plasticine")
+    ABANDONED = "abandoned", _("Abandoned")
 
 
 class Project(models.Model):
@@ -31,10 +43,17 @@ class Project(models.Model):
         on_delete=models.PROTECT,
         verbose_name=_("Cover"),
     )
-    content_type = models.ForeignKey(
-        ContentType,
-        on_delete=models.PROTECT,
-        verbose_name=_("Content type"),
+    post_type = models.CharField(
+        _("Post type"),
+        max_length=16,
+        choices=PostType.choices,
+        default=PostType.POST,
+    )
+    post_list_type = models.CharField(
+        _("Post list type"),
+        max_length=16,
+        choices=PostListType.choices,
+        default=PostListType.POST,
     )
     is_public = models.BooleanField(_("Public"), default=True)
     status = models.CharField(
