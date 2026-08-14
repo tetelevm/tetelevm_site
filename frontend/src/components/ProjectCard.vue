@@ -24,10 +24,10 @@ defineProps({
 </script>
 
 <template>
-  <a
+  <RouterLink
     class="project-card"
     :class="{ 'project-card--private': isPrivate }"
-    :href="href"
+    :to="href"
     :aria-label="`${title}${isPrivate ? ', закрытый проект' : ''}`"
   >
     <span class="project-card__frame">
@@ -44,7 +44,7 @@ defineProps({
       <span class="project-card__title">{{ title }}</span>
       <span v-if="isPrivate" class="project-card__shade" aria-hidden="true" />
     </span>
-  </a>
+  </RouterLink>
 </template>
 
 <style scoped>
