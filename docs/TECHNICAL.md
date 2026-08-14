@@ -5,8 +5,9 @@
 The repository contains a working development foundation: Django REST Framework,
 Vue, Vue Router, Vite, PostgreSQL, and Docker Compose. The first frontend
 prototype is implemented and builds successfully. Domain models and read-only
-project API endpoints exist. Project-grid integration, authentication, broader
-media integration, and production deployment are still to be implemented.
+project API endpoints, project-grid integration, and session authentication
+exist. Broader media integration and production deployment are still to be
+implemented.
 
 This document describes the intended architecture. A capability mentioned here
 should not be treated as already implemented unless it exists in the codebase.
@@ -98,8 +99,12 @@ frontend renders only the projects returned by the backend and must not be
 responsible for filtering private data.
 
 CSRF protection is required for login, logout, and every state-changing
-operation. Current project endpoints are read-only. Future session-authenticated
-writes must use Django's CSRF protection.
+operation. The frontend obtains a token from `/_api/auth/csrf/` and sends it in
+the `X-CSRFToken` header for login and logout. Current project endpoints are
+read-only. Future session-authenticated writes must use the same protection.
+Development frontend origins are supplied through
+`DJANGO_CSRF_TRUSTED_ORIGINS`; production should set this variable to its real
+HTTPS origin when the frontend and backend are not seen as the same origin.
 
 ## Content domain
 
@@ -172,6 +177,10 @@ them from the public site structure. Current routes are:
 
 ```text
 /_admin/                       Django Admin
+/_api/auth/csrf/               CSRF token and cookie
+/_api/auth/session/            Current authentication state
+/_api/auth/login/              Session login
+/_api/auth/logout/             Session logout
 /_api/projects/                Projects visible to the current visitor
 /_api/projects/<project>/      Project metadata and paginated posts (`?page=N`)
 /_api/projects/<project>/<n>/  Individual post
@@ -212,7 +221,7 @@ The current router implements:
 /                Empty About page
 /content/        Projects loaded from the REST API
 /content/:project/ Project posts loaded from the REST API
-/login/          Guest login prototype
+/login/          Session login
 ```
 
 The shared frontend building blocks are:
@@ -237,10 +246,10 @@ Projects come from the REST API. Anonymous users never receive private projects;
 authenticated guests receive them with `isPublic: false` so the existing locked
 card presentation can distinguish them.
 
-The login form currently simulates an invalid-credentials response after every
-submission. The language switch stores its selection only in component state
-and does not translate or persist content. Both are UI contracts awaiting
-backend and localization integration.
+The login form uses Django session authentication with CSRF protection and
+redirects successful logins to the project grid. The header action reflects the
+current session and provides logout. The language switch stores its selection
+only in component state and does not translate or persist content.
 
 Global frontend styling uses a dark `#202020` background and system sans-serif
 font stack. Page-specific styles remain scoped to Vue components. The favicon

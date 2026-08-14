@@ -1,14 +1,45 @@
 <script setup>
-import { ref } from "vue"
+import { onMounted, ref } from "vue"
+import { useRouter } from "vue-router"
+
+import { authState, loadSession, login as loginUser } from "../api/auth.js"
 import MainLayout from "../components/MainLayout.vue"
 
-const login = ref("")
+const router = useRouter()
+const username = ref("")
 const password = ref("")
-const hasError = ref(false)
+const errorMessage = ref("")
+const isSubmitting = ref(false)
 
-function submitLogin() {
-  hasError.value = true
+async function submitLogin() {
+  errorMessage.value = ""
+  isSubmitting.value = true
+
+  try {
+    await loginUser(username.value, password.value)
+    await router.push("/content/")
+  } catch (error) {
+    errorMessage.value =
+      error.message === "Invalid credentials"
+        ? "неверные данные"
+        : "не удалось войти"
+  } finally {
+    isSubmitting.value = false
+  }
 }
+
+onMounted(async () => {
+  try {
+    if (!authState.isLoaded) {
+      await loadSession()
+    }
+    if (authState.isAuthenticated) {
+      await router.replace("/content/")
+    }
+  } catch {
+    errorMessage.value = "не удалось проверить сессию"
+  }
+})
 </script>
 
 <template>
@@ -20,8 +51,8 @@ function submitLogin() {
         <label class="login-form__field">
           <span>логин</span>
           <input
-            v-model="login"
-            name="login"
+            v-model="username"
+            name="username"
             type="text"
             autocomplete="username"
             required
@@ -40,14 +71,20 @@ function submitLogin() {
         </label>
 
         <p
-          v-if="hasError"
+          v-if="errorMessage"
           class="login-form__error"
           role="alert"
         >
-          неверные данные
+          {{ errorMessage }}
         </p>
 
-        <button class="login-form__submit" type="submit">войти</button>
+        <button
+          class="login-form__submit"
+          type="submit"
+          :disabled="isSubmitting"
+        >
+          {{ isSubmitting ? "входим…" : "войти" }}
+        </button>
       </form>
     </div>
   </MainLayout>

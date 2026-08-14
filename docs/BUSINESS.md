@@ -25,7 +25,8 @@ Anonymous access is read-only.
 
 A guest is a trusted visitor using shared access provided by the site owner.
 A guest can do everything available to an anonymous visitor and can also view
-private projects and their items.
+private projects and their items. An authenticated guest can sign out and
+return to anonymous access.
 
 Guest access is read-only. Guests cannot create, edit, upload, or delete
 content. Separate guest profiles are not required.
@@ -65,7 +66,9 @@ and may use a presentation suited to its purpose.
 
 The site provides a login page matching its own interface. Its main purpose is
 to give trusted visitors access to private projects. Ordinary visitors should
-not be directed to an administrative login screen.
+not be directed to an administrative login screen. Valid guest and administrator
+credentials create a normal site session; authenticated visitors can sign out
+from the public interface.
 
 ## Content organization
 
