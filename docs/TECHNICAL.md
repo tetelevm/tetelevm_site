@@ -217,6 +217,8 @@ The current router implements:
 
 The shared frontend building blocks are:
 
+- `MainLayout` for the global background, shared header, and centered
+  800-pixel content container;
 - `AppHeader` for navigation and a page-specific action slot;
 - `LanguageSwitch` for the About-page `ru/en` control;
 - `LoginLink` for the Projects-page login icon;
