@@ -1,6 +1,6 @@
 <script setup>
-import AppHeader from "../components/AppHeader.vue"
 import LoginLink from "../components/LoginLink.vue"
+import MainLayout from "../components/MainLayout.vue"
 import ProjectGrid from "../components/ProjectGrid.vue"
 
 const projects = [
@@ -64,29 +64,20 @@ const projects = [
 </script>
 
 <template>
-  <div class="projects-page">
-    <AppHeader active-page="projects">
-      <template #action>
+  <MainLayout active-page="projects">
+    <template #header-action>
         <LoginLink />
-      </template>
-    </AppHeader>
+    </template>
 
-    <main class="projects-page__content">
+    <div class="projects-page__content">
       <h1 class="visually-hidden">Проекты</h1>
       <ProjectGrid :projects="projects" />
-    </main>
-  </div>
+    </div>
+  </MainLayout>
 </template>
 
 <style scoped>
-.projects-page {
-  min-height: 100vh;
-  background: #202020;
-}
-
 .projects-page__content {
-  display: flex;
-  justify-content: center;
-  padding: clamp(0.7rem, 1.7vw, 1.6rem) clamp(1rem, 5vw, 5rem) 5rem;
+  width: 100%;
 }
 </style>

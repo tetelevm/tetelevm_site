@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from "vue"
-import AppHeader from "../components/AppHeader.vue"
+import MainLayout from "../components/MainLayout.vue"
 
 const login = ref("")
 const password = ref("")
@@ -12,10 +12,8 @@ function submitLogin() {
 </script>
 
 <template>
-  <div class="login-page">
-    <AppHeader />
-
-    <main class="login-page__content">
+  <MainLayout>
+    <div class="login-page__content">
       <form class="login-form" novalidate @submit.prevent="submitLogin">
         <h1 class="login-form__title">вход</h1>
 
@@ -51,20 +49,15 @@ function submitLogin() {
 
         <button class="login-form__submit" type="submit">войти</button>
       </form>
-    </main>
-  </div>
+    </div>
+  </MainLayout>
 </template>
 
 <style scoped>
-.login-page {
-  min-height: 100vh;
-  background: #202020;
-}
-
 .login-page__content {
   display: flex;
   justify-content: center;
-  padding: clamp(1.5rem, 5vw, 4rem) 1rem 4rem;
+  padding: clamp(1.5rem, 5vw, 4rem) 0 4rem;
 }
 
 .login-form {
