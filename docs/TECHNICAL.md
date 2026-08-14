@@ -2,11 +2,11 @@
 
 ## Scope and status
 
-The repository contains a working development foundation: Django, Graphene,
+The repository contains a working development foundation: Django REST Framework,
 Vue, Vue Router, Vite, PostgreSQL, and Docker Compose. The first frontend
-prototype is implemented and builds successfully. Domain models, GraphQL data
-integration, authentication, media handling, tests, and production deployment
-are still to be implemented.
+prototype is implemented and builds successfully. Domain models and read-only
+project API endpoints exist. Project-grid integration, authentication, broader
+media integration, and production deployment are still to be implemented.
 
 This document describes the intended architecture. A capability mentioned here
 should not be treated as already implemented unless it exists in the codebase.
@@ -15,7 +15,7 @@ should not be treated as already implemented unless it exists in the codebase.
 
 ```text
 /
-├── backend/       Django, GraphQL, administration, and backend tests
+├── backend/       Django, REST API, administration, and backend tests
 ├── frontend/      Vue application and frontend tests
 ├── deploy/        Container and production deployment configuration
 ├── docs/          Product and technical documentation
@@ -37,7 +37,7 @@ operation rather than independent service deployment or high traffic.
 ## System boundaries
 
 The Vue application is the public user interface. It communicates with Django
-through GraphQL.
+through a small REST API.
 
 Django is responsible for:
 
@@ -46,7 +46,7 @@ Django is responsible for:
 - project and content visibility;
 - administrative content management;
 - media metadata and file handling;
-- exposing safe data through GraphQL.
+- exposing safe data through the REST API.
 
 Vue is responsible for:
 
@@ -59,7 +59,8 @@ Frontend filtering is presentation logic, not a security boundary.
 
 ## Backend
 
-The backend uses Python, Django, Graphene, PostgreSQL, and Django Admin.
+The backend uses Python, Django, Django REST Framework, PostgreSQL, and Django
+Admin.
 User-facing backend labels use Django gettext localization, with Russian
 translations stored in the repository and compiled during development or
 deployment builds.
@@ -68,9 +69,9 @@ Backend domain code is grouped into two Django applications: `core` contains
 shared models such as uploaded files, while `projects` contains projects and
 their content items.
 
-Django Admin is the primary authoring interface. A broad set of administrative
-GraphQL mutations is therefore unnecessary. The GraphQL schema should remain
-small and be expanded in response to actual frontend use cases.
+Django Admin is the primary authoring interface. A broad write API is therefore
+unnecessary. The REST API should remain small and be expanded in response to
+actual frontend use cases.
 
 Expected read capabilities include:
 
@@ -78,9 +79,6 @@ Expected read capabilities include:
 - projects visible to the current user;
 - details and items for a selected project;
 - individual item details when required by a project type.
-
-GraphiQL may be enabled in development but must remain disabled when Django is
-not running in debug mode.
 
 ## Authentication and authorization
 
@@ -94,15 +92,14 @@ contains:
 Do not introduce JWT or a custom authentication framework without a client or
 deployment requirement that makes session authentication unsuitable.
 
-Authorization must be enforced in backend query resolution. Anonymous GraphQL
+Authorization must be enforced in backend API views. Anonymous API
 requests must not reveal private projects or items belonging to them. The
 frontend renders only the projects returned by the backend and must not be
 responsible for filtering private data.
 
 CSRF protection is required for login, logout, and every state-changing
-operation. The current GraphQL endpoint is a read-only scaffold and is CSRF
-exempt; that exemption must be removed or narrowed before adding mutations or
-other session-authenticated writes.
+operation. Current project endpoints are read-only. Future session-authenticated
+writes must use Django's CSRF protection.
 
 ## Content domain
 
@@ -113,14 +110,11 @@ Project
     name
     link: unique string
     cover -> File
-    content_type -> ContentType
+    post_type: fixed presentation type
+    post_list_type: fixed presentation type
     is_public
     status: open | paused | closed
     order
-
-ContentType
-    name
-    code: string
 
 Tag
     code: unique string
@@ -139,8 +133,11 @@ Post
 ```
 
 A project is an independent content collection. It owns the visibility and
-presentation context inherited by its posts. A post belongs to exactly one
-project; its number determines its position and is unique within that project.
+presentation context inherited by its posts. Its post and post-list presentation
+types use separate explicit choice lists, currently containing `post`, `photo`,
+`travel`, `text`, `text_md`, `door`, `review`, `plasticine`, and `abandoned`
+options. A post belongs to exactly one project; its number determines its
+position and is unique within that project.
 Additional post files are connected through `PostFile`, which stores their
 order. Avoid a generic page builder or universal CMS schema without a
 demonstrated need.
@@ -175,7 +172,7 @@ them from the public site structure. Current routes are:
 
 ```text
 /_admin/                       Django Admin
-/_graphql/                     GraphQL API and development GraphiQL
+/_api/                         REST API
 /_static/                      Django-managed static assets
 ```
 
@@ -212,6 +209,7 @@ The current router implements:
 ```text
 /                Empty About page
 /content/        Projects prototype
+/content/:project/ Project posts loaded from the REST API
 /login/          Guest login prototype
 ```
 
@@ -225,11 +223,16 @@ The shared frontend building blocks are:
 - `ProjectGrid` for a responsive grid of at most three cards per row;
 - `ProjectCard` for public and visually locked project states.
 
+The project-posts page fetches a project and its posts from the REST API, then
+uses an explicit mapping from the project's `postListType` code to a component in
+`components/post-list-types`. Each list component receives the project's
+`posts` array.
+
 Projects currently come from temporary data in `ProjectsPage.vue`. Covers use
 generated color placeholders until backend media is available. The temporary
 array includes private-card examples only to demonstrate their visual state.
 In the integrated application, anonymous users will never receive those
-projects from GraphQL.
+projects from the REST API.
 
 The login form currently simulates an invalid-credentials response after every
 submission. The language switch stores its selection only in component state
@@ -252,7 +255,7 @@ requires another tool. Prioritize behavior with security or domain significance:
 - guests can retrieve private projects and remain read-only;
 - guest users cannot obtain staff or administrative capabilities;
 - visibility is applied consistently to every item in a project;
-- GraphQL resolvers enforce authorization;
+- REST API views enforce authorization;
 - login, logout, and session behavior work correctly;
 - core model invariants are preserved.
 
@@ -288,7 +291,7 @@ choices only when a concrete requirement makes one of them useful.
 
 The following are intentionally unresolved:
 
-- exact Django model fields and GraphQL naming;
+- exact Django model fields and remaining API response fields;
 - concrete project and item presentation types;
 - storage for heterogeneous item content;
 - detailed visual design and SEO strategy;
@@ -302,8 +305,8 @@ The following are intentionally unresolved:
 The next coherent milestone is backend-driven Projects and authentication:
 
 1. define the minimal `Project` model and Django Admin configuration;
-2. expose only projects visible to the current user through GraphQL;
+2. expose only projects visible to the current user through the REST API;
 3. add authorization tests before exposing any private project data or items;
-4. replace the temporary array in `ProjectsPage.vue` with a GraphQL query;
+4. replace the temporary array in `ProjectsPage.vue` with a REST API request;
 5. implement session login and logout with correct CSRF handling;
 6. connect the login form and header state to the authenticated session.

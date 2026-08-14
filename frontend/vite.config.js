@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [vue()],
   server: {
     proxy: {
-      "/_graphql": {
+      "/_api": {
         target: "http://backend:8000",
         changeOrigin: true,
       },
