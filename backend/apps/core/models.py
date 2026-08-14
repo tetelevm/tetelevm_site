@@ -74,7 +74,9 @@ class File(models.Model):
         except (OSError, UnidentifiedImageError):
             return
         finally:
-            self.content.close()
+            content_file = getattr(self.content, "_file", None)
+            if content_file is not None and not content_file.closed:
+                content_file.seek(0)
 
         self.preview.save(
             f"{self.id}.jpg",
