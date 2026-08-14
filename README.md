@@ -1,6 +1,6 @@
 # tetelevm_site
 
-Personal website built with Django, GraphQL, and Vue.
+Personal website built with Django REST Framework and Vue.
 
 The first frontend prototype is complete. It includes a responsive Projects
 page, an empty About page, and a guest login form. Backend domain logic and
@@ -31,7 +31,7 @@ Development URLs:
 - frontend: http://localhost:5173;
 - Django: http://localhost:8000;
 - Django Admin: http://localhost:8000/_admin/;
-- GraphQL and development GraphiQL: http://localhost:8000/_graphql/.
+- REST API: http://localhost:8000/_api/.
 
 The frontend container runs `npm install` on startup so its persistent
 `node_modules` volume stays synchronized with `package-lock.json`.
@@ -52,7 +52,7 @@ login link, grid, and card components. The favicon is served from
 
 The following frontend behavior is intentionally not implemented yet:
 
-- loading projects from GraphQL;
+- loading the project grid from the REST API;
 - real login, logout, and session state;
 - persistent localization or translated content;
 - project list and item detail pages;

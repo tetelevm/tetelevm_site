@@ -52,7 +52,7 @@ builder without an explicit requirement.
   `from __future__ import annotations` where it keeps annotations simple.
 - Docstrings are optional for straightforward functions and classes. Add them
   when they clarify complex or non-obvious logic.
-- Keep the GraphQL schema driven by actual frontend screens and use cases.
+- Keep the REST API driven by actual frontend screens and use cases.
 - Keep mappings from project/content presentation types to Vue components
   explicit and maintainable.
 - Treat data in `frontend/src/pages/ProjectsPage.vue` and the login error as
@@ -71,7 +71,7 @@ builder without an explicit requirement.
 ## Verification
 
 Test behavior in proportion to its risk. Backend coverage should prioritize
-authorization, authentication, GraphQL exposure, and domain invariants. Use
+authorization, authentication, API exposure, and domain invariants. Use
 pytest with pytest-django unless there is a concrete reason to choose otherwise.
 
 Do not consider authorization-sensitive work complete until anonymous, guest,
