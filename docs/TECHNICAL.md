@@ -172,7 +172,9 @@ them from the public site structure. Current routes are:
 
 ```text
 /_admin/                       Django Admin
-/_api/                         REST API
+/_api/projects/                Projects visible to the current visitor
+/_api/projects/<project>/      Project metadata and paginated posts (`?page=N`)
+/_api/projects/<project>/<n>/  Individual post
 /_static/                      Django-managed static assets
 ```
 
@@ -208,7 +210,7 @@ The current router implements:
 
 ```text
 /                Empty About page
-/content/        Projects prototype
+/content/        Projects loaded from the REST API
 /content/:project/ Project posts loaded from the REST API
 /login/          Guest login prototype
 ```
@@ -226,13 +228,14 @@ The shared frontend building blocks are:
 The project-posts page fetches a project and its posts from the REST API, then
 uses an explicit mapping from the project's `postListType` code to a component in
 `components/post-list-types`. Each list component receives the project's
-`posts` array.
+`posts` array. Project posts use page-number pagination with 50 posts per page;
+the response includes the current page, page size, total pages, and total posts.
+The frontend keeps the selected page in the URL query string and renders numeric
+page controls.
 
-Projects currently come from temporary data in `ProjectsPage.vue`. Covers use
-generated color placeholders until backend media is available. The temporary
-array includes private-card examples only to demonstrate their visual state.
-In the integrated application, anonymous users will never receive those
-projects from the REST API.
+Projects come from the REST API. Anonymous users never receive private projects;
+authenticated guests receive them with `isPublic: false` so the existing locked
+card presentation can distinguish them.
 
 The login form currently simulates an invalid-credentials response after every
 submission. The language switch stores its selection only in component state

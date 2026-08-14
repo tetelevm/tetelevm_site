@@ -6,7 +6,7 @@ from rest_framework.test import APITestCase
 
 from apps.core.models import File
 
-from .models import PostListType, PostType, Project
+from .models import Post, PostListType, PostType, Project
 
 
 class ProjectModelTests(TestCase):
@@ -71,6 +71,16 @@ class ProjectApiTests(APITestCase):
             post_list_type=PostListType.PHOTO,
             is_public=False,
         )
+        self.public_post = Post.objects.create(
+            project=self.public_project,
+            number=1,
+            name="Public post",
+        )
+        self.private_post = Post.objects.create(
+            project=self.private_project,
+            number=1,
+            name="Private post",
+        )
         user_model = get_user_model()
         self.guest = user_model.objects.create_user("guest", password="guest")
         self.admin = user_model.objects.create_superuser(
@@ -84,18 +94,88 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual([project["link"] for project in response.data], ["public"])
 
-    def test_anonymous_user_cannot_retrieve_private_project(self) -> None:
+    def test_anonymous_user_can_retrieve_public_project_posts(self) -> None:
         response = self.client.get(
-            reverse("projects:project-detail", kwargs={"link": "private"})
+            reverse(
+                "projects:project-posts",
+                kwargs={"project_code": "public"},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["postListType"], PostListType.TRAVEL)
+        self.assertEqual([post["number"] for post in response.data["posts"]], [1])
+        self.assertEqual(
+            response.data["pagination"],
+            {
+                "page": 1,
+                "pageSize": 50,
+                "totalPages": 1,
+                "totalItems": 1,
+            },
+        )
+
+    def test_project_posts_are_paginated_by_fifty(self) -> None:
+        Post.objects.bulk_create(
+            [
+                Post(project=self.public_project, number=number)
+                for number in range(2, 52)
+            ]
+        )
+
+        response = self.client.get(
+            reverse(
+                "projects:project-posts",
+                kwargs={"project_code": "public"},
+            ),
+            {"page": 2},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([post["number"] for post in response.data["posts"]], [51])
+        self.assertEqual(response.data["pagination"]["page"], 2)
+        self.assertEqual(response.data["pagination"]["totalPages"], 2)
+        self.assertEqual(response.data["pagination"]["totalItems"], 51)
+
+    def test_anonymous_user_cannot_retrieve_private_project_posts(self) -> None:
+        response = self.client.get(
+            reverse(
+                "projects:project-posts",
+                kwargs={"project_code": "private"},
+            )
         )
 
         self.assertEqual(response.status_code, 404)
 
-    def test_guest_can_retrieve_private_project(self) -> None:
+    def test_anonymous_user_can_retrieve_public_post(self) -> None:
+        response = self.client.get(
+            reverse(
+                "projects:post-detail",
+                kwargs={"project_code": "public", "post_num": 1},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["name"], "Public post")
+
+    def test_anonymous_user_cannot_retrieve_post_from_private_project(self) -> None:
+        response = self.client.get(
+            reverse(
+                "projects:post-detail",
+                kwargs={"project_code": "private", "post_num": 1},
+            )
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_guest_can_retrieve_private_project_posts(self) -> None:
         self.client.force_login(self.guest)
 
         response = self.client.get(
-            reverse("projects:project-detail", kwargs={"link": "private"})
+            reverse(
+                "projects:project-posts",
+                kwargs={"project_code": "private"},
+            )
         )
 
         self.assertEqual(response.status_code, 200)
@@ -111,11 +191,38 @@ class ProjectApiTests(APITestCase):
 
         self.assertEqual(response.status_code, 405)
 
-    def test_admin_can_retrieve_private_project(self) -> None:
+    def test_guest_can_retrieve_post_from_private_project(self) -> None:
+        self.client.force_login(self.guest)
+
+        response = self.client.get(
+            reverse(
+                "projects:post-detail",
+                kwargs={"project_code": "private", "post_num": 1},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_admin_can_retrieve_private_project_posts(self) -> None:
         self.client.force_login(self.admin)
 
         response = self.client.get(
-            reverse("projects:project-detail", kwargs={"link": "private"})
+            reverse(
+                "projects:project-posts",
+                kwargs={"project_code": "private"},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_admin_can_retrieve_post_from_private_project(self) -> None:
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse(
+                "projects:post-detail",
+                kwargs={"project_code": "private", "post_num": 1},
+            )
         )
 
         self.assertEqual(response.status_code, 200)

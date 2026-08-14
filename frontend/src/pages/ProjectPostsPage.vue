@@ -1,8 +1,8 @@
 <script setup>
 import { computed, ref, watch } from "vue"
-import { useRoute } from "vue-router"
+import { useRoute, useRouter } from "vue-router"
 
-import { getProject } from "../api/projects.js"
+import { getProjectPosts } from "../api/projects.js"
 import LoginLink from "../components/LoginLink.vue"
 import MainLayout from "../components/MainLayout.vue"
 import AbandonedList from "../components/post-list-types/Abandoned.vue"
@@ -28,7 +28,9 @@ const POST_LIST_COMPONENTS = {
 }
 
 const route = useRoute()
+const router = useRouter()
 const project = ref(null)
+const pagination = ref(null)
 const isLoading = ref(false)
 const errorMessage = ref("")
 
@@ -36,13 +38,21 @@ const postListComponent = computed(
   () => POST_LIST_COMPONENTS[project.value?.postListType] ?? PostList,
 )
 
-async function loadProject(link) {
+function routePage() {
+  const page = Number.parseInt(route.query.page, 10)
+  return Number.isInteger(page) && page > 0 ? page : 1
+}
+
+async function loadProject(link, page) {
   isLoading.value = true
   errorMessage.value = ""
   project.value = null
+  pagination.value = null
 
   try {
-    project.value = await getProject(link)
+    const response = await getProjectPosts(link, page)
+    project.value = response
+    pagination.value = response.pagination
   } catch (error) {
     errorMessage.value = error.message || "Не удалось загрузить проект"
   } finally {
@@ -50,9 +60,21 @@ async function loadProject(link) {
   }
 }
 
+function switchPage(page) {
+  if (page === pagination.value?.page) {
+    return
+  }
+  router.push({
+    query: {
+      ...route.query,
+      page: page === 1 ? undefined : String(page),
+    },
+  })
+}
+
 watch(
-  () => route.params.project,
-  (link) => loadProject(link),
+  () => [route.params.project, route.query.page],
+  ([link]) => loadProject(link, routePage()),
   { immediate: true },
 )
 </script>
@@ -73,6 +95,23 @@ watch(
         :is="postListComponent"
         :posts="project.posts"
       />
+      <nav
+        v-if="pagination.totalPages > 1"
+        class="project-posts-page__pagination"
+        aria-label="Страницы постов"
+      >
+        <button
+          v-for="page in pagination.totalPages"
+          :key="page"
+          class="project-posts-page__page"
+          :class="{ 'project-posts-page__page--active': page === pagination.page }"
+          type="button"
+          :aria-current="page === pagination.page ? 'page' : undefined"
+          @click="switchPage(page)"
+        >
+          {{ page }}
+        </button>
+      </nav>
     </template>
   </MainLayout>
 </template>
@@ -82,5 +121,35 @@ watch(
   margin: 0;
   color: rgba(255, 255, 255, 0.72);
   text-align: center;
+}
+
+.project-posts-page__pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2.5rem;
+}
+
+.project-posts-page__page {
+  min-width: 2.25rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 2px;
+  color: rgba(255, 255, 255, 0.75);
+  background: transparent;
+  cursor: pointer;
+}
+
+.project-posts-page__page:hover,
+.project-posts-page__page:focus-visible,
+.project-posts-page__page--active {
+  border-color: rgba(255, 255, 255, 0.85);
+  color: #fff;
+  outline: none;
+}
+
+.project-posts-page__page--active {
+  background: rgba(255, 255, 255, 0.12);
 }
 </style>
