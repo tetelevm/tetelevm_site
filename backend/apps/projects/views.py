@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from django.db.models import QuerySet
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.request import Request
+from rest_framework.response import Response
 
-from .models import Project
-from .serializers import ProjectDetailSerializer, ProjectListSerializer
+from .models import Post, Project
+from .serializers import PostSerializer, ProjectListSerializer
 
 
 def visible_projects(user_is_authenticated: bool) -> QuerySet[Project]:
@@ -21,11 +24,61 @@ class ProjectListView(ListAPIView):
         return visible_projects(self.request.user.is_authenticated)
 
 
-class ProjectDetailView(RetrieveAPIView):
-    serializer_class = ProjectDetailSerializer
+class ProjectPostPagination(PageNumberPagination):
+    page_size = 50
+    page_query_param = "page"
+
+
+class ProjectPostsView(RetrieveAPIView):
+    serializer_class = ProjectListSerializer
+    pagination_class = ProjectPostPagination
     lookup_field = "link"
+    lookup_url_kwarg = "project_code"
 
     def get_queryset(self) -> QuerySet[Project]:
-        return visible_projects(self.request.user.is_authenticated).prefetch_related(
-            "posts"
+        return visible_projects(self.request.user.is_authenticated)
+
+    def retrieve(
+        self,
+        request: Request,
+        *args: object,
+        **kwargs: object,
+    ) -> Response:
+        project = self.get_object()
+        posts = project.posts.select_related(
+            "main_file",
+            "related_post",
+        ).prefetch_related("post_files__file", "tags")
+        page = self.paginate_queryset(posts)
+        assert page is not None
+        assert self.paginator is not None
+
+        data = dict(self.get_serializer(project).data)
+        data["posts"] = PostSerializer(
+            page,
+            many=True,
+            context=self.get_serializer_context(),
+        ).data
+        data["pagination"] = {
+            "page": self.paginator.page.number,
+            "pageSize": self.paginator.page_size,
+            "totalPages": self.paginator.page.paginator.num_pages,
+            "totalItems": self.paginator.page.paginator.count,
+        }
+        return Response(data)
+
+
+class PostDetailView(RetrieveAPIView):
+    serializer_class = PostSerializer
+    lookup_field = "number"
+    lookup_url_kwarg = "post_num"
+
+    def get_queryset(self) -> QuerySet[Post]:
+        posts = Post.objects.filter(
+            project__in=visible_projects(self.request.user.is_authenticated),
+            project__link=self.kwargs["project_code"],
+        )
+        return posts.select_related("main_file", "related_post").prefetch_related(
+            "post_files__file",
+            "tags",
         )

@@ -2,7 +2,24 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from .models import Post, Project
+from apps.core.models import File
+
+from .models import Post, Project, Tag
+
+
+class FileSerializer(serializers.ModelSerializer):
+    link = serializers.CharField(read_only=True)
+    linkFull = serializers.CharField(source="link_full", read_only=True)
+
+    class Meta:
+        model = File
+        fields = ("id", "link", "linkFull")
+
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ("code", "name")
 
 
 class ProjectListSerializer(serializers.ModelSerializer):
@@ -27,14 +44,29 @@ class ProjectListSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     link = serializers.CharField(read_only=True)
+    mainFile = FileSerializer(source="main_file", read_only=True)
+    files = serializers.SerializerMethodField()
+    tags = TagSerializer(many=True, read_only=True)
+    relatedPost = serializers.IntegerField(
+        source="related_post.number",
+        read_only=True,
+    )
 
     class Meta:
         model = Post
-        fields = ("id", "number", "link", "name", "text", "extra")
+        fields = (
+            "id",
+            "number",
+            "link",
+            "name",
+            "text",
+            "mainFile",
+            "files",
+            "tags",
+            "extra",
+            "relatedPost",
+        )
 
-
-class ProjectDetailSerializer(ProjectListSerializer):
-    posts = PostSerializer(many=True, read_only=True)
-
-    class Meta(ProjectListSerializer.Meta):
-        fields = (*ProjectListSerializer.Meta.fields, "posts")
+    def get_files(self, obj: Post) -> list[dict[str, object]]:
+        files = [post_file.file for post_file in obj.post_files.all()]
+        return list(FileSerializer(files, many=True).data)

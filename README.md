@@ -41,7 +41,7 @@ The frontend container runs `npm install` on startup so its persistent
 Implemented Vue routes:
 
 - `/` — empty About page with a non-persistent `ru/en` UI switch;
-- `/content/` — responsive project card grid using temporary local data;
+- `/content/` — responsive project card grid loaded from the REST API;
 - `/login/` — login form UI with a temporary simulated error state.
 
 The Projects page supports ordinary and visually private project cards. Private
@@ -51,8 +51,6 @@ login link, grid, and card components. The favicon is served from
 `frontend/public/favicon.ico`.
 
 The following frontend behavior is intentionally not implemented yet:
-
-- loading the project grid from the REST API;
 - real login, logout, and session state;
 - persistent localization or translated content;
 - project list and item detail pages;

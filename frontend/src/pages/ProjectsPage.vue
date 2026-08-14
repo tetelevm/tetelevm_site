@@ -1,77 +1,51 @@
 <script setup>
+import { onMounted, ref } from "vue"
+
+import { getProjects } from "../api/projects.js"
 import LoginLink from "../components/LoginLink.vue"
 import MainLayout from "../components/MainLayout.vue"
 import ProjectGrid from "../components/ProjectGrid.vue"
 
-const projects = [
-  {
-    id: 1,
-    title: "Проект 01",
-    href: "/content/project-01/",
-    image: "",
-    accent: "#dbcc4f",
-    isPrivate: false,
-  },
-  {
-    id: 2,
-    title: "Проект 02",
-    href: "/content/project-02/",
-    image: "",
-    accent: "#a8bd78",
-    isPrivate: false,
-  },
-  {
-    id: 3,
-    title: "Проект 03",
-    href: "/content/project-03/",
-    image: "",
-    accent: "#cf9866",
-    isPrivate: false,
-  },
-  {
-    id: 4,
-    title: "Проект 04",
-    href: "/content/project-04/",
-    image: "",
-    accent: "#7ca1aa",
-    isPrivate: false,
-  },
-  {
-    id: 5,
-    title: "Проект 05",
-    href: "/content/project-05/",
-    image: "",
-    accent: "#a990bd",
-    isPrivate: true,
-  },
-  {
-    id: 6,
-    title: "Проект 06",
-    href: "/content/project-06/",
-    image: "",
-    accent: "#be7975",
-    isPrivate: true,
-  },
-  {
-    id: 7,
-    title: "Проект 07",
-    href: "/content/project-07/",
-    image: "",
-    accent: "#8f9f67",
-    isPrivate: true,
-  },
-]
+const projects = ref([])
+const isLoading = ref(false)
+const errorMessage = ref("")
+
+async function loadProjects() {
+  isLoading.value = true
+  errorMessage.value = ""
+
+  try {
+    const response = await getProjects()
+    projects.value = response.map((project) => ({
+      id: project.id,
+      title: project.name,
+      href: `/content/${project.link}/`,
+      image: project.cover,
+      isPrivate: !project.isPublic,
+    }))
+  } catch (error) {
+    errorMessage.value = error.message || "Не удалось загрузить проекты"
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(loadProjects)
 </script>
 
 <template>
   <MainLayout active-page="projects">
     <template #header-action>
-        <LoginLink />
+      <LoginLink />
     </template>
 
     <div class="projects-page__content">
       <h1 class="visually-hidden">Проекты</h1>
-      <ProjectGrid :projects="projects" />
+      <p v-if="isLoading" class="projects-page__status">Загрузка…</p>
+      <p v-else-if="errorMessage" class="projects-page__status" role="alert">
+        {{ errorMessage }}
+      </p>
+      <ProjectGrid v-else :projects="projects" />
     </div>
   </MainLayout>
 </template>
@@ -79,5 +53,11 @@ const projects = [
 <style scoped>
 .projects-page__content {
   width: 100%;
+}
+
+.projects-page__status {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  text-align: center;
 }
 </style>
