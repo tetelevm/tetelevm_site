@@ -6,7 +6,7 @@ import { authState, loadSession, logout } from "../api/auth.js"
 async function logoutUser() {
   try {
     await logout()
-    window.location.assign("/content/")
+    window.location.assign("/projects/")
   } catch {
     window.location.reload()
   }

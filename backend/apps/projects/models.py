@@ -140,7 +140,7 @@ class Post(models.Model):
 
     @property
     def link(self) -> str:
-        return f"projects/{self.project.link}/{self.number}"
+        return f"/projects/{self.project.link}/{self.number}/"
 
     def __str__(self) -> str:
         label = self.name or self.number

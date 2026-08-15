@@ -21,7 +21,7 @@ defineProps({
       <RouterLink
         class="site-header__link"
         :class="{ 'site-header__link--active': activePage === 'projects' }"
-        to="/content/"
+        to="/projects/"
       >
         проекты
       </RouterLink>
@@ -105,4 +105,3 @@ defineProps({
   }
 }
 </style>
-
