@@ -19,7 +19,7 @@ async function loadProjects() {
     projects.value = response.map((project) => ({
       id: project.id,
       title: project.name,
-      href: `/content/${project.link}/`,
+      href: `/projects/${project.link}/`,
       image: project.cover,
       isPrivate: !project.isPublic,
     }))
