@@ -46,6 +46,7 @@ class ProjectPostsView(RetrieveAPIView):
     ) -> Response:
         project = self.get_object()
         posts = project.posts.select_related(
+            "project",
             "main_file",
             "related_post",
         ).prefetch_related("post_files__file", "tags")
@@ -78,7 +79,8 @@ class PostDetailView(RetrieveAPIView):
             project__in=visible_projects(self.request.user.is_authenticated),
             project__link=self.kwargs["project_code"],
         )
-        return posts.select_related("main_file", "related_post").prefetch_related(
-            "post_files__file",
-            "tags",
-        )
+        return posts.select_related(
+            "project",
+            "main_file",
+            "related_post",
+        ).prefetch_related("post_files__file", "tags")
