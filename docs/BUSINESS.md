@@ -88,6 +88,14 @@ An item contains the actual material, such as text, images, video, or a
 combination of media. The exact set of project and item formats will evolve as
 real content is added.
 
+### Doors
+
+A Doors project contains photographs of doors. Each item uses its main file as
+the photograph and its text as a caption in the form `🚪 Country, City`. The
+project list presents four square, center-cropped photographs per desktop row
+with captions beneath them. An individual item presents the full photograph
+with its caption centered below it.
+
 ## Visibility
 
 Visibility is defined at project level:

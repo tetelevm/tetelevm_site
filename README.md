@@ -40,7 +40,7 @@ The frontend container runs `npm install` on startup so its persistent
 Implemented Vue routes:
 
 - `/` — empty About page with a non-persistent `ru/en` UI switch;
-- `/content/` — responsive project card grid loaded from the REST API;
+- `/projects/` — responsive project card grid loaded from the REST API;
 - `/login/` — session login form for guests and administrators.
 
 The Projects page supports ordinary and visually private project cards. Private

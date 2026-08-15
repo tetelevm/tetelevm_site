@@ -134,7 +134,7 @@ Tag
 Post
     project -> Project
     number: unique within project
-    link: projects/<project link>/<number>
+    link: /projects/<project link>/<number>/
     optional name and text
     optional main_file -> File
     extra: JSON
@@ -168,9 +168,9 @@ The intended routes are:
 ```text
 /                               About
 /login/                         Guest login
-/content/                       Projects visible to the visitor
-/content/<project>/             Items in a project
-/content/<project>/<item>/      Item detail when the project needs one
+/projects/                      Projects visible to the visitor
+/projects/<project>/            Items in a project
+/projects/<project>/<item>/     Item detail when the project needs one
 ```
 
 Exact identifiers and slug behavior remain deferred. The Content landing page
@@ -194,7 +194,7 @@ them from the public site structure. Current routes are:
 ```
 
 Future internal endpoints should follow the same `/_name/` convention. Public
-pages such as `/`, `/login/`, and `/content/` do not use this prefix.
+pages such as `/`, `/login/`, and `/projects/` do not use this prefix.
 
 ## Media
 
@@ -228,8 +228,9 @@ The current router implements:
 
 ```text
 /                Empty About page
-/content/        Projects loaded from the REST API
-/content/:project/ Project posts loaded from the REST API
+/projects/        Projects loaded from the REST API
+/projects/:project/ Project posts loaded from the REST API
+/projects/:project/:postNumber/ Individual post loaded from the REST API
 /login/          Session login
 ```
 
@@ -250,6 +251,11 @@ uses an explicit mapping from the project's `postListType` code to a component i
 the response includes the current page, page size, total pages, and total posts.
 The frontend keeps the selected page in the URL query string and renders numeric
 page controls.
+
+The individual-post page selects its component through an explicit mapping from
+the API's `postType` value. For the `door` type, the list component renders an
+independent responsive four-column tile grid, while the individual component
+renders the uncropped main image and centered text caption.
 
 Projects come from the REST API. Anonymous users never receive private projects;
 authenticated guests receive them with `isPublic: false` so the existing locked
