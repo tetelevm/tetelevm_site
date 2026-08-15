@@ -51,7 +51,6 @@ defineProps({
 .project-card {
   position: relative;
   display: block;
-  aspect-ratio: 1;
   color: #fff;
   border: 3px solid rgba(255, 255, 255, 0.62);
   border-radius: 2px;
@@ -87,14 +86,14 @@ defineProps({
 .project-card__frame {
   position: relative;
   display: grid;
-  height: 100%;
   overflow: hidden;
-  grid-template-rows: minmax(0, 1fr) 25%;
+  grid-template-rows: auto minmax(4rem, auto);
   background: #202020;
 }
 
 .project-card__cover {
   position: relative;
+  aspect-ratio: 1;
   display: grid;
   min-height: 0;
   overflow: hidden;
@@ -113,6 +112,7 @@ defineProps({
   height: 100%;
   display: block;
   object-fit: cover;
+  object-position: center;
 }
 
 .project-card__placeholder {

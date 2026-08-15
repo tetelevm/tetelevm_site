@@ -4,5 +4,7 @@ __pycache__/
 *.py[cod]
 .venv/
 backend/staticfiles/
+/media/*
+!/media/.gitkeep
 frontend/node_modules/
 frontend/dist/

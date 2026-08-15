@@ -10,6 +10,8 @@ from .models import File
 class FileAdmin(admin.ModelAdmin):
     readonly_fields = ("id", "preview", "uploaded_at")
     list_display = ("id", "filename", "uploaded_at")
+    search_fields = ("content",)
+    ordering = ("-uploaded_at",)
 
     @admin.display(description=_("Filename"))
     def filename(self, obj: File) -> str:
