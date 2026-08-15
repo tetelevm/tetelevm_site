@@ -52,20 +52,20 @@ onMounted(async () => {
 
 <style scoped>
 .login-link {
-  width: 2rem;
-  height: 2rem;
+  width: 2.4rem;
+  height: 2.4rem;
   display: grid;
   padding: 0;
-  border: 0;
+  border: 1px solid var(--color-line);
   border-radius: 50%;
-  color: #f4f4f4;
-  background: transparent;
+  color: var(--color-muted);
+  background: var(--color-surface);
   place-items: center;
-  opacity: 0.48;
   cursor: pointer;
   transition:
-    background-color 160ms ease,
-    opacity 160ms ease;
+    color 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
 }
 
 .login-link__icon--logout {
@@ -74,18 +74,19 @@ onMounted(async () => {
 
 .login-link:hover,
 .login-link:focus-visible {
-  background: rgba(255, 255, 255, 0.08);
-  opacity: 0.92;
+  border-color: rgba(215, 240, 111, 0.55);
+  color: var(--color-accent);
+  background: var(--color-surface-raised);
   outline: none;
 }
 
 .login-link:focus-visible {
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
 }
 
 .login-link__icon {
-  width: 1.2rem;
-  height: 1.2rem;
+  width: 1.15rem;
+  height: 1.15rem;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;

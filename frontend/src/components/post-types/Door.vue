@@ -24,21 +24,24 @@ defineProps({
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .door-post__photo {
   max-width: 100%;
   max-height: 75vh;
   display: block;
+  border-radius: var(--radius-small);
+  box-shadow: var(--shadow-card);
   object-fit: contain;
 }
 
 .door-post__caption {
   margin: 0;
-  color: #f4f4f4;
+  color: var(--color-text);
+  font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(1rem, 2.5vw, 1.25rem);
-  line-height: 1.4;
+  line-height: 1.45;
   text-align: center;
 }
 </style>

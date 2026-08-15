@@ -266,9 +266,16 @@ redirects successful logins to the project grid. The header action reflects the
 current session and provides logout. The language switch stores its selection
 only in component state and does not translate or persist content.
 
-Global frontend styling uses a dark `#202020` background and system sans-serif
-font stack. Page-specific styles remain scoped to Vue components. The favicon
-is stored in `frontend/public/favicon.ico`.
+Global frontend styling uses a dark editorial palette defined through CSS
+custom properties, a compact pill-based header, serif display headings, and a
+system sans-serif text stack. Cards use square center-cropped covers, restrained
+motion, visible focus states, and responsive grids. Page-specific styles remain
+scoped to Vue components. The favicon is stored in
+`frontend/public/favicon.ico`.
+
+On project and post pages, the current project name appears beside the session
+action in the header. A compact subheader row directly below it contains the
+back link and, on project lists, the total item count.
 
 Frontend testing should be proportional to the amount of meaningful client-side
 logic. Static presentation does not require exhaustive component tests.

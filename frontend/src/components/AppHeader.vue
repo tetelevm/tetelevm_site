@@ -17,7 +17,6 @@ defineProps({
       >
         главная
       </RouterLink>
-      <span class="site-header__divider" aria-hidden="true">/</span>
       <RouterLink
         class="site-header__link"
         :class="{ 'site-header__link--active': activePage === 'projects' }"
@@ -36,72 +35,65 @@ defineProps({
 <style scoped>
 .site-header {
   position: relative;
-  z-index: 1;
-  min-height: 7rem;
+  z-index: 2;
+  width: min(100% - 2rem, 800px);
+  min-height: 5rem;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: start;
-  padding: 1.65rem clamp(1.25rem, 3.5vw, 4rem) 2.8rem;
-  background: linear-gradient(
-    to bottom,
-    #000 0%,
-    rgba(0, 0, 0, 0.92) 55%,
-    rgba(0, 0, 0, 0) 100%
-  );
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--color-line);
+  margin-inline: auto;
 }
 
 .site-header__nav {
-  grid-column: 2;
   display: flex;
-  align-items: baseline;
-  gap: clamp(0.65rem, 1.2vw, 1.1rem);
-  font-size: clamp(1.6rem, 2.5vw, 2.45rem);
-  font-weight: 700;
-  line-height: 1;
-}
-
-.site-header__link,
-.site-header__divider {
-  color: #f4f4f4;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .site-header__link {
+  position: relative;
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  font-weight: 650;
+  letter-spacing: 0.09em;
   text-decoration: none;
-  opacity: 0.78;
-  transition: opacity 160ms ease;
+  text-transform: uppercase;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
 }
 
 .site-header__link:hover,
-.site-header__link:focus-visible,
-.site-header__link--active {
-  opacity: 1;
+.site-header__link:focus-visible {
+  color: var(--color-text);
+  background: rgba(238, 234, 222, 0.06);
+  outline: none;
 }
 
-.site-header__divider {
-  transform: rotate(9deg);
-  font-size: 1.2em;
+.site-header__link--active {
+  color: #151612;
+  background: var(--color-accent);
+}
+
+.site-header__link--active:hover,
+.site-header__link--active:focus-visible {
+  color: #151612;
+  background: #e2f58f;
 }
 
 .site-header__action {
-  grid-column: 3;
   justify-self: end;
 }
 
-@media (max-width: 640px) {
-  .site-header {
-    min-height: 6rem;
-    grid-template-columns: 1fr auto;
-    align-items: start;
-    padding: 1.4rem 1rem 2.5rem;
-  }
-
-  .site-header__nav {
-    grid-column: 1;
-    justify-self: start;
-  }
-
-  .site-header__action {
-    grid-column: 2;
+@media (max-width: 420px) {
+  .site-header__link {
+    padding-inline: 0.6rem;
+    font-size: 0.73rem;
   }
 }
 </style>
