@@ -42,6 +42,7 @@ defineProps({
       </span>
 
       <span class="project-card__title">{{ title }}</span>
+      <span v-if="isPrivate" class="project-card__badge">закрытый</span>
       <span v-if="isPrivate" class="project-card__shade" aria-hidden="true" />
     </span>
   </RouterLink>
@@ -51,44 +52,37 @@ defineProps({
 .project-card {
   position: relative;
   display: block;
-  color: #fff;
-  border: 3px solid rgba(255, 255, 255, 0.62);
-  border-radius: 2px;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-medium);
+  color: var(--color-text);
+  background: var(--color-surface);
   text-decoration: none;
   transition:
-    transform 180ms ease,
+    transform 200ms ease,
     border-color 180ms ease,
     box-shadow 180ms ease;
-}
-
-.project-card::after {
-  position: absolute;
-  inset: -3px;
-  z-index: 2;
-  border: 4px solid transparent;
-  border-radius: 2px;
-  content: "";
-  pointer-events: none;
 }
 
 .project-card:hover,
 .project-card:focus-visible {
   z-index: 2;
-  border-color: rgba(255, 255, 255, 0.88);
+  border-color: rgba(215, 240, 111, 0.65);
+  box-shadow: var(--shadow-card);
   outline: none;
-  transform: translateY(-0.3rem);
+  transform: translateY(-0.35rem);
 }
 
 .project-card:focus-visible {
-  box-shadow: 0 0 0 3px #202020, 0 0 0 5px #fff;
+  box-shadow: 0 0 0 3px var(--color-bg), 0 0 0 5px var(--color-accent);
 }
 
 .project-card__frame {
   position: relative;
   display: grid;
   overflow: hidden;
-  grid-template-rows: auto minmax(4rem, auto);
-  background: #202020;
+  grid-template-rows: auto minmax(3.75rem, auto);
+  background: var(--color-surface);
 }
 
 .project-card__cover {
@@ -113,10 +107,16 @@ defineProps({
   display: block;
   object-fit: cover;
   object-position: center;
+  transition: transform 350ms ease;
+}
+
+.project-card:hover .project-card__cover img,
+.project-card:focus-visible .project-card__cover img {
+  transform: scale(1.025);
 }
 
 .project-card__placeholder {
-  color: rgba(20, 20, 20, 0.78);
+  color: rgba(20, 20, 20, 0.72);
   font-family: ui-sans-serif, system-ui, sans-serif;
   font-size: clamp(4rem, 10vw, 8rem);
   font-weight: 800;
@@ -128,42 +128,51 @@ defineProps({
   z-index: 1;
   display: grid;
   min-width: 0;
-  padding: 0.35rem 0.8rem;
+  padding: 0.8rem 1rem;
   place-items: center;
   overflow: hidden;
-  font-size: clamp(1.15rem, 2.2vw, 2rem);
-  font-weight: 700;
-  line-height: 1.05;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 620;
+  line-height: 1.15;
   text-align: center;
   text-overflow: ellipsis;
 }
 
 .project-card--private {
-  color: rgba(255, 255, 255, 0.68);
-}
-
-.project-card--private::after {
-  border-right-color: rgba(204, 88, 88, 0.55);
-  border-bottom-color: rgba(204, 88, 88, 0.55);
-  box-shadow: 4px 4px 10px rgba(160, 45, 45, 0.16);
+  border-color: rgba(226, 140, 124, 0.32);
 }
 
 .project-card__shade {
   position: absolute;
   inset: 0;
-  z-index: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(110, 110, 110, 0.18) 0%,
-    rgba(110, 110, 110, 0.18) 49.6%,
-    rgba(91, 91, 91, 0) 50.2%,
-    rgba(91, 91, 91, 0) 100%
-  );
+  z-index: 1;
+  background: rgba(15, 16, 13, 0.22);
   pointer-events: none;
+}
+
+.project-card__badge {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  z-index: 2;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid rgba(226, 140, 124, 0.45);
+  border-radius: 999px;
+  color: #f1b1a5;
+  background: rgba(21, 22, 18, 0.78);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(0.4rem);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .project-card {
+    transition: none;
+  }
+
+  .project-card__cover img {
     transition: none;
   }
 }

@@ -36,36 +36,44 @@ const emit = defineEmits(["update:modelValue"])
 <style scoped>
 .language-switch {
   display: flex;
-  align-items: baseline;
-  gap: 0.25rem;
-  color: #f4f4f4;
-  font-size: clamp(0.9rem, 1.4vw, 1.1rem);
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.2rem;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   line-height: 1;
+  text-transform: uppercase;
 }
 
 .language-switch__option {
-  padding: 0.15rem;
+  padding: 0.38rem 0.5rem;
   border: 0;
+  border-radius: 999px;
   color: inherit;
   background: transparent;
   cursor: pointer;
-  opacity: 0.42;
-  transition: opacity 160ms ease;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
 }
 
 .language-switch__option:hover,
 .language-switch__option:focus-visible,
 .language-switch__option--active {
-  opacity: 0.9;
+  color: var(--color-text);
+  background: var(--color-surface-raised);
 }
 
 .language-switch__option:focus-visible {
-  outline: 1px solid rgba(255, 255, 255, 0.72);
+  outline: 1px solid var(--color-accent);
   outline-offset: 2px;
 }
 
 .language-switch__divider {
-  opacity: 0.35;
+  display: none;
 }
 </style>
-

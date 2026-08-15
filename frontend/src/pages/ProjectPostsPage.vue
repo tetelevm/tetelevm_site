@@ -5,6 +5,7 @@ import { useRoute, useRouter } from "vue-router"
 import { getProjectPosts } from "../api/projects.js"
 import LoginLink from "../components/LoginLink.vue"
 import MainLayout from "../components/MainLayout.vue"
+import ProjectHeaderAction from "../components/ProjectHeaderAction.vue"
 import AbandonedList from "../components/post-list-types/Abandoned.vue"
 import DoorList from "../components/post-list-types/Door.vue"
 import PhotoList from "../components/post-list-types/Photo.vue"
@@ -82,7 +83,18 @@ watch(
 <template>
   <MainLayout active-page="projects">
     <template #header-action>
-      <LoginLink />
+      <ProjectHeaderAction
+        v-if="project"
+        :project-name="project.name"
+      />
+      <LoginLink v-else />
+    </template>
+
+    <template #subheader>
+      <div class="project-posts-page__toolbar">
+        <RouterLink to="/projects/">← все проекты</RouterLink>
+        <span v-if="pagination">материалов: {{ pagination.totalItems }}</span>
+      </div>
     </template>
 
     <p v-if="isLoading" class="project-posts-page__status">Загрузка…</p>
@@ -119,37 +131,62 @@ watch(
 <style scoped>
 .project-posts-page__status {
   margin: 0;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--color-muted);
   text-align: center;
+}
+
+.project-posts-page__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.project-posts-page__toolbar a,
+.project-posts-page__toolbar span {
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.project-posts-page__toolbar a:hover,
+.project-posts-page__toolbar a:focus-visible {
+  color: var(--color-accent);
+  outline: none;
 }
 
 .project-posts-page__pagination {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.5rem;
-  margin-top: 2.5rem;
+  gap: 0.4rem;
+  margin-top: 3.5rem;
 }
 
 .project-posts-page__page {
-  min-width: 2.25rem;
-  padding: 0.4rem 0.6rem;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 2px;
-  color: rgba(255, 255, 255, 0.75);
-  background: transparent;
+  min-width: 2.4rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-small);
+  color: var(--color-muted);
+  background: var(--color-surface);
   cursor: pointer;
 }
 
 .project-posts-page__page:hover,
 .project-posts-page__page:focus-visible,
 .project-posts-page__page--active {
-  border-color: rgba(255, 255, 255, 0.85);
-  color: #fff;
+  border-color: rgba(215, 240, 111, 0.6);
+  color: var(--color-text);
   outline: none;
 }
 
 .project-posts-page__page--active {
-  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--color-accent);
+  color: #151612;
+  background: var(--color-accent);
 }
 </style>

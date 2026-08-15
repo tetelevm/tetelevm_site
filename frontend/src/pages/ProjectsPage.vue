@@ -57,7 +57,7 @@ onMounted(loadProjects)
 
 .projects-page__status {
   margin: 0;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--color-muted);
   text-align: center;
 }
 </style>

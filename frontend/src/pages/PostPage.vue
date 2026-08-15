@@ -5,6 +5,7 @@ import { useRoute } from "vue-router"
 import { getPost } from "../api/projects.js"
 import LoginLink from "../components/LoginLink.vue"
 import MainLayout from "../components/MainLayout.vue"
+import ProjectHeaderAction from "../components/ProjectHeaderAction.vue"
 import AbandonedPost from "../components/post-types/Abandoned.vue"
 import DoorPost from "../components/post-types/Door.vue"
 import PhotoPost from "../components/post-types/Photo.vue"
@@ -60,7 +61,21 @@ watch(
 <template>
   <MainLayout active-page="projects">
     <template #header-action>
-      <LoginLink />
+      <ProjectHeaderAction
+        v-if="post"
+        :project-name="post.projectName"
+      />
+      <LoginLink v-else />
+    </template>
+
+    <template #subheader>
+      <RouterLink
+        v-if="post"
+        class="post-page__back"
+        :to="`/projects/${post.projectCode}/`"
+      >
+        ← к проекту
+      </RouterLink>
     </template>
 
     <p v-if="isLoading" class="post-page__status">Загрузка…</p>
@@ -77,7 +92,23 @@ watch(
 <style scoped>
 .post-page__status {
   margin: 0;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--color-muted);
   text-align: center;
+}
+
+.post-page__back {
+  display: inline-block;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.post-page__back:hover,
+.post-page__back:focus-visible {
+  color: var(--color-accent);
+  outline: none;
 }
 </style>

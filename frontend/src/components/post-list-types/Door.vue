@@ -31,12 +31,12 @@ defineProps({
 .door-list {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1.5rem 1rem;
+  gap: 1.75rem 1rem;
 }
 
 .door-card {
   min-width: 0;
-  color: #f4f4f4;
+  color: var(--color-text);
   text-decoration: none;
 }
 
@@ -44,11 +44,13 @@ defineProps({
   aspect-ratio: 1;
   display: block;
   overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.55);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
   transition:
     border-color 160ms ease,
-    transform 160ms ease;
+    transform 180ms ease,
+    box-shadow 180ms ease;
 }
 
 .door-card__photo img {
@@ -63,15 +65,21 @@ defineProps({
   display: block;
   margin-top: 0.55rem;
   overflow-wrap: anywhere;
-  font-size: 0.9rem;
-  line-height: 1.25;
-  text-align: center;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
 }
 
 .door-card:hover .door-card__photo,
 .door-card:focus-visible .door-card__photo {
-  border-color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(215, 240, 111, 0.65);
+  box-shadow: var(--shadow-card);
   transform: translateY(-0.2rem);
+}
+
+.door-card:hover .door-card__caption,
+.door-card:focus-visible .door-card__caption {
+  color: var(--color-text);
 }
 
 .door-card:focus-visible {
@@ -87,6 +95,12 @@ defineProps({
 @media (max-width: 360px) {
   .door-list {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .door-card__photo {
+    transition: none;
   }
 }
 </style>

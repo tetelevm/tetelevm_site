@@ -158,6 +158,7 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["name"], "Public post")
         self.assertEqual(response.data["projectCode"], "public")
+        self.assertEqual(response.data["projectName"], "Public")
         self.assertEqual(response.data["postType"], PostType.TEXT)
         self.assertEqual(response.data["link"], "/projects/public/1/")
 

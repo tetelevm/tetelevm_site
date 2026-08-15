@@ -45,6 +45,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     link = serializers.CharField(read_only=True)
     projectCode = serializers.CharField(source="project.link", read_only=True)
+    projectName = serializers.CharField(source="project.name", read_only=True)
     postType = serializers.CharField(source="project.post_type", read_only=True)
     mainFile = FileSerializer(source="main_file", read_only=True)
     files = serializers.SerializerMethodField()
@@ -61,6 +62,7 @@ class PostSerializer(serializers.ModelSerializer):
             "number",
             "link",
             "projectCode",
+            "projectName",
             "postType",
             "name",
             "text",

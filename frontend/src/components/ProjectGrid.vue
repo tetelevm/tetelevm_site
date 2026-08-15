@@ -25,10 +25,10 @@ defineProps({
 
 <style scoped>
 .project-grid {
-  width: min(100%, 72rem);
+  width: 100%;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(2rem, 4vw, 3.3rem) clamp(2rem, 5vw, 5.2rem);
+  gap: clamp(1rem, 2.5vw, 1.5rem);
 }
 
 @media (max-width: 820px) {
@@ -39,9 +39,9 @@ defineProps({
 
 @media (max-width: 520px) {
   .project-grid {
-    width: min(100%, 20rem);
+    width: min(100%, 24rem);
+    margin-inline: auto;
     grid-template-columns: 1fr;
   }
 }
 </style>
-
