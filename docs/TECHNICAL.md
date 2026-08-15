@@ -18,6 +18,7 @@ should not be treated as already implemented unless it exists in the codebase.
 /
 ├── backend/       Django, REST API, administration, and backend tests
 ├── frontend/      Vue application and frontend tests
+├── media/         Persistent uploaded media (contents ignored by Git)
 ├── deploy/        Container and production deployment configuration
 ├── docs/          Product and technical documentation
 ├── scripts/       Maintenance and operational automation
@@ -73,6 +74,11 @@ their content items.
 Django Admin is the primary authoring interface. A broad write API is therefore
 unnecessary. The REST API should remain small and be expanded in response to
 actual frontend use cases.
+
+Relations to potentially large collections use Django Admin's built-in AJAX
+autocomplete widgets. They keep the default 20-result pages and load further
+results on scroll. File choices are searchable by stored filename and ordered
+by newest upload first; post choices are ordered by descending database ID.
 
 Expected read capabilities include:
 
@@ -192,9 +198,10 @@ pages such as `/`, `/login/`, and `/content/` do not use this prefix.
 
 ## Media
 
-Initial uploads are managed through Django Admin and stored on persistent VPS
-storage. Production deployment must preserve uploaded files independently of
-container replacement.
+Initial uploads are managed through Django Admin and stored in the repository
+root `media/` directory, whose contents are ignored by Git. Compose mounts it at
+`/media` in the backend container. Production deployment must preserve this
+directory independently of container replacement.
 
 Uploaded files are represented by the `File` model. Its primary key is a UUID,
 while the stored filename consists of the upload date and original filename,
@@ -205,6 +212,8 @@ and stored as `<file UUID>.jpg`. For images, `link` points to the preview and
 `link_full` points to the original; non-images use the original as `link` and
 have no `link_full`. Django serves these URLs only in debug mode; production
 must serve `MEDIA_ROOT` at `/files/` through the reverse proxy.
+The Vite development server also proxies `/files/` to Django. Project cards
+render covers in a square container and center-crop non-square images.
 
 External embeds or media providers may be added when a concrete content type
 requires them. They are not part of the initial infrastructure.

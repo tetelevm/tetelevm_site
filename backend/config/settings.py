@@ -83,7 +83,7 @@ LOCALE_PATHS = [BASE_DIR / "locale"]
 STATIC_URL = "_static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/files/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = BASE_DIR.parent / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {

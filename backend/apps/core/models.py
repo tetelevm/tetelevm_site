@@ -85,4 +85,4 @@ class File(models.Model):
         )
 
     def __str__(self) -> str:
-        return str(self.id)
+        return Path(self.content.name).name if self.content else str(self.id)
