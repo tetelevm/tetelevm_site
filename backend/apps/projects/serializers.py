@@ -33,6 +33,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
+            "description",
             "link",
             "cover",
             "postType",

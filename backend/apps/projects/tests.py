@@ -57,6 +57,7 @@ class ProjectApiTests(APITestCase):
         self.cover = File.objects.create(content="cover.jpg")
         self.public_project = Project.objects.create(
             name="Public",
+            description="A short project description.",
             link="public",
             cover=self.cover,
             post_type=PostType.TEXT,
@@ -104,6 +105,10 @@ class ProjectApiTests(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["postListType"], PostListType.TRAVEL)
+        self.assertEqual(
+            response.data["description"],
+            "A short project description.",
+        )
         self.assertEqual([post["number"] for post in response.data["posts"]], [1])
         self.assertEqual(
             response.data["pagination"],
