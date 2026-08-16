@@ -76,6 +76,7 @@ class ProjectApiTests(APITestCase):
             project=self.public_project,
             number=1,
             name="Public post",
+            extra={"rating": 8},
         )
         self.private_post = Post.objects.create(
             project=self.private_project,
@@ -105,6 +106,10 @@ class ProjectApiTests(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["postListType"], PostListType.TRAVEL)
+        self.assertEqual(response.data["posts"][0]["rating"], 8)
+        self.assertNotIn("extra", response.data["posts"][0])
+        self.assertNotIn("files", response.data["posts"][0])
+        self.assertNotIn("tags", response.data["posts"][0])
         self.assertEqual(
             response.data["description"],
             "A short project description.",
@@ -151,6 +156,19 @@ class ProjectApiTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, 404)
+
+    def test_project_post_list_returns_null_for_missing_rating(self) -> None:
+        self.public_post.extra = {}
+        self.public_post.save(update_fields=("extra",))
+
+        response = self.client.get(
+            reverse(
+                "projects:project-posts",
+                kwargs={"project_code": "public"},
+            )
+        )
+
+        self.assertIsNone(response.data["posts"][0]["rating"])
 
     def test_anonymous_user_can_retrieve_public_post(self) -> None:
         response = self.client.get(

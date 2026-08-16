@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 from django.db.models import QuerySet
+from django.db.models.fields.json import KeyTransform
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from .models import Post, Project
-from .serializers import PostSerializer, ProjectListSerializer
+from .serializers import (
+    PostListSerializer,
+    PostSerializer,
+    ProjectListSerializer,
+)
 
 
 def visible_projects(user_is_authenticated: bool) -> QuerySet[Project]:
@@ -45,17 +50,17 @@ class ProjectPostsView(RetrieveAPIView):
         **kwargs: object,
     ) -> Response:
         project = self.get_object()
-        posts = project.posts.select_related(
-            "project",
-            "main_file",
-            "related_post",
-        ).prefetch_related("post_files__file", "tags")
+        posts = (
+            project.posts.select_related("project", "main_file")
+            .annotate(rating=KeyTransform("rating", "extra"))
+            .defer("extra")
+        )
         page = self.paginate_queryset(posts)
         assert page is not None
         assert self.paginator is not None
 
         data = dict(self.get_serializer(project).data)
-        data["posts"] = PostSerializer(
+        data["posts"] = PostListSerializer(
             page,
             many=True,
             context=self.get_serializer_context(),
