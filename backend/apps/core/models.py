@@ -7,19 +7,38 @@ from typing import Any
 
 from django.core.files.base import ContentFile
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from PIL import Image, ImageOps, UnidentifiedImageError
 
-PREVIEW_MAX_SIZE = (900, 900)
+PREVIEW_MAX_SIZE = (600, 600)
+THUMBNAIL_SIZE = (150, 150)
 
 
 def file_upload_path(instance: File, filename: str) -> str:
-    return f"{timezone.localdate().isoformat()}_{Path(filename).name}"
+    suffix = Path(filename).suffix.lower()
+    return f"content/{instance.id}{suffix}"
 
 
 def preview_upload_path(instance: File, filename: str) -> str:
-    return f"{instance.id}.jpg"
+    return f"preview/{instance.id}.jpg"
+
+
+def thumbnail_upload_path(instance: File, filename: str) -> str:
+    return f"thumbnail/{instance.id}.jpg"
+
+
+def jpeg_content(image: Image.Image) -> ContentFile:
+    if image.mode in {"RGBA", "LA"}:
+        background = Image.new("RGB", image.size, "white")
+        alpha = image.getchannel("A")
+        background.paste(image.convert("RGB"), mask=alpha)
+        image = background
+    elif image.mode != "RGB":
+        image = image.convert("RGB")
+
+    output = BytesIO()
+    image.save(output, format="JPEG", quality=85, optimize=True)
+    return ContentFile(output.getvalue())
 
 
 class File(models.Model):
@@ -29,10 +48,23 @@ class File(models.Model):
         default=uuid.uuid4,
         editable=False,
     )
+    original_name = models.CharField(
+        _("Original name"),
+        max_length=255,
+        blank=True,
+        editable=False,
+    )
     content = models.FileField(_("Content"), upload_to=file_upload_path)
     preview = models.ImageField(
         _("Preview"),
         upload_to=preview_upload_path,
+        blank=True,
+        null=True,
+        editable=False,
+    )
+    thumbnail = models.ImageField(
+        _("Thumbnail"),
+        upload_to=thumbnail_upload_path,
         blank=True,
         null=True,
         editable=False,
@@ -51,28 +83,30 @@ class File(models.Model):
     def link_full(self) -> str | None:
         return self.content.url if self.preview else None
 
+    @property
+    def link_small(self) -> str:
+        return self.thumbnail.url if self.thumbnail else self.link
+
     def save(self, *args: Any, **kwargs: Any) -> None:
-        if self.content and not self.preview:
-            self._generate_preview()
+        if self.content and not self.content._committed:
+            self.original_name = Path(self.content.name).name
+        if self.content and (not self.preview or not self.thumbnail):
+            self._generate_images()
         super().save(*args, **kwargs)
 
-    def _generate_preview(self) -> None:
+    def _generate_images(self) -> None:
         try:
             self.content.open("rb")
             with Image.open(self.content) as source:
                 image = ImageOps.exif_transpose(source)
-                image.thumbnail(PREVIEW_MAX_SIZE, Image.Resampling.LANCZOS)
-
-                if image.mode in {"RGBA", "LA"}:
-                    background = Image.new("RGB", image.size, "white")
-                    alpha = image.getchannel("A")
-                    background.paste(image.convert("RGB"), mask=alpha)
-                    image = background
-                elif image.mode != "RGB":
-                    image = image.convert("RGB")
-
-                output = BytesIO()
-                image.save(output, format="JPEG", quality=85, optimize=True)
+                preview = image.copy()
+                preview.thumbnail(PREVIEW_MAX_SIZE, Image.Resampling.LANCZOS)
+                thumbnail = ImageOps.fit(
+                    image,
+                    THUMBNAIL_SIZE,
+                    method=Image.Resampling.LANCZOS,
+                    centering=(0.5, 0.5),
+                )
         except (OSError, UnidentifiedImageError):
             return
         finally:
@@ -80,11 +114,14 @@ class File(models.Model):
             if content_file is not None and not content_file.closed:
                 content_file.seek(0)
 
-        self.preview.save(
-            f"{self.id}.jpg",
-            ContentFile(output.getvalue()),
-            save=False,
-        )
+        if not self.preview:
+            self.preview.save(f"{self.id}.jpg", jpeg_content(preview), save=False)
+        if not self.thumbnail:
+            self.thumbnail.save(
+                f"{self.id}.jpg",
+                jpeg_content(thumbnail),
+                save=False,
+            )
 
     def __str__(self) -> str:
-        return Path(self.content.name).name if self.content else str(self.id)
+        return self.original_name or str(self.id)

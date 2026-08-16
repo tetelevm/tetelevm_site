@@ -102,6 +102,12 @@ project list presents four square, center-cropped photographs per desktop row
 with captions beneath them. An individual item presents the full photograph
 with its caption centered below it.
 
+### Photo
+
+A Photo project presents four square, center-cropped main-image previews per
+desktop row. Each preview opens an individual item that displays the full,
+uncropped main image without additional text or files.
+
 ### Plasticine
 
 A Plasticine project presents handmade plasticine works. Each item has one main

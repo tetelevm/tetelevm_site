@@ -1,8 +1,6 @@
 import json
 import tempfile
-from datetime import date
 from io import BytesIO
-from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -15,7 +13,7 @@ from .models import File
 
 
 class FileModelTests(TestCase):
-    def test_image_preview_is_constrained_to_nine_hundred_pixels(self) -> None:
+    def test_image_derivatives_have_expected_sizes_and_paths(self) -> None:
         source = BytesIO()
         Image.new("RGB", (1800, 1200), "red").save(source, format="JPEG")
 
@@ -26,21 +24,54 @@ class FileModelTests(TestCase):
                 )
 
                 with Image.open(uploaded.preview.path) as preview:
-                    self.assertEqual(preview.size, (900, 600))
+                    self.assertEqual(preview.size, (600, 400))
+                with Image.open(uploaded.thumbnail.path) as thumbnail:
+                    self.assertEqual(thumbnail.size, (150, 150))
 
-    def test_upload_uses_date_and_original_filename(self) -> None:
+                self.assertEqual(uploaded.original_name, "photo.jpg")
+                self.assertEqual(
+                    uploaded.content.name,
+                    f"content/{uploaded.id}.jpg",
+                )
+                self.assertEqual(
+                    uploaded.preview.name,
+                    f"preview/{uploaded.id}.jpg",
+                )
+                self.assertEqual(
+                    uploaded.thumbnail.name,
+                    f"thumbnail/{uploaded.id}.jpg",
+                )
+
+    def test_thumbnail_upscales_small_images(self) -> None:
+        source = BytesIO()
+        Image.new("RGB", (60, 40), "blue").save(source, format="PNG")
+
         with tempfile.TemporaryDirectory() as media_root:
             with override_settings(MEDIA_ROOT=media_root, MEDIA_URL="/files/"):
-                with patch(
-                    "apps.core.models.timezone.localdate",
-                    return_value=date(2026, 8, 12),
-                ):
-                    uploaded = File.objects.create(
-                        content=SimpleUploadedFile("Example.MOV", b"video")
-                    )
+                uploaded = File.objects.create(
+                    content=SimpleUploadedFile("small.png", source.getvalue())
+                )
 
-                self.assertEqual(uploaded.content.name, "2026-08-12_Example.MOV")
-                self.assertEqual(uploaded.link, "/files/2026-08-12_Example.MOV")
+                with Image.open(uploaded.preview.path) as preview:
+                    self.assertEqual(preview.size, (60, 40))
+                with Image.open(uploaded.thumbnail.path) as thumbnail:
+                    self.assertEqual(thumbnail.size, (150, 150))
+
+    def test_non_image_uses_uuid_filename_and_has_no_derivatives(self) -> None:
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root, MEDIA_URL="/files/"):
+                uploaded = File.objects.create(
+                    content=SimpleUploadedFile("Example.MOV", b"video")
+                )
+
+                self.assertEqual(uploaded.original_name, "Example.MOV")
+                self.assertEqual(
+                    uploaded.content.name,
+                    f"content/{uploaded.id}.mov",
+                )
+                self.assertEqual(uploaded.link, f"/files/content/{uploaded.id}.mov")
+                self.assertFalse(uploaded.preview)
+                self.assertFalse(uploaded.thumbnail)
                 self.assertTrue(uploaded.content.storage.exists(uploaded.content.name))
 
 
