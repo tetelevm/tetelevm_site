@@ -37,6 +37,7 @@ class Project(models.Model):
         CLOSED = "closed", _("Closed")
 
     name = models.CharField(_("Name"), max_length=255)
+    description = models.TextField(_("Description"), blank=True)
     link = models.CharField(_("Link"), max_length=64, unique=True)
     cover = models.ForeignKey(
         File,

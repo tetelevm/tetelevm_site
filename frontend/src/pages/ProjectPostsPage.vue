@@ -3,7 +3,6 @@ import { computed, ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 
 import { getProjectPosts } from "../api/projects.js"
-import LoginLink from "../components/LoginLink.vue"
 import MainLayout from "../components/MainLayout.vue"
 import ProjectHeaderAction from "../components/ProjectHeaderAction.vue"
 import AbandonedList from "../components/post-list-types/Abandoned.vue"
@@ -87,7 +86,6 @@ watch(
         v-if="project"
         :project-name="project.name"
       />
-      <LoginLink v-else />
     </template>
 
     <template #subheader>
@@ -95,6 +93,9 @@ watch(
         <RouterLink to="/projects/">← все проекты</RouterLink>
         <span v-if="pagination">материалов: {{ pagination.totalItems }}</span>
       </div>
+      <p v-if="project?.description" class="project-posts-page__description">
+        {{ project.description }}
+      </p>
     </template>
 
     <p v-if="isLoading" class="project-posts-page__status">Загрузка…</p>
@@ -140,6 +141,15 @@ watch(
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.project-posts-page__description {
+  max-width: 42rem;
+  margin: 0.75rem 0 0;
+  color: var(--color-text);
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  line-height: 1.5;
+  white-space: pre-line;
 }
 
 .project-posts-page__toolbar a,
