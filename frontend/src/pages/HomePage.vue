@@ -9,7 +9,7 @@ const language = ref("ru")
 <template>
   <MainLayout active-page="home">
     <template #header-action>
-        <LanguageSwitch v-model="language" />
+      <LanguageSwitch v-model="language" />
     </template>
 
     <h1 class="visually-hidden">Главная</h1>

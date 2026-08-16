@@ -70,6 +70,10 @@ not be directed to an administrative login screen. Valid guest and administrator
 credentials create a normal site session; authenticated visitors can sign out
 from the public interface.
 
+The shared header shows the site logo on every page. Three quick activations of
+the logo reveal the login or logout control in its place. The login URL remains
+directly accessible.
+
 ## Content organization
 
 Content follows this hierarchy:
@@ -81,6 +85,7 @@ Content -> Project -> Item
 A project determines:
 
 - the collection to which an item belongs;
+- a short description shown above its material;
 - whether the collection is public or private;
 - the general presentation of its material.
 

@@ -2,7 +2,6 @@
 import { onMounted, ref } from "vue"
 
 import { getProjects } from "../api/projects.js"
-import LoginLink from "../components/LoginLink.vue"
 import MainLayout from "../components/MainLayout.vue"
 import ProjectGrid from "../components/ProjectGrid.vue"
 
@@ -35,10 +34,6 @@ onMounted(loadProjects)
 
 <template>
   <MainLayout active-page="projects">
-    <template #header-action>
-      <LoginLink />
-    </template>
-
     <div class="projects-page__content">
       <h1 class="visually-hidden">Проекты</h1>
       <p v-if="isLoading" class="projects-page__status">Загрузка…</p>

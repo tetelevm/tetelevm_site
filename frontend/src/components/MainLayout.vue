@@ -1,5 +1,6 @@
 <script setup>
 import AppHeader from "./AppHeader.vue"
+import HeaderAccessAction from "./HeaderAccessAction.vue"
 
 defineProps({
   activePage: {
@@ -13,7 +14,10 @@ defineProps({
   <div class="main-layout">
     <AppHeader :active-page="activePage">
       <template #action>
-        <slot name="header-action" />
+        <div class="main-layout__header-action">
+          <slot name="header-action" />
+          <HeaderAccessAction />
+        </div>
       </template>
     </AppHeader>
 
@@ -35,6 +39,14 @@ defineProps({
   background:
     radial-gradient(circle at 12% -10%, rgba(215, 240, 111, 0.08), transparent 28rem),
     var(--color-bg);
+}
+
+.main-layout__header-action {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2em;
 }
 
 .main-layout::before {

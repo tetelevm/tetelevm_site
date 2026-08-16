@@ -3,7 +3,6 @@ import { computed, ref, watch } from "vue"
 import { useRoute } from "vue-router"
 
 import { getPost } from "../api/projects.js"
-import LoginLink from "../components/LoginLink.vue"
 import MainLayout from "../components/MainLayout.vue"
 import ProjectHeaderAction from "../components/ProjectHeaderAction.vue"
 import AbandonedPost from "../components/post-types/Abandoned.vue"
@@ -65,7 +64,6 @@ watch(
         v-if="post"
         :project-name="post.projectName"
       />
-      <LoginLink v-else />
     </template>
 
     <template #subheader>
