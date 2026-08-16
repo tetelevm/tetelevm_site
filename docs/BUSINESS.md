@@ -56,7 +56,8 @@ The About page provides a compact `ru/en` language switch in its header.
 ### Content
 
 The Content area contains material created by the site owner, including
-articles, notes, photographs, reviews, long-form text, and media publications.
+articles, notes, photographs, anime write-ups, long-form text, and media
+publications.
 
 The Content landing page shows projects, not a single feed mixing unrelated
 items. Each project is an independent collection with its own list of material
@@ -107,6 +108,16 @@ A Plasticine project presents handmade plasticine works. Each item has one main
 photograph and may have additional photographs. The project list shows the main
 photograph in a framed card. An individual item shows the main photograph first,
 followed by its additional photographs in their configured order.
+
+### Anime
+
+An Anime project contains the owner's write-ups about watched anime. Its list
+shows square, center-cropped main images with item names and ratings beneath
+them. An item
+shows its name and italic original title beside a rating, followed by exactly
+three square screenshots, the main text, and an italic viewing recommendation.
+The original title, rating, and recommendation are stored in `extra` as
+`original_title`, `rating`, and `result`.
 
 ## Visibility
 

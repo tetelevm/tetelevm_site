@@ -65,6 +65,8 @@ builder without an explicit requirement.
 
 ## Temporary rules
 
+- The project is currently in test development. Backward compatibility with
+  existing data is not required unless a task explicitly asks for it.
 - Do not create or update migrations after model changes.
 - Do not update localization files.
 

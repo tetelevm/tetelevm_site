@@ -10,7 +10,7 @@ import DoorList from "../components/post-list-types/Door.vue"
 import PhotoList from "../components/post-list-types/Photo.vue"
 import PlasticineList from "../components/post-list-types/Plasticine.vue"
 import PostList from "../components/post-list-types/Post.vue"
-import ReviewList from "../components/post-list-types/Review.vue"
+import AnimeList from "../components/post-list-types/Anime.vue"
 import TextList from "../components/post-list-types/Text.vue"
 import TextMdList from "../components/post-list-types/TextMd.vue"
 import TravelList from "../components/post-list-types/Travel.vue"
@@ -22,7 +22,7 @@ const POST_LIST_COMPONENTS = {
   text: TextList,
   text_md: TextMdList,
   door: DoorList,
-  review: ReviewList,
+  anime: AnimeList,
   plasticine: PlasticineList,
   abandoned: AbandonedList,
 }

@@ -147,7 +147,7 @@ Post
 A project is an independent content collection. It owns the visibility and
 presentation context inherited by its posts. Its post and post-list presentation
 types use separate explicit choice lists, currently containing `post`, `photo`,
-`travel`, `text`, `text_md`, `door`, `review`, `plasticine`, and `abandoned`
+`travel`, `text`, `text_md`, `door`, `anime`, `plasticine`, and `abandoned`
 options. A post belongs to exactly one project; its number determines its
 position and is unique within that project.
 Additional post files are connected through `PostFile`, which stores their
