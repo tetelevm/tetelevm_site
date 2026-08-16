@@ -101,6 +101,13 @@ project list presents four square, center-cropped photographs per desktop row
 with captions beneath them. An individual item presents the full photograph
 with its caption centered below it.
 
+### Plasticine
+
+A Plasticine project presents handmade plasticine works. Each item has one main
+photograph and may have additional photographs. The project list shows the main
+photograph in a framed card. An individual item shows the main photograph first,
+followed by its additional photographs in their configured order.
+
 ## Visibility
 
 Visibility is defined at project level:
