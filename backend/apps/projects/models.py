@@ -13,7 +13,7 @@ class PostType(models.TextChoices):
     TEXT = "text", _("Text")
     TEXT_MD = "text_md", _("Markdown text")
     DOOR = "door", _("Door")
-    REVIEW = "review", _("Review")
+    ANIME = "anime", _("Anime")
     PLASTICINE = "plasticine", _("Plasticine")
     ABANDONED = "abandoned", _("Abandoned")
 
@@ -25,7 +25,7 @@ class PostListType(models.TextChoices):
     TEXT = "text", _("Text")
     TEXT_MD = "text_md", _("Markdown text")
     DOOR = "door", _("Door")
-    REVIEW = "review", _("Review")
+    ANIME = "anime", _("Anime")
     PLASTICINE = "plasticine", _("Plasticine")
     ABANDONED = "abandoned", _("Abandoned")
 

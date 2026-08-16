@@ -10,7 +10,7 @@ import DoorPost from "../components/post-types/Door.vue"
 import PhotoPost from "../components/post-types/Photo.vue"
 import PlasticinePost from "../components/post-types/Plasticine.vue"
 import Post from "../components/post-types/Post.vue"
-import ReviewPost from "../components/post-types/Review.vue"
+import AnimePost from "../components/post-types/Anime.vue"
 import TextPost from "../components/post-types/Text.vue"
 import TextMdPost from "../components/post-types/TextMd.vue"
 import TravelPost from "../components/post-types/Travel.vue"
@@ -22,7 +22,7 @@ const POST_COMPONENTS = {
   text: TextPost,
   text_md: TextMdPost,
   door: DoorPost,
-  review: ReviewPost,
+  anime: AnimePost,
   plasticine: PlasticinePost,
   abandoned: AbandonedPost,
 }
@@ -81,7 +81,9 @@ watch(
       {{ errorMessage }}
     </p>
     <template v-else-if="post">
-      <h1 class="visually-hidden">{{ post.name || post.text }}</h1>
+      <h1 v-if="post.postType !== 'anime'" class="visually-hidden">
+        {{ post.name || post.text }}
+      </h1>
       <component :is="postComponent" :post="post" />
     </template>
   </MainLayout>
