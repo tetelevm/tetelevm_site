@@ -11,6 +11,8 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from PIL import Image, ImageOps, UnidentifiedImageError
 
+PREVIEW_MAX_SIZE = (900, 900)
+
 
 def file_upload_path(instance: File, filename: str) -> str:
     return f"{timezone.localdate().isoformat()}_{Path(filename).name}"
@@ -59,7 +61,7 @@ class File(models.Model):
             self.content.open("rb")
             with Image.open(self.content) as source:
                 image = ImageOps.exif_transpose(source)
-                image.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
+                image.thumbnail(PREVIEW_MAX_SIZE, Image.Resampling.LANCZOS)
 
                 if image.mode in {"RGBA", "LA"}:
                     background = Image.new("RGB", image.size, "white")

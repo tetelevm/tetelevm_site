@@ -1,6 +1,8 @@
 <script setup>
 import { computed } from "vue"
 
+import LightboxImage from "../LightboxImage.vue"
+
 const props = defineProps({
   post: {
     type: Object,
@@ -37,11 +39,11 @@ const screenshots = computed(() =>
         :key="file?.id ?? `empty-${index}`"
         class="anime-post__screenshot"
       >
-        <img
+        <LightboxImage
           v-if="file?.link"
-          :src="file.link"
+          :preview-src="file.link"
+          :full-src="file.linkFull"
           :alt="`${post.name} — скриншот ${index + 1}`"
-          loading="lazy"
         />
         <span v-else>нет скриншота</span>
       </div>
@@ -124,13 +126,6 @@ const screenshots = computed(() =>
   font-size: 0.7rem;
   place-items: center;
   text-align: center;
-}
-
-.anime-post__screenshot img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
 }
 
 .anime-post__text {
