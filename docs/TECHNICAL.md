@@ -75,6 +75,13 @@ Django Admin is the primary authoring interface. A broad write API is therefore
 unnecessary. The REST API should remain small and be expanded in response to
 actual frontend use cases.
 
+The post admin keeps `extra` as a validated raw JSON textarea. A small admin
+script prepopulates it from an explicit `post_type` template when the project is
+selected. It may replace a previously auto-applied template but never overwrites
+manually edited JSON. The project-to-template map is embedded in the form; this
+is intentionally simpler than an additional endpoint for the site's small
+project collection.
+
 Relations to potentially large collections use Django Admin's built-in AJAX
 autocomplete widgets. They keep the default 20-result pages and load further
 results on scroll. File choices are searchable by original upload name and ordered
@@ -247,6 +254,8 @@ The shared frontend building blocks are:
 - `LoginLink` for the login/logout icon revealed by the header logo;
 - `ProjectGrid` for a responsive grid of at most three cards per row;
 - `ProjectCard` for public and visually locked project states.
+- `RatedPostGrid` for project types whose cards share an image, name, and rating;
+- `RatedPostHeader` for detail types whose title sits beside an overall rating.
 
 The project-posts page fetches a project and its posts from the REST API, then
 uses an explicit mapping from the project's `postListType` code to a component in
@@ -268,6 +277,11 @@ renders the uncropped main image and centered text caption.
 Anime screenshots use a reusable native-dialog lightbox. The square grid loads
 the preview URL; opening a screenshot then loads `linkFull` and displays it
 within the viewport. The dialog closes from its button, backdrop, or Escape key.
+
+`MediaCarousel` renders ordered post files as an image-and-video carousel.
+Detail file serialization includes an explicit `mediaType`; images use their
+preview in the carousel and open the original through the shared lightbox,
+while videos use native browser controls and metadata-only preloading.
 
 Projects come from the REST API. Anonymous users never receive private projects;
 authenticated guests receive them with `isPublic: false` so the existing locked

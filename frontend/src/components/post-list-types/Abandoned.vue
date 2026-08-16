@@ -1,5 +1,5 @@
 <script setup>
-import Abandoned from "../post-types/Abandoned.vue"
+import RatedPostGrid from "../RatedPostGrid.vue"
 
 defineProps({
   posts: {
@@ -10,11 +10,5 @@ defineProps({
 </script>
 
 <template>
-  <div>
-    <Abandoned
-      v-for="post in posts"
-      :key="post.id ?? post.number"
-      :post="post"
-    />
-  </div>
+  <RatedPostGrid :posts="posts" />
 </template>

@@ -81,9 +81,6 @@ watch(
       {{ errorMessage }}
     </p>
     <template v-else-if="post">
-      <h1 v-if="post.postType !== 'anime'" class="visually-hidden">
-        {{ post.name || post.text }}
-      </h1>
       <component :is="postComponent" :post="post" />
     </template>
   </MainLayout>
