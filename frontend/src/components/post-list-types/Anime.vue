@@ -25,11 +25,11 @@ defineProps({
       <span class="anime-card__caption">
         <span class="anime-card__name">{{ post.name }}</span>
         <span
-          v-if="post.extra?.rating !== undefined && post.extra?.rating !== null"
+          v-if="post.rating !== null && post.rating !== undefined"
           class="anime-card__rating"
           aria-label="Оценка"
         >
-          {{ post.extra.rating }}
+          {{ post.rating }}
         </span>
       </span>
     </RouterLink>

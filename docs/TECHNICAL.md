@@ -249,7 +249,11 @@ The shared frontend building blocks are:
 The project-posts page fetches a project and its posts from the REST API, then
 uses an explicit mapping from the project's `postListType` code to a component in
 `components/post-list-types`. Each list component receives the project's
-`posts` array. Project posts use page-number pagination with 50 posts per page;
+`posts` array. List entries contain only the fields required by list components;
+they do not expose `extra`, additional files, tags, or detail-page metadata.
+PostgreSQL extracts `rating` directly from `extra.rating` for the dedicated
+list field, which is `null` when absent. Project posts use page-number
+pagination with 50 posts per page;
 the response includes the current page, page size, total pages, and total posts.
 The frontend keeps the selected page in the URL query string and renders numeric
 page controls.

@@ -16,6 +16,14 @@ class FileSerializer(serializers.ModelSerializer):
         fields = ("id", "link", "linkFull")
 
 
+class FileListSerializer(serializers.ModelSerializer):
+    link = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = File
+        fields = ("link",)
+
+
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -77,3 +85,21 @@ class PostSerializer(serializers.ModelSerializer):
     def get_files(self, obj: Post) -> list[dict[str, object]]:
         files = [post_file.file for post_file in obj.post_files.all()]
         return list(FileSerializer(files, many=True).data)
+
+
+class PostListSerializer(serializers.ModelSerializer):
+    link = serializers.CharField(read_only=True)
+    mainFile = FileListSerializer(source="main_file", read_only=True)
+    rating = serializers.JSONField(read_only=True, allow_null=True)
+
+    class Meta:
+        model = Post
+        fields = (
+            "id",
+            "number",
+            "link",
+            "name",
+            "text",
+            "mainFile",
+            "rating",
+        )
