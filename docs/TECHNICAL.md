@@ -119,6 +119,7 @@ The project domain currently uses these models:
 ```text
 Project
     name
+    description: optional short text
     link: unique string
     cover -> File
     post_type: fixed presentation type
@@ -240,7 +241,8 @@ The shared frontend building blocks are:
   800-pixel content container;
 - `AppHeader` for navigation and a page-specific action slot;
 - `LanguageSwitch` for the About-page `ru/en` control;
-- `LoginLink` for the Projects-page login icon;
+- `HeaderAccessAction` for the site logo and concealed login/logout control;
+- `LoginLink` for the login/logout icon revealed by the header logo;
 - `ProjectGrid` for a responsive grid of at most three cards per row;
 - `ProjectCard` for public and visually locked project states.
 
@@ -273,9 +275,10 @@ motion, visible focus states, and responsive grids. Page-specific styles remain
 scoped to Vue components. The favicon is stored in
 `frontend/public/favicon.ico`.
 
-On project and post pages, the current project name appears beside the session
-action in the header. A compact subheader row directly below it contains the
-back link and, on project lists, the total item count.
+On project and post pages, the current project name appears beside the site
+logo in the header. Three quick logo activations replace it with the session
+action. A compact subheader row directly below contains the back link and, on
+project lists, the total item count and optional short project description.
 
 Frontend testing should be proportional to the amount of meaningful client-side
 logic. Static presentation does not require exhaustive component tests.
