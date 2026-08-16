@@ -17,7 +17,7 @@ class FileSerializer(serializers.ModelSerializer):
 
 
 class FileListSerializer(serializers.ModelSerializer):
-    link = serializers.CharField(read_only=True)
+    link = serializers.CharField(source="link_small", read_only=True)
 
     class Meta:
         model = File

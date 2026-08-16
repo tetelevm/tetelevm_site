@@ -77,7 +77,7 @@ actual frontend use cases.
 
 Relations to potentially large collections use Django Admin's built-in AJAX
 autocomplete widgets. They keep the default 20-result pages and load further
-results on scroll. File choices are searchable by stored filename and ordered
+results on scroll. File choices are searchable by original upload name and ordered
 by newest upload first; post choices are ordered by descending database ID.
 
 Expected read capabilities include:
@@ -204,14 +204,16 @@ root `media/` directory, whose contents are ignored by Git. Compose mounts it at
 `/media` in the backend container. Production deployment must preserve this
 directory independently of container replacement.
 
-Uploaded files are represented by the `File` model. Its primary key is a UUID,
-while the stored filename consists of the upload date and original filename,
-for example `2026-08-12_video.mov`. `MEDIA_URL` is `/files/`, so the model's
-`link` property returns the storage URL for that filename. Uploaded images also
-receive a metadata-free JPEG preview, constrained to 900 pixels on each axis
-and stored as `<file UUID>.jpg`. For images, `link` points to the preview and
-`link_full` points to the original; non-images use the original as `link` and
-have no `link_full`. Django serves these URLs only in debug mode; production
+Uploaded files are represented by the `File` model and retain their upload name
+in `original_name`. Stored files use the model UUID and are separated by role:
+originals use `content/<UUID>.<extension>`, image previews use
+`preview/<UUID>.jpg`, and image thumbnails use `thumbnail/<UUID>.jpg`.
+Previews are metadata-free JPEGs constrained to 600 pixels on each axis without
+upscaling. Thumbnails are metadata-free 150-by-150 JPEGs produced with a centered
+square crop and are upscaled when the source is smaller. For images, `link`
+points to the preview, `link_small` to the thumbnail, and `link_full` to the
+original; non-images use the original for both `link` and `link_small` and have
+no `link_full`. Django serves these URLs only in debug mode; production
 must serve `MEDIA_ROOT` at `/files/` through the reverse proxy.
 The Vite development server also proxies `/files/` to Django. Project cards
 render covers in a square container and center-crop non-square images.
