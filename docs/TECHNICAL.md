@@ -208,7 +208,7 @@ Uploaded files are represented by the `File` model. Its primary key is a UUID,
 while the stored filename consists of the upload date and original filename,
 for example `2026-08-12_video.mov`. `MEDIA_URL` is `/files/`, so the model's
 `link` property returns the storage URL for that filename. Uploaded images also
-receive a metadata-free JPEG preview, constrained to 1200 pixels on each axis
+receive a metadata-free JPEG preview, constrained to 900 pixels on each axis
 and stored as `<file UUID>.jpg`. For images, `link` points to the preview and
 `link_full` points to the original; non-images use the original as `link` and
 have no `link_full`. Django serves these URLs only in debug mode; production
@@ -262,6 +262,10 @@ The individual-post page selects its component through an explicit mapping from
 the API's `postType` value. For the `door` type, the list component renders an
 independent responsive four-column tile grid, while the individual component
 renders the uncropped main image and centered text caption.
+
+Anime screenshots use a reusable native-dialog lightbox. The square grid loads
+the preview URL; opening a screenshot then loads `linkFull` and displays it
+within the viewport. The dialog closes from its button, backdrop, or Escape key.
 
 Projects come from the REST API. Anonymous users never receive private projects;
 authenticated guests receive them with `isPublic: false` so the existing locked

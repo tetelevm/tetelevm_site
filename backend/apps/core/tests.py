@@ -1,6 +1,7 @@
 import json
 import tempfile
 from datetime import date
+from io import BytesIO
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -8,11 +9,25 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponse
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+from PIL import Image
 
 from .models import File
 
 
 class FileModelTests(TestCase):
+    def test_image_preview_is_constrained_to_nine_hundred_pixels(self) -> None:
+        source = BytesIO()
+        Image.new("RGB", (1800, 1200), "red").save(source, format="JPEG")
+
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root, MEDIA_URL="/files/"):
+                uploaded = File.objects.create(
+                    content=SimpleUploadedFile("photo.jpg", source.getvalue())
+                )
+
+                with Image.open(uploaded.preview.path) as preview:
+                    self.assertEqual(preview.size, (900, 600))
+
     def test_upload_uses_date_and_original_filename(self) -> None:
         with tempfile.TemporaryDirectory() as media_root:
             with override_settings(MEDIA_ROOT=media_root, MEDIA_URL="/files/"):
