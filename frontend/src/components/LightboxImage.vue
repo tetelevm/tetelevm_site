@@ -14,6 +14,11 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  previewFit: {
+    type: String,
+    default: "cover",
+    validator: (value) => ["cover", "contain"].includes(value),
+  },
 })
 
 const dialog = ref(null)
@@ -50,7 +55,12 @@ onBeforeUnmount(() => {
 
 <template>
   <button class="lightbox-image__trigger" type="button" @click="openImage">
-    <img :src="previewSrc" :alt="alt" loading="lazy" />
+    <img
+      :src="previewSrc"
+      :alt="alt"
+      :style="{ objectFit: previewFit }"
+      loading="lazy"
+    />
   </button>
 
   <dialog
