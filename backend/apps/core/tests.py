@@ -9,7 +9,7 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from PIL import Image
 
-from .models import File
+from .models import File, FileType, detect_file_type
 
 
 class FileModelTests(TestCase):
@@ -29,6 +29,7 @@ class FileModelTests(TestCase):
                     self.assertEqual(thumbnail.size, (150, 150))
 
                 self.assertEqual(uploaded.original_name, "photo.jpg")
+                self.assertEqual(uploaded.file_type, FileType.PHOTO)
                 self.assertEqual(
                     uploaded.content.name,
                     f"content/{uploaded.id}.jpg",
@@ -65,6 +66,7 @@ class FileModelTests(TestCase):
                 )
 
                 self.assertEqual(uploaded.original_name, "Example.MOV")
+                self.assertEqual(uploaded.file_type, FileType.VIDEO)
                 self.assertEqual(
                     uploaded.content.name,
                     f"content/{uploaded.id}.mov",
@@ -73,6 +75,10 @@ class FileModelTests(TestCase):
                 self.assertFalse(uploaded.preview)
                 self.assertFalse(uploaded.thumbnail)
                 self.assertTrue(uploaded.content.storage.exists(uploaded.content.name))
+
+    def test_file_type_detection_covers_audio_and_other_files(self) -> None:
+        self.assertEqual(detect_file_type("song.FLAC"), FileType.AUDIO)
+        self.assertEqual(detect_file_type("document.pdf"), FileType.OTHER)
 
 
 class AuthenticationApiTests(TestCase):

@@ -142,6 +142,7 @@ Tag
 Post
     project -> Project
     number: unique within project
+    optional date
     link: /projects/<project link>/<number>/
     optional name and text
     optional main_file -> File
@@ -211,8 +212,10 @@ root `media/` directory, whose contents are ignored by Git. Compose mounts it at
 `/media` in the backend container. Production deployment must preserve this
 directory independently of container replacement.
 
-Uploaded files are represented by the `File` model and retain their upload name
-in `original_name`. Stored files use the model UUID and are separated by role:
+Uploaded files are represented by the `File` model, retain their upload name in
+`original_name`, and store `file_type` as `photo`, `video`, `audio`, or `other`.
+The type is detected from the extension when a new file is uploaded. Stored
+files use the model UUID and are separated by role:
 originals use `content/<UUID>.<extension>`, image previews use
 `preview/<UUID>.jpg`, and image thumbnails use `thumbnail/<UUID>.jpg`.
 Previews are metadata-free JPEGs constrained to 600 pixels on each axis without
@@ -265,6 +268,7 @@ The shared frontend building blocks are:
 - `MarkdownContent` for styled, HTML-disabled Markdown rendering.
 - `PostTag` for non-interactive tag labels on post detail pages;
 - `RelatedPostLink` for links to a post's optional same-project relation.
+- `PostFileList` for non-image and non-video file links using original names.
 
 Detail post responses expose `relatedPost` as an object containing its `number`
 and model-generated `link`. The frontend uses that link directly and does not
@@ -275,10 +279,12 @@ uses an explicit mapping from the project's `postListType` code to a component i
 `components/post-list-types`. Each list component receives the project's
 `posts` array. List entries contain only the fields required by list components;
 they do not expose `extra`, additional files, tags, or detail-page metadata.
-List `mainFile` data includes `mediaType` so presentation types can distinguish
-an image thumbnail from video and other files without filename parsing.
-PostgreSQL extracts `rating` and `date` directly from their matching `extra`
-keys for dedicated list fields, which are `null` when absent. Project posts use
+List `mainFile` data includes the stored `mediaType` so presentation types can
+distinguish photos, videos, audio, and other files without filename parsing.
+Post dates come from the optional model field rather than `extra`. PostgreSQL
+extracts only `rating` from `extra` for its dedicated list field. General post
+lists use a dedicated summary serializer that returns a thumbnail and a label
+derived from name, text excerpt, or file-type counts. Project posts use
 page-number pagination with 50 posts per page;
 the response includes the current page, page size, total pages, and total posts.
 The frontend keeps the selected page in the URL query string and renders numeric

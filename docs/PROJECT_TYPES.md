@@ -154,24 +154,15 @@ List:
 - the slot remains empty for a missing or non-image `mainFile`, keeping all
   names aligned;
 - `name` appears after the media slot;
-- the optional dedicated list field `date`, extracted from `extra.date`, appears
-  on the right.
+- the optional model field `date` appears on the right.
 
 Post:
 
-- the optional `extra.date` appears at the top on the left;
+- the optional `date` appears at the top on the left;
 - `name` appears in a larger type size on the right;
 - the plain `text` follows with its line breaks preserved;
 - when `mainFile` or additional files exist, they appear after the text in the
   shared image-and-video media carousel.
-
-Expected `extra` structure:
-
-```json
-{
-  "date": ""
-}
-```
 
 ## `text_md` — Markdown Texts
 
@@ -183,20 +174,12 @@ The list is identical to `text` and uses the shared `TextPostList` component:
 
 Post:
 
-- the header matches `text`, with optional `extra.date` on the left and `name`
+- the header matches `text`, with optional `date` on the left and `name`
   on the right;
 - `text` is rendered as Markdown;
 - headings, paragraphs, lists, links, blockquotes, code blocks, tables, images,
   and Markdown line breaks are styled for the site;
 - raw HTML embedded in Markdown is disabled and displayed as text.
-
-Expected `extra` structure:
-
-```json
-{
-  "date": ""
-}
-```
 
 ## `travel` — Travel
 
@@ -204,7 +187,7 @@ The list is identical to `text` and `text_md` and uses `TextPostList`:
 
 - each item is a full-width row with a fixed 150-pixel thumbnail slot;
 - an image `mainFile` appears in that slot;
-- `name` follows the thumbnail and optional `extra.date` appears on the right.
+- `name` follows the thumbnail and optional `date` appears on the right.
 
 Post:
 
@@ -218,22 +201,32 @@ Post:
 - related tags appear at the bottom as small, non-interactive rectangular
   labels.
 
-Expected `extra` structure:
+## `post` — General Posts
 
-```json
-{
-  "date": ""
-}
-```
+List:
 
-## Placeholder types
+- posts use the same full-width row structure as the text lists;
+- the first available photo from `mainFile` or ordered additional files appears
+  in the fixed 150-pixel thumbnail slot;
+- the label uses `name` when present, otherwise a 120-character `text` excerpt;
+- when both are empty, the label summarizes files as counts such as
+  `📷 3 · 🎬 1 · 🎵 1 · 📎 2`;
+- a completely empty post uses `🌀`;
+- optional `date` appears on the right.
 
-The following types are declared by the backend and explicitly mapped to Vue
-components, but their visual templates have not been designed yet:
+Post:
 
-- `post`.
-
-Their components currently render no content.
+- the shared dated header shows optional `date` on the left and `name` on
+  the right;
+- an image `mainFile`, when present, appears below the header and opens its
+  original in the shared lightbox;
+- a carousel follows with additional files whose `mediaType` is `photo` or
+  `video`;
+- plain `text` appears below the carousel with line breaks preserved;
+- remaining additional files appear as a vertical list of links using their
+  original upload names;
+- an optional related-post link appears below the files;
+- non-interactive tag labels appear at the bottom.
 
 ## JSON in Django Admin
 
@@ -243,9 +236,6 @@ is selected, the admin prepopulates a template based on its `post_type`:
 - `anime` receives `original_title`, `rating`, and `result`;
 - `abandoned` receives `rating`, `uniqueness`, `monumentality`, `atmosphere`,
   and `liveliness`;
-- `text` receives `date`;
-- `text_md` receives `date`;
-- `travel` receives `date`;
 - all other types receive an empty `{}` object.
 
 An automatically inserted template may be replaced when the project changes.
