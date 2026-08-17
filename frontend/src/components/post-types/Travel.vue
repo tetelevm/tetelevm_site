@@ -15,7 +15,7 @@ const props = defineProps({
 const photos = computed(() => {
   const items = [props.post.mainFile, ...(props.post.files ?? [])]
     .filter(Boolean)
-    .filter((item) => item.mediaType === "image")
+    .filter((item) => item.mediaType === "photo")
 
   return items.filter(
     (item, index) =>

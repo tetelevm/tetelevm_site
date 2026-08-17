@@ -12,6 +12,27 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 
 PREVIEW_MAX_SIZE = (600, 600)
 THUMBNAIL_SIZE = (150, 150)
+PHOTO_SUFFIXES = {".avif", ".gif", ".jpeg", ".jpg", ".png", ".webp"}
+VIDEO_SUFFIXES = {".m4v", ".mov", ".mp4", ".ogv", ".webm"}
+AUDIO_SUFFIXES = {".aac", ".flac", ".m4a", ".mp3", ".ogg", ".opus", ".wav"}
+
+
+class FileType(models.TextChoices):
+    PHOTO = "photo", _("Photo")
+    VIDEO = "video", _("Video")
+    AUDIO = "audio", _("Audio")
+    OTHER = "other", _("Other")
+
+
+def detect_file_type(filename: str) -> str:
+    suffix = Path(filename).suffix.lower()
+    if suffix in PHOTO_SUFFIXES:
+        return FileType.PHOTO
+    if suffix in VIDEO_SUFFIXES:
+        return FileType.VIDEO
+    if suffix in AUDIO_SUFFIXES:
+        return FileType.AUDIO
+    return FileType.OTHER
 
 
 def file_upload_path(instance: File, filename: str) -> str:
@@ -54,6 +75,13 @@ class File(models.Model):
         blank=True,
         editable=False,
     )
+    file_type = models.CharField(
+        _("File type"),
+        max_length=16,
+        choices=FileType.choices,
+        default=FileType.OTHER,
+        editable=False,
+    )
     content = models.FileField(_("Content"), upload_to=file_upload_path)
     preview = models.ImageField(
         _("Preview"),
@@ -90,7 +118,12 @@ class File(models.Model):
     def save(self, *args: Any, **kwargs: Any) -> None:
         if self.content and not self.content._committed:
             self.original_name = Path(self.content.name).name
-        if self.content and (not self.preview or not self.thumbnail):
+            self.file_type = detect_file_type(self.content.name)
+        if (
+            self.content
+            and self.file_type == FileType.PHOTO
+            and (not self.preview or not self.thumbnail)
+        ):
             self._generate_images()
         super().save(*args, **kwargs)
 
