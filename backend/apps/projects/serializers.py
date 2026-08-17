@@ -103,6 +103,7 @@ class PostSerializer(serializers.ModelSerializer):
             "projectCode",
             "projectName",
             "postType",
+            "date",
             "name",
             "text",
             "mainFile",
@@ -121,7 +122,6 @@ class PostListSerializer(serializers.ModelSerializer):
     link = serializers.CharField(read_only=True)
     mainFile = FileListSerializer(source="main_file", read_only=True)
     rating = serializers.JSONField(read_only=True, allow_null=True)
-    date = serializers.JSONField(read_only=True, allow_null=True)
 
     class Meta:
         model = Post
