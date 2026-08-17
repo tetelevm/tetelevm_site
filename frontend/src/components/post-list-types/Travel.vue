@@ -1,5 +1,5 @@
 <script setup>
-import Travel from "../post-types/Travel.vue"
+import TextPostList from "../TextPostList.vue"
 
 defineProps({
   posts: {
@@ -10,11 +10,5 @@ defineProps({
 </script>
 
 <template>
-  <div>
-    <Travel
-      v-for="post in posts"
-      :key="post.id ?? post.number"
-      :post="post"
-    />
-  </div>
+  <TextPostList :posts="posts" />
 </template>

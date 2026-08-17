@@ -260,9 +260,15 @@ The shared frontend building blocks are:
 - `ProjectCard` for public and visually locked project states.
 - `RatedPostGrid` for project types whose cards share an image, name, and rating;
 - `RatedPostHeader` for detail types whose title sits beside an overall rating.
-- `TextPostList` for the shared row list used by plain and Markdown text types;
+- `TextPostList` for the shared row list used by text and travel types;
 - `DatedPostHeader` for text detail pages with an optional date;
 - `MarkdownContent` for styled, HTML-disabled Markdown rendering.
+- `PostTag` for non-interactive tag labels on post detail pages;
+- `RelatedPostLink` for links to a post's optional same-project relation.
+
+Detail post responses expose `relatedPost` as an object containing its `number`
+and model-generated `link`. The frontend uses that link directly and does not
+reconstruct backend routes.
 
 The project-posts page fetches a project and its posts from the REST API, then
 uses an explicit mapping from the project's `postListType` code to a component in

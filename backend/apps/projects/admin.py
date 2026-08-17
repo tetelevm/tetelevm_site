@@ -21,6 +21,9 @@ EXTRA_TEMPLATES: dict[str, dict[str, object]] = {
     PostType.TEXT_MD: {
         "date": "",
     },
+    PostType.TRAVEL: {
+        "date": "",
+    },
     PostType.ABANDONED: {
         "rating": None,
         "uniqueness": None,
