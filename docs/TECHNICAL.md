@@ -234,6 +234,10 @@ The frontend uses Vue, Vue Router, and Vite. Public pages, including login,
 belong to Vue. Different project types may use different components, but the
 application should not become a runtime page-builder.
 
+Markdown post text is rendered client-side with `markdown-it`. Embedded raw
+HTML is disabled; Markdown-generated markup is styled by the dedicated
+`MarkdownContent` component.
+
 The current router implements:
 
 ```text
@@ -256,15 +260,20 @@ The shared frontend building blocks are:
 - `ProjectCard` for public and visually locked project states.
 - `RatedPostGrid` for project types whose cards share an image, name, and rating;
 - `RatedPostHeader` for detail types whose title sits beside an overall rating.
+- `TextPostList` for the shared row list used by plain and Markdown text types;
+- `DatedPostHeader` for text detail pages with an optional date;
+- `MarkdownContent` for styled, HTML-disabled Markdown rendering.
 
 The project-posts page fetches a project and its posts from the REST API, then
 uses an explicit mapping from the project's `postListType` code to a component in
 `components/post-list-types`. Each list component receives the project's
 `posts` array. List entries contain only the fields required by list components;
 they do not expose `extra`, additional files, tags, or detail-page metadata.
-PostgreSQL extracts `rating` directly from `extra.rating` for the dedicated
-list field, which is `null` when absent. Project posts use page-number
-pagination with 50 posts per page;
+List `mainFile` data includes `mediaType` so presentation types can distinguish
+an image thumbnail from video and other files without filename parsing.
+PostgreSQL extracts `rating` and `date` directly from their matching `extra`
+keys for dedicated list fields, which are `null` when absent. Project posts use
+page-number pagination with 50 posts per page;
 the response includes the current page, page size, total pages, and total posts.
 The frontend keeps the selected page in the URL query string and renders numeric
 page controls.
