@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tetelevm_site\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-14 21:40+0300\n"
+"POT-Creation-Date: 2026-08-17 06:20+0300\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -10,57 +10,77 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: apps/core/admin.py:14
-msgid "Filename"
-msgstr "Имя файла"
-
 #: apps/core/apps.py:8
 msgid "Core"
 msgstr "Основное"
 
-#: apps/core/models.py:25
+#: apps/core/models.py:21 apps/projects/models.py:11 apps/projects/models.py:23
+msgid "Photo"
+msgstr "Фото"
+
+#: apps/core/models.py:22
+msgid "Video"
+msgstr "Видео"
+
+#: apps/core/models.py:23
+msgid "Audio"
+msgstr "Аудио"
+
+#: apps/core/models.py:24
+msgid "Other"
+msgstr "Другое"
+
+#: apps/core/models.py:67
 msgid "ID"
 msgstr "ID"
 
-#: apps/core/models.py:30
+#: apps/core/models.py:73
+msgid "Original name"
+msgstr "Исходное имя"
+
+#: apps/core/models.py:79
+msgid "File type"
+msgstr "Тип файла"
+
+#: apps/core/models.py:85
 msgid "Content"
 msgstr "Содержимое"
 
-#: apps/core/models.py:32
+#: apps/core/models.py:87
 msgid "Preview"
 msgstr "Превью"
 
-#: apps/core/models.py:38
+#: apps/core/models.py:94
+msgid "Thumbnail"
+msgstr "Миниатюра"
+
+#: apps/core/models.py:100
 msgid "Uploaded at"
 msgstr "Дата загрузки"
 
-#: apps/core/models.py:41 apps/projects/models.py:161
+#: apps/core/models.py:103 apps/projects/models.py:163
 msgid "File"
 msgstr "Файл"
 
-#: apps/core/models.py:42 apps/projects/models.py:120
+#: apps/core/models.py:104 apps/projects/models.py:122
 msgid "Files"
 msgstr "Файлы"
 
-#: apps/projects/apps.py:8 apps/projects/models.py:70
+#: apps/projects/apps.py:8 apps/projects/models.py:71
 msgid "Projects"
 msgstr "Проекты"
 
 #: apps/projects/models.py:10 apps/projects/models.py:22
-#: apps/projects/models.py:138 apps/projects/models.py:155
+#: apps/projects/models.py:140 apps/projects/models.py:157
 msgid "Post"
 msgstr "Пост"
-
-#: apps/projects/models.py:11 apps/projects/models.py:23
-msgid "Photo"
-msgstr "Фото"
 
 #: apps/projects/models.py:12 apps/projects/models.py:24
 msgid "Travel"
 msgstr "Путешествие"
 
 #: apps/projects/models.py:13 apps/projects/models.py:25
-#: apps/projects/models.py:98
+#: apps/projects/models.py:100
 msgid "Text"
 msgstr "Текст"
 
@@ -73,8 +93,8 @@ msgid "Door"
 msgstr "Дверки"
 
 #: apps/projects/models.py:16 apps/projects/models.py:28
-msgid "Review"
-msgstr "Обзорчики"
+msgid "Anime"
+msgstr "Анимешки"
 
 #: apps/projects/models.py:17 apps/projects/models.py:29
 msgid "Plasticine"
@@ -96,79 +116,87 @@ msgstr "Приостановлен"
 msgid "Closed"
 msgstr "Закрыт"
 
-#: apps/projects/models.py:39 apps/projects/models.py:78
-#: apps/projects/models.py:97
+#: apps/projects/models.py:39 apps/projects/models.py:79
+#: apps/projects/models.py:99
 msgid "Name"
 msgstr "Название"
 
 #: apps/projects/models.py:40
+msgid "Description"
+msgstr "Описание"
+
+#: apps/projects/models.py:41
 msgid "Link"
 msgstr "Ссылка"
 
-#: apps/projects/models.py:44
+#: apps/projects/models.py:45
 msgid "Cover"
 msgstr "Обложка"
 
-#: apps/projects/models.py:47
+#: apps/projects/models.py:48
 msgid "Post type"
 msgstr "Тип поста"
 
-#: apps/projects/models.py:53
+#: apps/projects/models.py:54
 msgid "Post list type"
 msgstr "Тип списка постов"
 
-#: apps/projects/models.py:58
+#: apps/projects/models.py:59
 msgid "Public"
 msgstr "Публичный"
 
-#: apps/projects/models.py:60
+#: apps/projects/models.py:61
 msgid "Status"
 msgstr "Статус"
 
-#: apps/projects/models.py:65 apps/projects/models.py:163
+#: apps/projects/models.py:66 apps/projects/models.py:165
 msgid "Order"
 msgstr "Порядковый номер"
 
-#: apps/projects/models.py:69 apps/projects/models.py:94
+#: apps/projects/models.py:70 apps/projects/models.py:95
 msgid "Project"
 msgstr "Проект"
 
-#: apps/projects/models.py:77
+#: apps/projects/models.py:78
 msgid "Code"
 msgstr "Код"
 
-#: apps/projects/models.py:82
+#: apps/projects/models.py:83
 msgid "Tag"
 msgstr "Тег"
 
-#: apps/projects/models.py:83 apps/projects/models.py:126
+#: apps/projects/models.py:84 apps/projects/models.py:128
 msgid "Tags"
 msgstr "Теги"
 
-#: apps/projects/models.py:96
+#: apps/projects/models.py:97
 msgid "Number"
 msgstr "Номер"
 
-#: apps/projects/models.py:103
+#: apps/projects/models.py:98
+msgid "Date"
+msgstr "Дата"
+
+#: apps/projects/models.py:105
 msgid "Main file"
 msgstr "Основной файл"
 
-#: apps/projects/models.py:107
+#: apps/projects/models.py:109
 msgid "Extra"
 msgstr "Дополнительные данные"
 
-#: apps/projects/models.py:112
+#: apps/projects/models.py:114
 msgid "Related post"
 msgstr "Связанный пост"
 
-#: apps/projects/models.py:139
+#: apps/projects/models.py:141
 msgid "Posts"
 msgstr "Посты"
 
-#: apps/projects/models.py:177
+#: apps/projects/models.py:179
 msgid "Post file"
 msgstr "Файл поста"
 
-#: apps/projects/models.py:178
+#: apps/projects/models.py:180
 msgid "Post files"
 msgstr "Файлы поста"
