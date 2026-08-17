@@ -91,39 +91,8 @@ A project determines:
 - the general presentation of its material.
 
 An item contains the actual material, such as text, images, video, or a
-combination of media. The exact set of project and item formats will evolve as
-real content is added.
-
-### Doors
-
-A Doors project contains photographs of doors. Each item uses its main file as
-the photograph and its text as a caption in the form `🚪 Country, City`. The
-project list presents four square, center-cropped photographs per desktop row
-with captions beneath them. An individual item presents the full photograph
-with its caption centered below it.
-
-### Photo
-
-A Photo project presents four square, center-cropped main-image previews per
-desktop row. Each preview opens an individual item that displays the full,
-uncropped main image without additional text or files.
-
-### Plasticine
-
-A Plasticine project presents handmade plasticine works. Each item has one main
-photograph and may have additional photographs. The project list shows the main
-photograph in a framed card. An individual item shows the main photograph first,
-followed by its additional photographs in their configured order.
-
-### Anime
-
-An Anime project contains the owner's write-ups about watched anime. Its list
-shows square, center-cropped main images with item names and ratings beneath
-them. An item
-shows its name and italic original title beside a rating, followed by exactly
-three square screenshots, the main text, and an italic viewing recommendation.
-The original title, rating, and recommendation are stored in `extra` as
-`original_title`, `rating`, and `result`.
+combination of media. The supported project presentation types and their visual
+behavior are specified in `docs/PROJECT_TYPES.md`.
 
 ## Visibility
 

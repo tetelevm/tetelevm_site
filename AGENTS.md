@@ -5,11 +5,13 @@
 - `docs/BUSINESS.md` defines product behavior and user capabilities. Keep it
   implementation-agnostic.
 - `docs/TECHNICAL.md` defines architecture and implementation decisions.
+- `docs/PROJECT_TYPES.md` defines how project lists and posts are presented.
 - `README.md` contains the repository overview and setup instructions.
 
 Read the relevant documentation before changing behavior or architecture. When
 behavior changes, update `docs/BUSINESS.md`; when implementation or architecture
-changes materially, update `docs/TECHNICAL.md`.
+changes materially, update `docs/TECHNICAL.md`; when a project type's visual
+presentation changes, update `docs/PROJECT_TYPES.md`.
 
 ## Engineering approach
 

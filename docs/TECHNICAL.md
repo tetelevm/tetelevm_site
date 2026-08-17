@@ -270,18 +270,8 @@ The frontend keeps the selected page in the URL query string and renders numeric
 page controls.
 
 The individual-post page selects its component through an explicit mapping from
-the API's `postType` value. For the `door` type, the list component renders an
-independent responsive four-column tile grid, while the individual component
-renders the uncropped main image and centered text caption.
-
-Anime screenshots use a reusable native-dialog lightbox. The square grid loads
-the preview URL; opening a screenshot then loads `linkFull` and displays it
-within the viewport. The dialog closes from its button, backdrop, or Escape key.
-
-`MediaCarousel` renders ordered post files as an image-and-video carousel.
-Detail file serialization includes an explicit `mediaType`; images use their
-preview in the carousel and open the original through the shared lightbox,
-while videos use native browser controls and metadata-only preloading.
+the API's `postType` value. Concrete list and post presentation behavior is
+specified in `docs/PROJECT_TYPES.md`.
 
 Projects come from the REST API. Anonymous users never receive private projects;
 authenticated guests receive them with `isPublic: false` so the existing locked
@@ -353,7 +343,6 @@ choices only when a concrete requirement makes one of them useful.
 The following are intentionally unresolved:
 
 - exact Django model fields and remaining API response fields;
-- concrete project and item presentation types;
 - storage for heterogeneous item content;
 - detailed visual design and SEO strategy;
 - external media and embed support;

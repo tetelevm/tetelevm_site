@@ -68,4 +68,5 @@ npm audit --audit-level=high
 
 - `docs/BUSINESS.md` defines product behavior and user capabilities.
 - `docs/TECHNICAL.md` describes current state and intended architecture.
+- `docs/PROJECT_TYPES.md` describes the visual presentation of project types.
 - `AGENTS.md` contains repository instructions for coding agents.
