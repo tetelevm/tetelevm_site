@@ -1,12 +1,14 @@
+from datetime import date
+
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
-from apps.core.models import File
+from apps.core.models import File, FileType
 
-from .models import Post, PostListType, PostType, Project
+from .models import Post, PostFile, PostListType, PostType, Project
 
 
 class ProjectModelTests(TestCase):
@@ -75,8 +77,9 @@ class ProjectApiTests(APITestCase):
         self.public_post = Post.objects.create(
             project=self.public_project,
             number=1,
+            date=date(2026, 8, 17),
             name="Public post",
-            extra={"rating": 8, "date": "2026-08-17"},
+            extra={"rating": 8},
         )
         self.private_post = Post.objects.create(
             project=self.private_project,
@@ -148,6 +151,53 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.data["pagination"]["totalPages"], 2)
         self.assertEqual(response.data["pagination"]["totalItems"], 51)
 
+    def test_general_post_list_uses_text_excerpt_when_name_is_missing(self) -> None:
+        self.public_project.post_list_type = PostListType.POST
+        self.public_project.save(update_fields=("post_list_type",))
+        self.public_post.name = ""
+        self.public_post.text = "  A text\nexcerpt  "
+        self.public_post.save(update_fields=("name", "text"))
+
+        response = self.client.get(
+            reverse(
+                "projects:project-posts",
+                kwargs={"project_code": "public"},
+            )
+        )
+
+        self.assertEqual(response.data["posts"][0]["label"], "A text excerpt")
+
+    def test_general_post_list_summarizes_files_and_uses_first_photo(self) -> None:
+        self.public_project.post_list_type = PostListType.POST
+        self.public_project.save(update_fields=("post_list_type",))
+        self.public_post.name = ""
+        self.public_post.text = ""
+        self.public_post.save(update_fields=("name", "text"))
+        photo = File.objects.create(
+            original_name="photo.jpg",
+            file_type=FileType.PHOTO,
+            content="content/photo.jpg",
+            thumbnail="thumbnail/photo.jpg",
+        )
+        audio = File.objects.create(
+            original_name="song.mp3",
+            file_type=FileType.AUDIO,
+            content="content/song.mp3",
+        )
+        PostFile.objects.create(post=self.public_post, file=photo, order=0)
+        PostFile.objects.create(post=self.public_post, file=audio, order=1)
+
+        response = self.client.get(
+            reverse(
+                "projects:project-posts",
+                kwargs={"project_code": "public"},
+            )
+        )
+
+        summary = response.data["posts"][0]
+        self.assertEqual(summary["label"], "📷 1 · 🎵 1")
+        self.assertEqual(summary["thumbnail"], "/files/thumbnail/photo.jpg")
+
     def test_anonymous_user_cannot_retrieve_private_project_posts(self) -> None:
         response = self.client.get(
             reverse(
@@ -170,7 +220,7 @@ class ProjectApiTests(APITestCase):
         )
 
         self.assertIsNone(response.data["posts"][0]["rating"])
-        self.assertIsNone(response.data["posts"][0]["date"])
+        self.assertEqual(response.data["posts"][0]["date"], "2026-08-17")
 
     def test_anonymous_user_can_retrieve_public_post(self) -> None:
         response = self.client.get(
