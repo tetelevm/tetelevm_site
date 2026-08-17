@@ -17,13 +17,13 @@ defineProps({
     >
       <span class="text-post-list__thumbnail">
         <img
-          v-if="post.mainFile?.mediaType === 'image'"
-          :src="post.mainFile.link"
-          :alt="post.name"
+          v-if="post.thumbnail || post.mainFile?.mediaType === 'photo'"
+          :src="post.thumbnail || post.mainFile.link"
+          :alt="post.label || post.name"
           loading="lazy"
         />
       </span>
-      <span class="text-post-list__name">{{ post.name }}</span>
+      <span class="text-post-list__name">{{ post.label || post.name }}</span>
       <span v-if="post.date" class="text-post-list__date">{{ post.date }}</span>
     </RouterLink>
   </div>

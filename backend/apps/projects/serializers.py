@@ -4,47 +4,32 @@ from pathlib import Path
 
 from rest_framework import serializers
 
-from apps.core.models import File
+from apps.core.models import File, FileType
 
 from .models import Post, Project, Tag
-
-IMAGE_SUFFIXES = {".avif", ".gif", ".jpeg", ".jpg", ".png", ".webp"}
-VIDEO_SUFFIXES = {".m4v", ".mov", ".mp4", ".ogg", ".ogv", ".webm"}
-
-
-def file_media_type(obj: File) -> str:
-    suffix = Path(obj.original_name or obj.content.name).suffix.lower()
-    if obj.preview or suffix in IMAGE_SUFFIXES:
-        return "image"
-    if suffix in VIDEO_SUFFIXES:
-        return "video"
-    return "file"
 
 
 class FileSerializer(serializers.ModelSerializer):
     link = serializers.CharField(read_only=True)
     linkFull = serializers.CharField(source="link_full", read_only=True)
-    mediaType = serializers.SerializerMethodField()
+    mediaType = serializers.CharField(source="file_type", read_only=True)
+    name = serializers.SerializerMethodField()
 
     class Meta:
         model = File
-        fields = ("id", "link", "linkFull", "mediaType")
+        fields = ("id", "name", "link", "linkFull", "mediaType")
 
-    def get_mediaType(self, obj: File) -> str:
-        return file_media_type(obj)
+    def get_name(self, obj: File) -> str:
+        return obj.original_name or Path(obj.content.name).name
 
 
 class FileListSerializer(serializers.ModelSerializer):
     link = serializers.CharField(source="link_small", read_only=True)
-    mediaType = serializers.SerializerMethodField()
+    mediaType = serializers.CharField(source="file_type", read_only=True)
 
     class Meta:
         model = File
         fields = ("link", "mediaType")
-
-    def get_mediaType(self, obj: File) -> str:
-        return file_media_type(obj)
-
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
@@ -134,4 +119,60 @@ class PostListSerializer(serializers.ModelSerializer):
             "mainFile",
             "rating",
             "date",
+        )
+
+
+def post_summary_files(obj: Post) -> list[File]:
+    files = ([obj.main_file] if obj.main_file else []) + [
+        post_file.file for post_file in obj.post_files.all()
+    ]
+    return list({file.id: file for file in files}.values())
+
+
+class GeneralPostListSerializer(serializers.ModelSerializer):
+    link = serializers.CharField(read_only=True)
+    label = serializers.SerializerMethodField()
+    thumbnail = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Post
+        fields = ("id", "number", "link", "label", "thumbnail", "date")
+
+    def get_label(self, obj: Post) -> str:
+        if obj.name.strip():
+            return obj.name.strip()
+
+        excerpt = " ".join(obj.text.split())
+        if excerpt:
+            return excerpt if len(excerpt) <= 120 else f"{excerpt[:117].rstrip()}..."
+
+        counts = {
+            FileType.PHOTO: 0,
+            FileType.VIDEO: 0,
+            FileType.AUDIO: 0,
+            FileType.OTHER: 0,
+        }
+        for file in post_summary_files(obj):
+            counts[file.file_type] += 1
+
+        parts = [
+            f"{emoji} {counts[file_type]}"
+            for file_type, emoji in (
+                (FileType.PHOTO, "📷"),
+                (FileType.VIDEO, "🎬"),
+                (FileType.AUDIO, "🎵"),
+                (FileType.OTHER, "📎"),
+            )
+            if counts[file_type]
+        ]
+        return " · ".join(parts) or "🌀"
+
+    def get_thumbnail(self, obj: Post) -> str | None:
+        return next(
+            (
+                file.link_small
+                for file in post_summary_files(obj)
+                if file.file_type == FileType.PHOTO
+            ),
+            None,
         )

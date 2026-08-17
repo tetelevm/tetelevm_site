@@ -49,7 +49,7 @@ watch(
   >
     <div class="media-carousel__stage">
       <LightboxImage
-        v-if="currentItem?.mediaType === 'image'"
+        v-if="currentItem?.mediaType === 'photo'"
         :key="currentItem.id"
         :preview-src="currentItem.link"
         :full-src="currentItem.linkFull"
