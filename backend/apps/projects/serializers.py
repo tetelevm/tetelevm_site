@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from rest_framework import serializers
 
 from apps.core.models import File
@@ -10,10 +12,20 @@ from .models import Post, Project, Tag
 class FileSerializer(serializers.ModelSerializer):
     link = serializers.CharField(read_only=True)
     linkFull = serializers.CharField(source="link_full", read_only=True)
+    mediaType = serializers.SerializerMethodField()
 
     class Meta:
         model = File
-        fields = ("id", "link", "linkFull")
+        fields = ("id", "link", "linkFull", "mediaType")
+
+    def get_mediaType(self, obj: File) -> str:
+        if obj.preview:
+            return "image"
+
+        suffix = Path(obj.original_name or obj.content.name).suffix.lower()
+        if suffix in {".mp4", ".webm", ".ogg", ".ogv", ".mov", ".m4v"}:
+            return "video"
+        return "file"
 
 
 class FileListSerializer(serializers.ModelSerializer):
