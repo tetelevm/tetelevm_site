@@ -8,6 +8,18 @@ from apps.core.models import File
 
 from .models import Post, Project, Tag
 
+IMAGE_SUFFIXES = {".avif", ".gif", ".jpeg", ".jpg", ".png", ".webp"}
+VIDEO_SUFFIXES = {".m4v", ".mov", ".mp4", ".ogg", ".ogv", ".webm"}
+
+
+def file_media_type(obj: File) -> str:
+    suffix = Path(obj.original_name or obj.content.name).suffix.lower()
+    if obj.preview or suffix in IMAGE_SUFFIXES:
+        return "image"
+    if suffix in VIDEO_SUFFIXES:
+        return "video"
+    return "file"
+
 
 class FileSerializer(serializers.ModelSerializer):
     link = serializers.CharField(read_only=True)
@@ -19,21 +31,19 @@ class FileSerializer(serializers.ModelSerializer):
         fields = ("id", "link", "linkFull", "mediaType")
 
     def get_mediaType(self, obj: File) -> str:
-        if obj.preview:
-            return "image"
-
-        suffix = Path(obj.original_name or obj.content.name).suffix.lower()
-        if suffix in {".mp4", ".webm", ".ogg", ".ogv", ".mov", ".m4v"}:
-            return "video"
-        return "file"
+        return file_media_type(obj)
 
 
 class FileListSerializer(serializers.ModelSerializer):
     link = serializers.CharField(source="link_small", read_only=True)
+    mediaType = serializers.SerializerMethodField()
 
     class Meta:
         model = File
-        fields = ("link",)
+        fields = ("link", "mediaType")
+
+    def get_mediaType(self, obj: File) -> str:
+        return file_media_type(obj)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -103,6 +113,7 @@ class PostListSerializer(serializers.ModelSerializer):
     link = serializers.CharField(read_only=True)
     mainFile = FileListSerializer(source="main_file", read_only=True)
     rating = serializers.JSONField(read_only=True, allow_null=True)
+    date = serializers.JSONField(read_only=True, allow_null=True)
 
     class Meta:
         model = Post
@@ -114,4 +125,5 @@ class PostListSerializer(serializers.ModelSerializer):
             "text",
             "mainFile",
             "rating",
+            "date",
         )

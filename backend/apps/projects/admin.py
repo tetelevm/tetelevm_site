@@ -15,6 +15,12 @@ EXTRA_TEMPLATES: dict[str, dict[str, object]] = {
         "rating": None,
         "result": "",
     },
+    PostType.TEXT: {
+        "date": "",
+    },
+    PostType.TEXT_MD: {
+        "date": "",
+    },
     PostType.ABANDONED: {
         "rating": None,
         "uniqueness": None,

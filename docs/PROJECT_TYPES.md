@@ -144,15 +144,67 @@ The individual rating labels shown in the current Russian interface are
 “уникальность” (uniqueness), “монументальность” (monumentality), “атмосфера”
 (atmosphere), and “жизненность” (liveliness).
 
+## `text` — Texts
+
+List:
+
+- posts form a vertical list rather than an image grid;
+- each post is a full-width row with a fixed 150-pixel media slot on the left;
+- an image `mainFile` fills that slot with its square thumbnail;
+- the slot remains empty for a missing or non-image `mainFile`, keeping all
+  names aligned;
+- `name` appears after the media slot;
+- the optional dedicated list field `date`, extracted from `extra.date`, appears
+  on the right.
+
+Post:
+
+- the optional `extra.date` appears at the top on the left;
+- `name` appears in a larger type size on the right;
+- the plain `text` follows with its line breaks preserved;
+- when `mainFile` or additional files exist, they appear after the text in the
+  shared image-and-video media carousel.
+
+Expected `extra` structure:
+
+```json
+{
+  "date": ""
+}
+```
+
+## `text_md` — Markdown Texts
+
+The list is identical to `text` and uses the shared `TextPostList` component:
+
+- each item is a full-width row with a fixed 150-pixel thumbnail slot;
+- `name` follows the slot and the optional `date` appears on the right;
+- the thumbnail slot remains empty when there is no image `mainFile`.
+
+Post:
+
+- the header matches `text`, with optional `extra.date` on the left and `name`
+  on the right;
+- `text` is rendered as Markdown;
+- headings, paragraphs, lists, links, blockquotes, code blocks, tables, images,
+  and Markdown line breaks are styled for the site;
+- raw HTML embedded in Markdown is disabled and displayed as text.
+
+Expected `extra` structure:
+
+```json
+{
+  "date": ""
+}
+```
+
 ## Placeholder types
 
 The following types are declared by the backend and explicitly mapped to Vue
 components, but their visual templates have not been designed yet:
 
 - `post`;
-- `travel`;
-- `text`;
-- `text_md`.
+- `travel`.
 
 Their components currently render no content.
 
@@ -164,6 +216,8 @@ is selected, the admin prepopulates a template based on its `post_type`:
 - `anime` receives `original_title`, `rating`, and `result`;
 - `abandoned` receives `rating`, `uniqueness`, `monumentality`, `atmosphere`,
   and `liveliness`;
+- `text` receives `date`;
+- `text_md` receives `date`;
 - all other types receive an empty `{}` object.
 
 An automatically inserted template may be replaced when the project changes.
