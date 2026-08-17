@@ -187,6 +187,27 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.data["postType"], PostType.TEXT)
         self.assertEqual(response.data["link"], "/projects/public/1/")
 
+    def test_post_detail_uses_related_post_link(self) -> None:
+        related_post = Post.objects.create(
+            project=self.public_project,
+            number=2,
+            name="Related post",
+        )
+        self.public_post.related_post = related_post
+        self.public_post.save(update_fields=("related_post",))
+
+        response = self.client.get(
+            reverse(
+                "projects:post-detail",
+                kwargs={"project_code": "public", "post_num": 1},
+            )
+        )
+
+        self.assertEqual(
+            response.data["relatedPost"],
+            {"number": 2, "link": "/projects/public/2/"},
+        )
+
     def test_anonymous_user_cannot_retrieve_post_from_private_project(self) -> None:
         response = self.client.get(
             reverse(

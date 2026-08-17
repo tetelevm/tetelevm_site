@@ -73,6 +73,14 @@ class ProjectListSerializer(serializers.ModelSerializer):
         )
 
 
+class RelatedPostSerializer(serializers.ModelSerializer):
+    link = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = Post
+        fields = ("number", "link")
+
+
 class PostSerializer(serializers.ModelSerializer):
     link = serializers.CharField(read_only=True)
     projectCode = serializers.CharField(source="project.link", read_only=True)
@@ -81,8 +89,8 @@ class PostSerializer(serializers.ModelSerializer):
     mainFile = FileSerializer(source="main_file", read_only=True)
     files = serializers.SerializerMethodField()
     tags = TagSerializer(many=True, read_only=True)
-    relatedPost = serializers.IntegerField(
-        source="related_post.number",
+    relatedPost = RelatedPostSerializer(
+        source="related_post",
         read_only=True,
     )
 

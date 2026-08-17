@@ -198,13 +198,40 @@ Expected `extra` structure:
 }
 ```
 
+## `travel` — Travel
+
+The list is identical to `text` and `text_md` and uses `TextPostList`:
+
+- each item is a full-width row with a fixed 150-pixel thumbnail slot;
+- an image `mainFile` appears in that slot;
+- `name` follows the thumbnail and optional `extra.date` appears on the right.
+
+Post:
+
+- a large `name` appears at the top;
+- an image carousel follows, containing image `mainFile` and image additional
+  files in `PostFile.order`;
+- selecting a photograph opens its original in the shared lightbox;
+- the plain `text` appears below the carousel with line breaks preserved;
+- when `relatedPost` is set, a `related with: #<number>` link to that post
+  appears below the text;
+- related tags appear at the bottom as small, non-interactive rectangular
+  labels.
+
+Expected `extra` structure:
+
+```json
+{
+  "date": ""
+}
+```
+
 ## Placeholder types
 
 The following types are declared by the backend and explicitly mapped to Vue
 components, but their visual templates have not been designed yet:
 
-- `post`;
-- `travel`.
+- `post`.
 
 Their components currently render no content.
 
@@ -218,6 +245,7 @@ is selected, the admin prepopulates a template based on its `post_type`:
   and `liveliness`;
 - `text` receives `date`;
 - `text_md` receives `date`;
+- `travel` receives `date`;
 - all other types receive an empty `{}` object.
 
 An automatically inserted template may be replaced when the project changes.
