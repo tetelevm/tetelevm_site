@@ -52,10 +52,7 @@ class ProjectPostsView(RetrieveAPIView):
         project = self.get_object()
         posts = (
             project.posts.select_related("project", "main_file")
-            .annotate(
-                rating=KeyTransform("rating", "extra"),
-                date=KeyTransform("date", "extra"),
-            )
+            .annotate(rating=KeyTransform("rating", "extra"))
             .defer("extra")
         )
         page = self.paginate_queryset(posts)

@@ -95,6 +95,7 @@ class Post(models.Model):
         verbose_name=_("Project"),
     )
     number = models.PositiveIntegerField(_("Number"))
+    date = models.DateField(_("Date"), blank=True, null=True)
     name = models.CharField(_("Name"), max_length=255, blank=True)
     text = models.TextField(_("Text"), blank=True)
     main_file = models.ForeignKey(

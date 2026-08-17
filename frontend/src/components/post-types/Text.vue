@@ -22,7 +22,7 @@ const mediaItems = computed(() => {
 
 <template>
   <article class="text-post">
-    <DatedPostHeader :title="post.name" :date="post.extra?.date" />
+    <DatedPostHeader :title="post.name" :date="post.date" />
 
     <div class="text-post__body">{{ post.text }}</div>
 

@@ -12,7 +12,7 @@ defineProps({
 
 <template>
   <article class="text-md-post">
-    <DatedPostHeader :title="post.name" :date="post.extra?.date" />
+    <DatedPostHeader :title="post.name" :date="post.date" />
     <MarkdownContent :source="post.text" />
   </article>
 </template>
