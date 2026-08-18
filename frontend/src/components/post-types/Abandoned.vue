@@ -61,8 +61,7 @@ function ratingHouses(value) {
 
 .abandoned-post__text {
   color: var(--color-text);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1rem, 2.4vw, 1.15rem);
+  font-size: 1.2rem;
   line-height: 1.75;
   white-space: pre-line;
 }

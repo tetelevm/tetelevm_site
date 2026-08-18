@@ -207,6 +207,31 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(summary["label"], "📷 1 · 🎵 1")
         self.assertEqual(summary["thumbnail"], "/files/thumbnail/photo.jpg")
 
+    def test_plasticine_list_uses_preview_instead_of_thumbnail(self) -> None:
+        self.public_project.post_list_type = PostListType.PLASTICINE
+        self.public_project.save(update_fields=("post_list_type",))
+        photo = File.objects.create(
+            original_name="plasticine.jpg",
+            file_type=FileType.PHOTO,
+            content="content/plasticine.jpg",
+            preview="preview/plasticine.jpg",
+            thumbnail="thumbnail/plasticine.jpg",
+        )
+        self.public_post.main_file = photo
+        self.public_post.save(update_fields=("main_file",))
+
+        response = self.client.get(
+            reverse(
+                "projects:project-posts",
+                kwargs={"project_code": "public"},
+            )
+        )
+
+        self.assertEqual(
+            response.data["posts"][0]["mainFile"]["link"],
+            "/files/preview/plasticine.jpg",
+        )
+
     def test_anonymous_user_cannot_retrieve_private_project_posts(self) -> None:
         response = self.client.get(
             reverse(

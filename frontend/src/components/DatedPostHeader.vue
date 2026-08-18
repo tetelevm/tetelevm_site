@@ -13,21 +13,21 @@ defineProps({
 
 <template>
   <header class="dated-post-header">
-    <span v-if="date" class="dated-post-header__date">{{ date }}</span>
     <h1>{{ title }}</h1>
+    <span v-if="date" class="dated-post-header__date">{{ date }}</span>
   </header>
 </template>
 
 <style scoped>
 .dated-post-header {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   gap: 1.5rem;
 }
 
 .dated-post-header h1 {
-  grid-column: 2;
+  grid-column: 1;
   margin: 0;
   color: var(--color-text);
   font-family: Georgia, "Times New Roman", serif;
@@ -35,11 +35,11 @@ defineProps({
   font-weight: 500;
   line-height: 1.1;
   overflow-wrap: anywhere;
-  text-align: right;
+  text-align: left;
 }
 
 .dated-post-header__date {
-  grid-column: 1;
+  grid-column: 2;
   color: var(--color-muted);
   font-size: 0.82rem;
   font-variant-numeric: tabular-nums;

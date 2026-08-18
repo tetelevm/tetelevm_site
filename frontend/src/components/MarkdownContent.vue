@@ -27,7 +27,7 @@ const rendered = computed(() => markdown.render(props.source))
 .markdown-content {
   overflow-wrap: anywhere;
   color: var(--color-text);
-  font-size: 1rem;
+  font-size: 1.2rem;
   line-height: 1.7;
 }
 

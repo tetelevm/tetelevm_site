@@ -18,7 +18,7 @@ defineProps({
   border-radius: var(--radius-small);
   color: var(--color-muted);
   background: var(--color-surface);
-  font-size: 0.74rem;
+  font-size: 1.1rem;
   letter-spacing: 0.04em;
   line-height: 1.2;
 }

@@ -16,6 +16,9 @@ combined independently.
 - The original is loaded only when a type explicitly displays the full image or
   the visitor opens a lightbox.
 - Additional files follow `PostFile.order`.
+- Plain post body text uses the shared sans-serif face at `1.2rem`.
+- Headers that contain both a name and date place the name on the left and the
+  date on the right.
 - Types that show a name and overall rating share the `RatedPostGrid` and
   `RatedPostHeader` components.
 
@@ -55,15 +58,18 @@ Post:
 
 List:
 
-- the main photograph appears in a decorative frame;
+- the regular 600-pixel preview of the main photograph appears in a decorative
+  frame rather than its square thumbnail;
 - two cards appear per row on wide screens and one on mobile devices;
 - cards have a slight rotation and straighten on hover;
 - name and text are not displayed.
 
 Post:
 
-- the main photograph appears first;
-- additional photographs follow vertically in `PostFile.order`;
+- the full main photograph appears first;
+- a simple horizontal divider separates it from the additional photographs;
+- full additional photographs follow vertically in `PostFile.order`;
+- photographs open their originals in the shared full-screen lightbox;
 - name and text are not displayed.
 
 ## `anime` — Anime
@@ -81,14 +87,15 @@ List:
 
 Post:
 
-- a large `name` appears at the top;
+- a moderately sized `name` appears at the top;
 - `extra.original_title` appears directly below it in italics;
 - a circular overall `extra.rating` sits to the right of the title block;
 - three square screenshots from the first three additional files appear below;
 - selecting a screenshot opens its original in a full-screen lightbox;
 - the main `text` follows;
 - the bottom row contains the Russian label “стоит смотреть:” (“worth
-  watching:”) followed by the italicized `extra.result`.
+  watching:”) followed by the italicized `extra.result`; the label and result
+  use the same font size.
 
 Expected `extra` structure:
 
@@ -149,17 +156,17 @@ The individual rating labels shown in the current Russian interface are
 List:
 
 - posts form a vertical list rather than an image grid;
-- each post is a full-width row with a fixed 150-pixel media slot on the left;
+- each post is a full-width row with a fixed 100-pixel media slot on the left;
 - an image `mainFile` fills that slot with its square thumbnail;
 - the slot remains empty for a missing or non-image `mainFile`, keeping all
-  names aligned;
+  names aligned; there is no media-slot divider when no image is present;
 - `name` appears after the media slot;
 - the optional model field `date` appears on the right.
 
 Post:
 
-- the optional `date` appears at the top on the left;
-- `name` appears in a larger type size on the right;
+- `name` appears in a larger type size at the top on the left;
+- the optional `date` appears on the right;
 - the plain `text` follows with its line breaks preserved;
 - when `mainFile` or additional files exist, they appear after the text in the
   shared image-and-video media carousel.
@@ -168,14 +175,14 @@ Post:
 
 The list is identical to `text` and uses the shared `TextPostList` component:
 
-- each item is a full-width row with a fixed 150-pixel thumbnail slot;
+- each item is a full-width row with a fixed 100-pixel thumbnail slot;
 - `name` follows the slot and the optional `date` appears on the right;
 - the thumbnail slot remains empty when there is no image `mainFile`.
 
 Post:
 
-- the header matches `text`, with optional `date` on the left and `name`
-  on the right;
+- the header matches `text`, with `name` on the left and optional `date` on the
+  right;
 - `text` is rendered as Markdown;
 - headings, paragraphs, lists, links, blockquotes, code blocks, tables, images,
   and Markdown line breaks are styled for the site;
@@ -185,21 +192,20 @@ Post:
 
 The list is identical to `text` and `text_md` and uses `TextPostList`:
 
-- each item is a full-width row with a fixed 150-pixel thumbnail slot;
+- each item is a full-width row with a fixed 100-pixel thumbnail slot;
 - an image `mainFile` appears in that slot;
 - `name` follows the thumbnail and optional `date` appears on the right.
 
 Post:
 
-- a large `name` appears at the top;
-- an image carousel follows, containing image `mainFile` and image additional
-  files in `PostFile.order`;
+- a large `name` appears on the top left and optional `date` on the right;
+- an image carousel follows, containing only image additional files in
+  `PostFile.order`; `mainFile` is not duplicated in the post carousel;
 - selecting a photograph opens its original in the shared lightbox;
 - the plain `text` appears below the carousel with line breaks preserved;
 - when `relatedPost` is set, a `related with: #<number>` link to that post
   appears below the text;
-- related tags appear at the bottom as small, non-interactive rectangular
-  labels.
+- related tags appear at the bottom as non-interactive rectangular labels.
 
 ## `post` — General Posts
 
@@ -207,7 +213,7 @@ List:
 
 - posts use the same full-width row structure as the text lists;
 - the first available photo from `mainFile` or ordered additional files appears
-  in the fixed 150-pixel thumbnail slot;
+  in the fixed 100-pixel thumbnail slot;
 - the label uses `name` when present, otherwise a 120-character `text` excerpt;
 - when both are empty, the label summarizes files as counts such as
   `📷 3 · 🎬 1 · 🎵 1 · 📎 2`;
@@ -216,13 +222,13 @@ List:
 
 Post:
 
-- the shared dated header shows optional `date` on the left and `name` on
-  the right;
-- an image `mainFile`, when present, appears below the header and opens its
+- the shared dated header shows `name` on the left and optional `date` on the
+  right;
+- plain `text` appears below the header with line breaks preserved;
+- an image `mainFile`, when present, appears below the text and opens its
   original in the shared lightbox;
 - a carousel follows with additional files whose `mediaType` is `photo` or
   `video`;
-- plain `text` appears below the carousel with line breaks preserved;
 - remaining additional files appear as a vertical list of links using their
   original upload names;
 - an optional related-post link appears below the files;

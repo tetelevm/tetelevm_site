@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from "vue"
 
+import DatedPostHeader from "../DatedPostHeader.vue"
 import MediaCarousel from "../MediaCarousel.vue"
 import PostTag from "../PostTag.vue"
 import RelatedPostLink from "../RelatedPostLink.vue"
@@ -13,20 +14,13 @@ const props = defineProps({
 })
 
 const photos = computed(() => {
-  const items = [props.post.mainFile, ...(props.post.files ?? [])]
-    .filter(Boolean)
-    .filter((item) => item.mediaType === "photo")
-
-  return items.filter(
-    (item, index) =>
-      items.findIndex((candidate) => candidate.id === item.id) === index,
-  )
+  return (props.post.files ?? []).filter((item) => item.mediaType === "photo")
 })
 </script>
 
 <template>
   <article class="travel-post">
-    <h1>{{ post.name }}</h1>
+    <DatedPostHeader :title="post.name" :date="post.date" />
 
     <MediaCarousel :items="photos" :label="`Фотографии: ${post.name}`" />
 
@@ -54,19 +48,9 @@ const photos = computed(() => {
   gap: clamp(1.75rem, 4vw, 2.75rem);
 }
 
-.travel-post h1 {
-  margin: 0;
-  color: var(--color-text);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2rem, 6vw, 3.4rem);
-  font-weight: 500;
-  line-height: 1.05;
-  overflow-wrap: anywhere;
-}
-
 .travel-post__text {
   color: var(--color-text);
-  font-size: 1rem;
+  font-size: 1.2rem;
   line-height: 1.65;
   white-space: pre-line;
 }

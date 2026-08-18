@@ -38,9 +38,9 @@ defineProps({
 
 .text-post-list__item {
   min-width: 0;
-  min-height: 150px;
+  min-height: 100px;
   display: grid;
-  grid-template-columns: 150px minmax(0, 1fr) auto;
+  grid-template-columns: 100px minmax(0, 1fr) auto;
   align-items: center;
   gap: 1rem;
   overflow: hidden;
@@ -56,12 +56,11 @@ defineProps({
 }
 
 .text-post-list__thumbnail {
-  width: 150px;
-  height: 150px;
+  width: 100px;
+  height: 100px;
   align-self: stretch;
   display: block;
   overflow: hidden;
-  border-right: 1px solid var(--color-line);
   background: rgba(0, 0, 0, 0.12);
 }
 
@@ -98,7 +97,7 @@ defineProps({
 
 @media (max-width: 480px) {
   .text-post-list__item {
-    grid-template-columns: 150px minmax(0, 1fr);
+    grid-template-columns: 100px minmax(0, 1fr);
     align-items: start;
   }
 
