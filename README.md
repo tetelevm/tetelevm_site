@@ -47,9 +47,10 @@ Implemented Vue routes:
 
 The Projects page dims private project cards without labeling their visibility.
 Paused projects carry a warm “на паузе” badge and closed projects a red
-“завершён” badge; open projects have no status badge. The backend omits private
-projects entirely for anonymous users. The page uses reusable header, language
-switch, login link, grid, and card components. The favicon is served from
+“завершён” badge; open projects have no status badge. Each card shows its post
+total on the bottom-left of the cover. The backend omits private projects
+entirely for anonymous users. The page uses reusable header, language switch,
+login link, grid, and card components. The favicon is served from
 `frontend/public/favicon.ico`.
 
 The following frontend behavior is intentionally not implemented yet:

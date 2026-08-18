@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from django.db.models import QuerySet
+from django.db.models import Count, QuerySet
 from django.db.models.fields.json import KeyTransform
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
@@ -24,11 +24,19 @@ def visible_projects(user_is_authenticated: bool) -> QuerySet[Project]:
     return projects.filter(is_public=True)
 
 
+def with_post_count(projects: QuerySet[Project]) -> QuerySet[Project]:
+    return projects.annotate(
+        post_count=Count("posts", distinct=True)
+    ).order_by("order", "id")
+
+
 class ProjectListView(ListAPIView):
     serializer_class = ProjectListSerializer
 
     def get_queryset(self) -> QuerySet[Project]:
-        return visible_projects(self.request.user.is_authenticated)
+        return with_post_count(
+            visible_projects(self.request.user.is_authenticated)
+        )
 
 
 class ProjectPostPagination(PageNumberPagination):
@@ -43,7 +51,9 @@ class ProjectPostsView(RetrieveAPIView):
     lookup_url_kwarg = "project_code"
 
     def get_queryset(self) -> QuerySet[Project]:
-        return visible_projects(self.request.user.is_authenticated)
+        return with_post_count(
+            visible_projects(self.request.user.is_authenticated)
+        )
 
     def retrieve(
         self,

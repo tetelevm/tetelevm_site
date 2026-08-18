@@ -81,6 +81,9 @@ selected. It may replace a previously auto-applied template but never overwrites
 manually edited JSON. The project-to-template map is embedded in the form; this
 is intentionally simpler than an additional endpoint for the site's small
 project collection.
+The `abandoned` template includes a nested `location` object with `latitude`,
+`longitude`, and `link`. Its Vue detail component renders complete locations as
+an `http(s)` external link and ignores incomplete or unsafe values.
 
 Relations to potentially large collections use Django Admin's built-in AJAX
 autocomplete widgets. They keep the default 20-result pages and load further
@@ -167,9 +170,9 @@ demonstrated need.
 `Post.display_label` is the single source for list and administrative labels. It
 prefers a trimmed name, then a whitespace-normalized 120-character text excerpt,
 then counts of unique files by media type, and finally `🌀`. A custom
-`PostQuerySet.with_display_file_counts()` method annotates the four file counts.
-List API and admin querysets opt into it explicitly, avoiding per-post queries
-without adding aggregation overhead to unrelated post queries.
+`PostQuerySet.with_display_file_counts()` method annotates the four per-type
+counts. List API and admin querysets opt into it explicitly, avoiding per-post
+queries without adding aggregation overhead to unrelated post queries.
 
 Project status describes its lifecycle and does not control authorization.
 Project cards show no badge for `open`, a warm yellow-orange “на паузе” badge
@@ -276,9 +279,10 @@ The shared frontend building blocks are:
 - `HeaderAccessAction` for the site logo and concealed login/logout control;
 - `LoginLink` for the login/logout icon revealed by the header logo;
 - `ProjectGrid` for a responsive grid of at most three cards per row;
-- `ProjectCard` for lifecycle-status badges and visually dimmed private states.
-- `PostCardList` for presentation-only square cards with an optional caption
-  and rating;
+- `ProjectCard` for post counts, lifecycle-status badges, and visually dimmed
+  private states.
+- `PostCardList` for unified framed square-image cards with an optional caption
+  and rating section;
 - `RatedPostHeader` for detail types whose title sits beside an overall rating.
 - `PostRowList` for presentation-only rows with a media slot, label, and date;
 - `PostLayout` for the shared vertical composition and spacing of detail posts;
@@ -304,7 +308,7 @@ components/
 ├── auth/                 concealed login/logout controls
 ├── common/               reusable page-level UI
 ├── layout/               global header, footer, and page shell
-├── media/                lightbox and aspect-ratio-adaptive media carousel
+├── media/                lightbox and bounded, adaptive media carousel
 ├── posts/
 │   ├── blocks/           reusable detail-post building blocks
 │   ├── lists/            base card and row renderers
@@ -312,6 +316,11 @@ components/
 │   └── types/            detail-post compositions
 └── projects/             project cards, grid, and header action
 ```
+
+`MediaCarousel` records the loaded active item's intrinsic aspect ratio. It
+keeps that ratio as the stage reservation while the next item loads, then
+updates the stage once from the new image or video dimensions. This avoids an
+intermediate zero-height layout without adding media dimensions to the API.
 
 Detail post responses expose `relatedPost` as an object containing its `number`
 and model-generated `link`. The frontend uses that link directly and does not
@@ -332,6 +341,9 @@ they do not expose `extra`, additional files, tags, or detail-page metadata.
 Every list response includes the model-derived `label`. List `mainFile` data
 includes the stored `mediaType` so presentation types can distinguish photos,
 videos, audio, and other files without filename parsing.
+Image-only list adapters such as `photo` and `plasticine` use the label for
+accessible image text but intentionally pass an empty visible caption to
+`PostCardList`.
 Post dates come from the optional model field rather than `extra`. PostgreSQL
 extracts only `rating` from `extra` for its dedicated list field. General post
 lists use a dedicated summary serializer that also selects the first available
@@ -351,7 +363,12 @@ presentation behavior is specified in `docs/PROJECT_TYPES.md`.
 
 Projects come from the REST API. Anonymous users never receive private projects;
 authenticated guests receive them with `isPublic: false` so their cards can be
-dimmed. The separate `status` field controls the lifecycle badge.
+dimmed. The separate `status` field controls the lifecycle badge. Project list
+and project-post querysets annotate their post total as `post_count`; the shared
+serializer exposes it as `postCount`, and the project card renders it on the
+bottom-left of the cover. Because aggregation drops Django's implicit model
+ordering, the annotated query explicitly reapplies ascending `order` and `id`.
+The authorization queryset remains unannotated.
 
 The login form uses Django session authentication with CSRF protection and
 redirects successful logins to the project grid. The header action reflects the

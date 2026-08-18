@@ -20,6 +20,7 @@ defineProps({
       :accent="project.accent"
       :is-private="project.isPrivate"
       :status="project.status"
+      :post-count="project.postCount"
     />
   </div>
 </template>

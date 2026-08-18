@@ -42,26 +42,30 @@ defineProps({
 .post-card-list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.75rem 1rem;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
 }
 
 .post-card {
   min-width: 0;
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-medium);
   color: var(--color-text);
+  background: var(--color-surface);
   text-decoration: none;
+  transition:
+    transform 200ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
 .post-card__image {
   aspect-ratio: 1;
   display: block;
   overflow: hidden;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-small);
   background: var(--color-surface);
-  transition:
-    border-color 160ms ease,
-    box-shadow 180ms ease,
-    transform 180ms ease;
 }
 
 .post-card__image img {
@@ -73,19 +77,20 @@ defineProps({
 }
 
 .post-card__caption {
+  min-height: 3.75rem;
   display: flex;
-  align-items: baseline;
+  flex: 1;
+  align-items: center;
   justify-content: space-between;
   gap: 0.6rem;
-  margin-top: 0.55rem;
+  padding: 0.8rem 1rem;
 }
 
 .post-card__label {
   min-width: 0;
   overflow-wrap: anywhere;
-  color: var(--color-muted);
-  font-size: 0.82rem;
-  line-height: 1.35;
+  font-size: clamp(0.82rem, 2vw, 0.95rem);
+  line-height: 1.3;
 }
 
 .post-card__rating {
@@ -96,11 +101,13 @@ defineProps({
   line-height: 1.35;
 }
 
-.post-card:hover .post-card__image,
-.post-card:focus-visible .post-card__image {
+.post-card:hover,
+.post-card:focus-visible {
+  z-index: 2;
   border-color: rgba(215, 240, 111, 0.65);
   box-shadow: var(--shadow-card);
-  transform: translateY(-0.2rem);
+  outline: none;
+  transform: translateY(-0.35rem);
 }
 
 .post-card:hover .post-card__label,
@@ -111,7 +118,7 @@ defineProps({
 }
 
 .post-card:focus-visible {
-  outline: none;
+  box-shadow: 0 0 0 3px var(--color-bg), 0 0 0 5px var(--color-accent);
 }
 
 @media (max-width: 640px) {
@@ -127,7 +134,8 @@ defineProps({
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .post-card__image {
+  .post-card,
+  .post-card__image img {
     transition: none;
   }
 }

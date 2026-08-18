@@ -49,6 +49,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 class ProjectListSerializer(serializers.ModelSerializer):
     cover = serializers.CharField(source="cover.link", read_only=True)
+    postCount = serializers.IntegerField(source="post_count", read_only=True)
     postType = serializers.CharField(source="post_type", read_only=True)
     postListType = serializers.CharField(source="post_list_type", read_only=True)
     isPublic = serializers.BooleanField(source="is_public", read_only=True)
@@ -61,6 +62,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "description",
             "link",
             "cover",
+            "postCount",
             "postType",
             "postListType",
             "isPublic",
