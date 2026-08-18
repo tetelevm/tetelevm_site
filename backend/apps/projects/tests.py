@@ -137,6 +137,12 @@ class ProjectApiTests(APITestCase):
             ]
         )
 
+        first_page = self.client.get(
+            reverse(
+                "projects:project-posts",
+                kwargs={"project_code": "public"},
+            )
+        )
         response = self.client.get(
             reverse(
                 "projects:project-posts",
@@ -145,8 +151,11 @@ class ProjectApiTests(APITestCase):
             {"page": 2},
         )
 
+        self.assertEqual(first_page.status_code, 200)
+        self.assertEqual(first_page.data["posts"][0]["number"], 51)
+        self.assertEqual(first_page.data["posts"][-1]["number"], 2)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual([post["number"] for post in response.data["posts"]], [51])
+        self.assertEqual([post["number"] for post in response.data["posts"]], [1])
         self.assertEqual(response.data["pagination"]["page"], 2)
         self.assertEqual(response.data["pagination"]["totalPages"], 2)
         self.assertEqual(response.data["pagination"]["totalItems"], 51)

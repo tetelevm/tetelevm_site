@@ -216,11 +216,15 @@ Uploaded files are represented by the `File` model, retain their upload name in
 `original_name`, and store `file_type` as `photo`, `video`, `audio`, or `other`.
 The type is detected from the extension when a new file is uploaded. Stored
 files use the model UUID and are separated by role:
-originals use `content/<UUID>.<extension>`, image previews use
+non-image originals use `content/<UUID>.<extension>`, normalized image originals
+use `content/<UUID>.jpg`, image previews use
 `preview/<UUID>.jpg`, and image thumbnails use `thumbnail/<UUID>.jpg`.
-Previews are metadata-free JPEGs constrained to 600 pixels on each axis without
-upscaling. Thumbnails are metadata-free 150-by-150 JPEGs produced with a centered
-square crop and are upscaled when the source is smaller. For images, `link`
+Image originals are normalized to metadata-free JPEG at 90 percent quality and
+constrained to 1500 pixels on each axis without upscaling. Previews are
+metadata-free JPEGs constrained to 600 pixels on each axis without upscaling.
+Thumbnails are metadata-free 150-by-150 JPEGs produced with a centered square
+crop and are upscaled when the source is smaller. Replacing an uploaded image
+regenerates the original, preview, and thumbnail. For images, `link`
 points to the preview, `link_small` to the thumbnail, and `link_full` to the
 original; non-images use the original for both `link` and `link_small` and have
 no `link_full`. Django serves these URLs only in debug mode; production
@@ -255,6 +259,7 @@ The shared frontend building blocks are:
 
 - `MainLayout` for the global background, shared header, and centered
   800-pixel content container;
+- `AppFooter` for the shared current-year footer;
 - `AppHeader` for navigation and a page-specific action slot;
 - `LanguageSwitch` for the About-page `ru/en` control;
 - `HeaderAccessAction` for the site logo and concealed login/logout control;
@@ -273,6 +278,10 @@ The shared frontend building blocks are:
 Detail post responses expose `relatedPost` as an object containing its `number`
 and model-generated `link`. The frontend uses that link directly and does not
 reconstruct backend routes.
+
+Projects are returned in ascending explicit project order. Posts within a
+project are returned by descending post number, with the highest-numbered item
+first.
 
 The project-posts page fetches a project and its posts from the REST API, then
 uses an explicit mapping from the project's `postListType` code to a component in
