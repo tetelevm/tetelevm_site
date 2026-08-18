@@ -3,29 +3,15 @@ import { computed, ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 
 import { getProjectPosts } from "../api/projects.js"
-import MainLayout from "../components/MainLayout.vue"
-import ProjectHeaderAction from "../components/ProjectHeaderAction.vue"
-import AbandonedList from "../components/post-list-types/Abandoned.vue"
-import DoorList from "../components/post-list-types/Door.vue"
-import PhotoList from "../components/post-list-types/Photo.vue"
-import PlasticineList from "../components/post-list-types/Plasticine.vue"
-import PostList from "../components/post-list-types/Post.vue"
-import AnimeList from "../components/post-list-types/Anime.vue"
-import TextList from "../components/post-list-types/Text.vue"
-import TextMdList from "../components/post-list-types/TextMd.vue"
-import TravelList from "../components/post-list-types/Travel.vue"
-
-const POST_LIST_COMPONENTS = {
-  post: PostList,
-  photo: PhotoList,
-  travel: TravelList,
-  text: TextList,
-  text_md: TextMdList,
-  door: DoorList,
-  anime: AnimeList,
-  plasticine: PlasticineList,
-  abandoned: AbandonedList,
-}
+import PageStatus from "../components/common/PageStatus.vue"
+import PageSubheader from "../components/common/PageSubheader.vue"
+import PaginationNav from "../components/common/PaginationNav.vue"
+import MainLayout from "../components/layout/MainLayout.vue"
+import ProjectHeaderAction from "../components/projects/ProjectHeaderAction.vue"
+import {
+  DEFAULT_POST_LIST_COMPONENT,
+  POST_LIST_COMPONENTS,
+} from "../config/postTypes.js"
 
 const route = useRoute()
 const router = useRouter()
@@ -35,7 +21,9 @@ const isLoading = ref(false)
 const errorMessage = ref("")
 
 const postListComponent = computed(
-  () => POST_LIST_COMPONENTS[project.value?.postListType] ?? PostList,
+  () =>
+    POST_LIST_COMPONENTS[project.value?.postListType] ??
+    DEFAULT_POST_LIST_COMPONENT,
 )
 
 function routePage() {
@@ -89,114 +77,31 @@ watch(
     </template>
 
     <template #subheader>
-      <div class="project-posts-page__toolbar">
-        <RouterLink to="/projects/">← все проекты</RouterLink>
-        <span v-if="pagination">материалов: {{ pagination.totalItems }}</span>
-      </div>
-      <p v-if="project?.description" class="project-posts-page__description">
-        {{ project.description }}
-      </p>
+      <PageSubheader
+        back-to="/projects/"
+        back-label="← все проекты"
+        :meta="pagination ? `материалов: ${pagination.totalItems}` : ''"
+        :description="project?.description"
+      />
     </template>
 
-    <p v-if="isLoading" class="project-posts-page__status">Загрузка…</p>
-    <p v-else-if="errorMessage" class="project-posts-page__status" role="alert">
-      {{ errorMessage }}
-    </p>
+    <PageStatus
+      v-if="isLoading || errorMessage"
+      :loading="isLoading"
+      :error="errorMessage"
+    />
     <template v-else-if="project">
       <h1 class="visually-hidden">{{ project.name }}</h1>
       <component
         :is="postListComponent"
         :posts="project.posts"
       />
-      <nav
-        v-if="pagination.totalPages > 1"
-        class="project-posts-page__pagination"
-        aria-label="Страницы постов"
-      >
-        <button
-          v-for="page in pagination.totalPages"
-          :key="page"
-          class="project-posts-page__page"
-          :class="{ 'project-posts-page__page--active': page === pagination.page }"
-          type="button"
-          :aria-current="page === pagination.page ? 'page' : undefined"
-          @click="switchPage(page)"
-        >
-          {{ page }}
-        </button>
-      </nav>
+      <PaginationNav
+        :current-page="pagination.page"
+        :total-pages="pagination.totalPages"
+        label="Страницы постов"
+        @select="switchPage"
+      />
     </template>
   </MainLayout>
 </template>
-
-<style scoped>
-.project-posts-page__status {
-  margin: 0;
-  color: var(--color-muted);
-  text-align: center;
-}
-
-.project-posts-page__toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.project-posts-page__description {
-  max-width: 42rem;
-  margin: 0.75rem 0 0;
-  color: var(--color-text);
-  font-size: clamp(0.9rem, 2vw, 1rem);
-  line-height: 1.5;
-  white-space: pre-line;
-}
-
-.project-posts-page__toolbar a,
-.project-posts-page__toolbar span {
-  color: var(--color-muted);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-decoration: none;
-  text-transform: uppercase;
-}
-
-.project-posts-page__toolbar a:hover,
-.project-posts-page__toolbar a:focus-visible {
-  color: var(--color-accent);
-  outline: none;
-}
-
-.project-posts-page__pagination {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.4rem;
-  margin-top: 3.5rem;
-}
-
-.project-posts-page__page {
-  min-width: 2.4rem;
-  padding: 0.5rem 0.65rem;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-small);
-  color: var(--color-muted);
-  background: var(--color-surface);
-  cursor: pointer;
-}
-
-.project-posts-page__page:hover,
-.project-posts-page__page:focus-visible,
-.project-posts-page__page--active {
-  border-color: rgba(215, 240, 111, 0.6);
-  color: var(--color-text);
-  outline: none;
-}
-
-.project-posts-page__page--active {
-  border-color: var(--color-accent);
-  color: #151612;
-  background: var(--color-accent);
-}
-</style>

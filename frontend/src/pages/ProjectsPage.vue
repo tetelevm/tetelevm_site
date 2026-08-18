@@ -2,8 +2,9 @@
 import { onMounted, ref } from "vue"
 
 import { getProjects } from "../api/projects.js"
-import MainLayout from "../components/MainLayout.vue"
-import ProjectGrid from "../components/ProjectGrid.vue"
+import PageStatus from "../components/common/PageStatus.vue"
+import MainLayout from "../components/layout/MainLayout.vue"
+import ProjectGrid from "../components/projects/ProjectGrid.vue"
 
 const projects = ref([])
 const isLoading = ref(false)
@@ -34,25 +35,12 @@ onMounted(loadProjects)
 
 <template>
   <MainLayout active-page="projects">
-    <div class="projects-page__content">
-      <h1 class="visually-hidden">Проекты</h1>
-      <p v-if="isLoading" class="projects-page__status">Загрузка…</p>
-      <p v-else-if="errorMessage" class="projects-page__status" role="alert">
-        {{ errorMessage }}
-      </p>
-      <ProjectGrid v-else :projects="projects" />
-    </div>
+    <h1 class="visually-hidden">Проекты</h1>
+    <PageStatus
+      v-if="isLoading || errorMessage"
+      :loading="isLoading"
+      :error="errorMessage"
+    />
+    <ProjectGrid v-else :projects="projects" />
   </MainLayout>
 </template>
-
-<style scoped>
-.projects-page__content {
-  width: 100%;
-}
-
-.projects-page__status {
-  margin: 0;
-  color: var(--color-muted);
-  text-align: center;
-}
-</style>

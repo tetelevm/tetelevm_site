@@ -26,6 +26,9 @@ combined independently.
 - Type-specific list components decide which post data becomes the image,
   label, rating, and date; the shared components only render those values.
 - Detail types that show a name and overall rating share `RatedPostHeader`.
+- Detail pages compose the shared `PostLayout`, `PostTitle`, `PlainPostText`,
+  `PostImage`, media, and connection blocks where applicable. Type components
+  retain only their data selection and genuinely type-specific markup.
 
 ## `door` — Doors
 

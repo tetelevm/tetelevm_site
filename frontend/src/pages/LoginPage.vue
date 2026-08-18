@@ -3,7 +3,7 @@ import { onMounted, ref } from "vue"
 import { useRouter } from "vue-router"
 
 import { authState, loadSession, login as loginUser } from "../api/auth.js"
-import MainLayout from "../components/MainLayout.vue"
+import MainLayout from "../components/layout/MainLayout.vue"
 
 const router = useRouter()
 const username = ref("")
