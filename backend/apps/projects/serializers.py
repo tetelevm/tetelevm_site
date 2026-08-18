@@ -31,6 +31,16 @@ class FileListSerializer(serializers.ModelSerializer):
         model = File
         fields = ("link", "mediaType")
 
+
+class FilePreviewListSerializer(serializers.ModelSerializer):
+    link = serializers.CharField(read_only=True)
+    mediaType = serializers.CharField(source="file_type", read_only=True)
+
+    class Meta:
+        model = File
+        fields = ("link", "mediaType")
+
+
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -120,6 +130,10 @@ class PostListSerializer(serializers.ModelSerializer):
             "rating",
             "date",
         )
+
+
+class PlasticinePostListSerializer(PostListSerializer):
+    mainFile = FilePreviewListSerializer(source="main_file", read_only=True)
 
 
 def post_summary_files(obj: Post) -> list[File]:

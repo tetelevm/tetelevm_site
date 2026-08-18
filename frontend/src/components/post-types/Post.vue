@@ -32,6 +32,8 @@ const otherFiles = computed(() =>
   <article class="post-post">
     <DatedPostHeader :title="post.name" :date="post.date" />
 
+    <div v-if="post.text" class="post-post__text">{{ post.text }}</div>
+
     <div v-if="post.mainFile?.mediaType === 'photo'" class="post-post__main-image">
       <LightboxImage
         :preview-src="post.mainFile.link"
@@ -42,8 +44,6 @@ const otherFiles = computed(() =>
     </div>
 
     <MediaCarousel :items="mediaFiles" :label="`Медиа: ${post.name}`" />
-
-    <div v-if="post.text" class="post-post__text">{{ post.text }}</div>
 
     <PostFileList :files="otherFiles" />
 
@@ -81,7 +81,7 @@ const otherFiles = computed(() =>
 
 .post-post__text {
   color: var(--color-text);
-  font-size: 1rem;
+  font-size: 1.2rem;
   line-height: 1.65;
   white-space: pre-line;
 }

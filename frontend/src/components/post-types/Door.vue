@@ -39,8 +39,7 @@ defineProps({
 .door-post__caption {
   margin: 0;
   color: var(--color-text);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-size: 1.2rem;
   line-height: 1.45;
   text-align: center;
 }

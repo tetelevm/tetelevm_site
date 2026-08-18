@@ -56,6 +56,10 @@ const screenshots = computed(() =>
   gap: clamp(2rem, 5vw, 3.5rem);
 }
 
+.anime-post :deep(.rated-post-header__titles h1) {
+  font-size: clamp(1.4rem, 4vw, 2.25rem);
+}
+
 .anime-post__screenshots {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -77,8 +81,7 @@ const screenshots = computed(() =>
 
 .anime-post__text {
   color: var(--color-text);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1rem, 2.4vw, 1.15rem);
+  font-size: 1.2rem;
   line-height: 1.75;
   white-space: pre-line;
 }
@@ -91,12 +94,12 @@ const screenshots = computed(() =>
   border-top: 1px solid var(--color-line);
   margin: -1rem 0 0;
   color: var(--color-text);
+  font-size: 1.2rem;
   line-height: 1.5;
 }
 
 .anime-post__result span {
   color: var(--color-accent);
-  font-size: 0.75rem;
   font-weight: 750;
   letter-spacing: 0.09em;
   text-transform: uppercase;

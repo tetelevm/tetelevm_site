@@ -39,7 +39,7 @@ const mediaItems = computed(() => {
 
 .text-post__body {
   color: var(--color-text);
-  font-size: 1rem;
+  font-size: 1.2rem;
   line-height: 1.65;
   white-space: pre-line;
 }

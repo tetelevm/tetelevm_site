@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from .models import Post, PostListType, Project
 from .serializers import (
     GeneralPostListSerializer,
+    PlasticinePostListSerializer,
     PostListSerializer,
     PostSerializer,
     ProjectListSerializer,
@@ -58,6 +59,8 @@ class ProjectPostsView(RetrieveAPIView):
             .order_by("-number", "-id")
         )
         list_serializer = PostListSerializer
+        if project.post_list_type == PostListType.PLASTICINE:
+            list_serializer = PlasticinePostListSerializer
         if project.post_list_type == PostListType.POST:
             posts = posts.prefetch_related("post_files__file")
             list_serializer = GeneralPostListSerializer

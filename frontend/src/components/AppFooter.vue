@@ -14,10 +14,10 @@ const currentYear = new Date().getFullYear()
   width: min(100% - 2rem, 800px);
   margin-inline: auto;
   padding: 1.25rem 0 1.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
-  color: var(--color-text-muted);
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  color: rgba(216, 217, 207, 0.42);
   text-align: center;
-  font-size: 0.8rem;
+  font-size: 0.95rem;
 }
 
 .app-footer p {
