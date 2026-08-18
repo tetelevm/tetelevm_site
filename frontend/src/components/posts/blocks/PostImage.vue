@@ -43,6 +43,7 @@ defineProps({
       :full-src="fullSrc"
       :alt="alt"
       preview-fit="contain"
+      :preserve-aspect-ratio="variant === 'stage'"
     />
     <img v-else :src="src" :alt="alt" />
   </div>
@@ -79,7 +80,6 @@ defineProps({
 }
 
 .post-image--stage {
-  aspect-ratio: 16 / 10;
   overflow: hidden;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-medium);
@@ -89,14 +89,8 @@ defineProps({
 
 .post-image--stage > img {
   width: 100%;
-  height: 100%;
+  height: auto;
   display: block;
   object-fit: contain;
-}
-
-@media (max-width: 480px) {
-  .post-image--stage {
-    aspect-ratio: 1;
-  }
 }
 </style>

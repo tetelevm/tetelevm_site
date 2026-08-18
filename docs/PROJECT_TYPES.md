@@ -16,13 +16,18 @@ combined independently.
 - The original is loaded only when a type explicitly displays the full image or
   the visitor opens a lightbox.
 - Additional files follow `PostFile.order`.
+- Media carousels preserve the active image or video's aspect ratio instead of
+  cropping it into a fixed frame. Their height changes when visitors switch
+  between portrait and landscape items.
+- Framed standalone images also preserve their natural aspect ratio; the frame
+  follows the image instead of imposing a fixed shape.
 - Plain post body text uses the shared sans-serif face at `1.2rem`.
 - Headers that contain both a name and date place the name on the left and the
   date on the right.
 - Card lists use the shared `PostCardList`: every image is square-cropped and an
   optional caption below it can contain a label and rating.
 - Row lists use the shared `PostRowList` with a 100-pixel media slot, label, and
-  optional date.
+  optional date positioned near the bottom edge of the row.
 - Type-specific list components decide which post data becomes the image,
   label, rating, and date; the shared components only render those values.
 - Every list item displays the shared post label. It prefers a trimmed `name`,
@@ -236,8 +241,8 @@ Post:
 - the shared dated header shows `name` on the left and optional `date` on the
   right;
 - plain `text` appears below the header with line breaks preserved;
-- an image `mainFile`, when present, appears below the text and opens its
-  original in the shared lightbox;
+- an image `mainFile`, when present, appears below the text in an
+  aspect-ratio-preserving frame and opens its original in the shared lightbox;
 - a carousel follows with additional files whose `mediaType` is `photo` or
   `video`;
 - remaining additional files appear as a vertical list of links using their

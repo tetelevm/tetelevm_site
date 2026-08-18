@@ -19,6 +19,10 @@ const props = defineProps({
     default: "cover",
     validator: (value) => ["cover", "contain"].includes(value),
   },
+  preserveAspectRatio: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const dialog = ref(null)
@@ -54,7 +58,14 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <button class="lightbox-image__trigger" type="button" @click="openImage">
+  <button
+    class="lightbox-image__trigger"
+    :class="{
+      'lightbox-image__trigger--natural': preserveAspectRatio,
+    }"
+    type="button"
+    @click="openImage"
+  >
     <img
       :src="previewSrc"
       :alt="alt"
@@ -104,6 +115,11 @@ onBeforeUnmount(() => {
   height: 100%;
   display: block;
   object-fit: cover;
+}
+
+.lightbox-image__trigger--natural,
+.lightbox-image__trigger--natural img {
+  height: auto;
 }
 
 .lightbox-image__trigger:focus-visible {

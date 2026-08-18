@@ -47,7 +47,13 @@ watch(
     @keydown.left.prevent="showPrevious"
     @keydown.right.prevent="showNext"
   >
-    <div class="media-carousel__stage">
+    <div
+      class="media-carousel__stage"
+      :class="{
+        'media-carousel__stage--file': currentItem
+          && !['photo', 'video'].includes(currentItem.mediaType),
+      }"
+    >
       <LightboxImage
         v-if="currentItem?.mediaType === 'photo'"
         :key="currentItem.id"
@@ -55,6 +61,7 @@ watch(
         :full-src="currentItem.linkFull"
         :alt="`${label}: изображение ${activeIndex + 1}`"
         preview-fit="contain"
+        preserve-aspect-ratio
       />
       <video
         v-else-if="currentItem?.mediaType === 'video'"
@@ -109,7 +116,6 @@ watch(
 }
 
 .media-carousel__stage {
-  aspect-ratio: 16 / 10;
   display: grid;
   overflow: hidden;
   border: 1px solid var(--color-line);
@@ -119,9 +125,13 @@ watch(
   place-items: center;
 }
 
+.media-carousel__stage--file {
+  min-height: 12rem;
+}
+
 .media-carousel__stage video {
   width: 100%;
-  height: 100%;
+  height: auto;
   display: block;
   object-fit: contain;
 }
@@ -188,10 +198,6 @@ watch(
 }
 
 @media (max-width: 480px) {
-  .media-carousel__stage {
-    aspect-ratio: 1;
-  }
-
   .media-carousel__controls {
     gap: 0.5rem;
   }

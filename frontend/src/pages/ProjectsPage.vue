@@ -22,6 +22,7 @@ async function loadProjects() {
       href: `/projects/${project.link}/`,
       image: project.cover,
       isPrivate: !project.isPublic,
+      status: project.status,
     }))
   } catch (error) {
     errorMessage.value = error.message || "Не удалось загрузить проекты"
