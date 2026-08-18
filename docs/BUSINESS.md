@@ -95,6 +95,12 @@ A project determines:
 - whether the collection is public or private;
 - the general presentation of its material.
 
+Project cards communicate lifecycle status separately from visibility. Open
+projects have no status label, paused projects show “на паузе” in a warm
+yellow-orange color, and closed projects show “завершён” in red. Private
+projects may remain visually dimmed, but their public/private state is not
+written on the card.
+
 An item contains the actual material, such as text, images, video, or a
 combination of media. The supported project presentation types and their visual
 behavior are specified in `docs/PROJECT_TYPES.md`.
@@ -134,4 +140,7 @@ publishing platforms.
 The public interface must be usable and visually coherent on desktop and mobile
 devices. Detailed visual design and the presentation of individual project
 types will be defined separately as the corresponding content is designed.
+Standalone media frames and carousels show images without cropping and follow
+their natural aspect ratio. Carousels resize when one gallery mixes portrait
+and landscape media.
 Every public page ends with a small footer showing the current year.

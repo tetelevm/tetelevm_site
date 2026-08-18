@@ -19,6 +19,7 @@ defineProps({
       :image="project.image"
       :accent="project.accent"
       :is-private="project.isPrivate"
+      :status="project.status"
     />
   </div>
 </template>

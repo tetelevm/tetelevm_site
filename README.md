@@ -45,10 +45,11 @@ Implemented Vue routes:
 - `/projects/` — responsive project card grid loaded from the REST API;
 - `/login/` — session login form for guests and administrators.
 
-The Projects page supports ordinary and visually private project cards. Private
-examples currently exist only as design fixtures; the backend will omit them
-entirely for anonymous users. The page uses reusable header, language switch,
-login link, grid, and card components. The favicon is served from
+The Projects page dims private project cards without labeling their visibility.
+Paused projects carry a warm “на паузе” badge and closed projects a red
+“завершён” badge; open projects have no status badge. The backend omits private
+projects entirely for anonymous users. The page uses reusable header, language
+switch, login link, grid, and card components. The favicon is served from
 `frontend/public/favicon.ico`.
 
 The following frontend behavior is intentionally not implemented yet:

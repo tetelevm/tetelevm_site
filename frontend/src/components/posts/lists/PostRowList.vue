@@ -81,7 +81,8 @@ defineProps({
 
 .post-row__date {
   flex: 0 0 auto;
-  padding: 1rem 1.15rem 1rem 0;
+  align-self: end;
+  padding: 0 1.15rem 0.8rem 0;
   color: var(--color-muted);
   font-size: 0.78rem;
   font-variant-numeric: tabular-nums;

@@ -172,8 +172,10 @@ List API and admin querysets opt into it explicitly, avoiding per-post queries
 without adding aggregation overhead to unrelated post queries.
 
 Project status describes its lifecycle and does not control authorization.
-Visibility for anonymous and authenticated visitors continues to depend only
-on `is_public`.
+Project cards show no badge for `open`, a warm yellow-orange “на паузе” badge
+for `paused`, and a red “завершён” badge for `closed`. Private cards remain
+dimmed but do not display a visibility badge. Visibility for anonymous and
+authenticated visitors continues to depend only on `is_public`.
 
 The backend should expose an explicit presentation type. The frontend should
 map that type to a known Vue component. Keep this mapping simple and visible in
@@ -274,7 +276,7 @@ The shared frontend building blocks are:
 - `HeaderAccessAction` for the site logo and concealed login/logout control;
 - `LoginLink` for the login/logout icon revealed by the header logo;
 - `ProjectGrid` for a responsive grid of at most three cards per row;
-- `ProjectCard` for public and visually locked project states.
+- `ProjectCard` for lifecycle-status badges and visually dimmed private states.
 - `PostCardList` for presentation-only square cards with an optional caption
   and rating;
 - `RatedPostHeader` for detail types whose title sits beside an overall rating.
@@ -284,8 +286,8 @@ The shared frontend building blocks are:
 - `DatedPostHeader` and `RatedPostHeader` for compositions of `PostTitle` with
   right-side metadata;
 - `PlainPostText` for consistently styled plain-text post bodies;
-- `PostImage` for natural-size or framed standalone images, optionally using
-  the shared lightbox;
+- `PostImage` for aspect-ratio-preserving natural-size or framed standalone
+  images, optionally using the shared lightbox;
 - `MarkdownContent` for styled, HTML-disabled Markdown rendering.
 - `PostTag` for non-interactive tag labels on post detail pages;
 - `RelatedPostLink` for links to a post's optional same-project relation.
@@ -302,7 +304,7 @@ components/
 ├── auth/                 concealed login/logout controls
 ├── common/               reusable page-level UI
 ├── layout/               global header, footer, and page shell
-├── media/                lightbox and media carousel
+├── media/                lightbox and aspect-ratio-adaptive media carousel
 ├── posts/
 │   ├── blocks/           reusable detail-post building blocks
 │   ├── lists/            base card and row renderers
@@ -348,8 +350,8 @@ of static Vue compositions, not a runtime page-builder. Concrete list and post
 presentation behavior is specified in `docs/PROJECT_TYPES.md`.
 
 Projects come from the REST API. Anonymous users never receive private projects;
-authenticated guests receive them with `isPublic: false` so the existing locked
-card presentation can distinguish them.
+authenticated guests receive them with `isPublic: false` so their cards can be
+dimmed. The separate `status` field controls the lifecycle badge.
 
 The login form uses Django session authentication with CSRF protection and
 redirects successful logins to the project grid. The header action reflects the

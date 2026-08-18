@@ -20,15 +20,31 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  status: {
+    type: String,
+    default: "open",
+  },
 })
+
+const statusBadges = {
+  paused: {
+    label: "на паузе",
+    className: "project-card__badge--paused",
+  },
+  closed: {
+    label: "завершён",
+    className: "project-card__badge--closed",
+  },
+}
 </script>
 
 <template>
   <RouterLink
     class="project-card"
-    :class="{ 'project-card--private': isPrivate }"
     :to="href"
-    :aria-label="`${title}${isPrivate ? ', закрытый проект' : ''}`"
+    :aria-label="statusBadges[status]
+      ? `${title}, ${statusBadges[status].label}`
+      : title"
   >
     <span class="project-card__frame">
       <span
@@ -42,7 +58,13 @@ defineProps({
       </span>
 
       <span class="project-card__title">{{ title }}</span>
-      <span v-if="isPrivate" class="project-card__badge">закрытый</span>
+      <span
+        v-if="statusBadges[status]"
+        class="project-card__badge"
+        :class="statusBadges[status].className"
+      >
+        {{ statusBadges[status].label }}
+      </span>
       <span v-if="isPrivate" class="project-card__shade" aria-hidden="true" />
     </span>
   </RouterLink>
@@ -138,10 +160,6 @@ defineProps({
   text-overflow: ellipsis;
 }
 
-.project-card--private {
-  border-color: rgba(226, 140, 124, 0.32);
-}
-
 .project-card__shade {
   position: absolute;
   inset: 0;
@@ -156,15 +174,24 @@ defineProps({
   right: 0.65rem;
   z-index: 2;
   padding: 0.3rem 0.5rem;
-  border: 1px solid rgba(226, 140, 124, 0.45);
+  border: 1px solid;
   border-radius: 999px;
-  color: #f1b1a5;
   background: rgba(21, 22, 18, 0.78);
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   backdrop-filter: blur(0.4rem);
+}
+
+.project-card__badge--paused {
+  border-color: rgba(240, 185, 91, 0.55);
+  color: #f0c878;
+}
+
+.project-card__badge--closed {
+  border-color: rgba(226, 103, 91, 0.58);
+  color: #ef8c80;
 }
 
 @media (prefers-reduced-motion: reduce) {
