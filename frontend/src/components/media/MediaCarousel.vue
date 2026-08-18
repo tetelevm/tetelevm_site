@@ -15,25 +15,61 @@ const props = defineProps({
 })
 
 const activeIndex = ref(0)
+const stageAspectRatio = ref("")
 const currentItem = computed(() => props.items[activeIndex.value] ?? null)
+const hasReservedStage = computed(
+  () => stageAspectRatio.value && ["photo", "video"].includes(
+    currentItem.value?.mediaType,
+  ),
+)
+const stageStyle = computed(() =>
+  hasReservedStage.value
+    ? { aspectRatio: stageAspectRatio.value }
+    : undefined,
+)
+const isFirstItem = computed(() => activeIndex.value === 0)
+const isLastItem = computed(
+  () => activeIndex.value === props.items.length - 1,
+)
 
 function showPrevious() {
-  activeIndex.value =
-    (activeIndex.value - 1 + props.items.length) % props.items.length
+  if (!isFirstItem.value) {
+    activeIndex.value -= 1
+  }
 }
 
 function showNext() {
-  activeIndex.value = (activeIndex.value + 1) % props.items.length
+  if (!isLastItem.value) {
+    activeIndex.value += 1
+  }
 }
 
 function showItem(index) {
   activeIndex.value = index
 }
 
+function setStageAspectRatio(width, height) {
+  if (width > 0 && height > 0) {
+    stageAspectRatio.value = `${width} / ${height}`
+  }
+}
+
+function handlePreviewLoad({ width, height }) {
+  setStageAspectRatio(width, height)
+}
+
+function handleVideoMetadata(event) {
+  setStageAspectRatio(
+    event.currentTarget.videoWidth,
+    event.currentTarget.videoHeight,
+  )
+}
+
 watch(
   () => props.items,
   () => {
     activeIndex.value = 0
+    stageAspectRatio.value = ""
   },
 )
 </script>
@@ -43,13 +79,12 @@ watch(
     v-if="items.length"
     class="media-carousel"
     :aria-label="label"
-    tabindex="0"
-    @keydown.left.prevent="showPrevious"
-    @keydown.right.prevent="showNext"
   >
     <div
       class="media-carousel__stage"
+      :style="stageStyle"
       :class="{
+        'media-carousel__stage--reserved': hasReservedStage,
         'media-carousel__stage--file': currentItem
           && !['photo', 'video'].includes(currentItem.mediaType),
       }"
@@ -61,7 +96,9 @@ watch(
         :full-src="currentItem.linkFull"
         :alt="`${label}: изображение ${activeIndex + 1}`"
         preview-fit="contain"
-        preserve-aspect-ratio
+        :preserve-aspect-ratio="!hasReservedStage"
+        loading="eager"
+        @preview-load="handlePreviewLoad"
       />
       <video
         v-else-if="currentItem?.mediaType === 'video'"
@@ -69,6 +106,7 @@ watch(
         :src="currentItem.linkFull || currentItem.link"
         controls
         preload="metadata"
+        @loadedmetadata="handleVideoMetadata"
       />
       <a
         v-else-if="currentItem"
@@ -80,7 +118,12 @@ watch(
     </div>
 
     <div v-if="items.length > 1" class="media-carousel__controls">
-      <button type="button" aria-label="Предыдущее медиа" @click="showPrevious">
+      <button
+        type="button"
+        aria-label="Предыдущее медиа"
+        :disabled="isFirstItem"
+        @click="showPrevious"
+      >
         ←
       </button>
       <div class="media-carousel__dots" aria-label="Выбор медиа">
@@ -95,7 +138,12 @@ watch(
         />
       </div>
       <span>{{ activeIndex + 1 }} / {{ items.length }}</span>
-      <button type="button" aria-label="Следующее медиа" @click="showNext">
+      <button
+        type="button"
+        aria-label="Следующее медиа"
+        :disabled="isLastItem"
+        @click="showNext"
+      >
         →
       </button>
     </div>
@@ -108,11 +156,6 @@ watch(
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
-  outline: none;
-}
-
-.media-carousel:focus-visible .media-carousel__stage {
-  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
 }
 
 .media-carousel__stage {
@@ -134,6 +177,10 @@ watch(
   height: auto;
   display: block;
   object-fit: contain;
+}
+
+.media-carousel__stage--reserved video {
+  height: 100%;
 }
 
 .media-carousel__file {
@@ -160,11 +207,16 @@ watch(
   place-items: center;
 }
 
-.media-carousel__controls > button:hover,
-.media-carousel__controls > button:focus-visible {
+.media-carousel__controls > button:not(:disabled):hover,
+.media-carousel__controls > button:not(:disabled):focus-visible {
   border-color: var(--color-accent);
   color: var(--color-accent);
   outline: none;
+}
+
+.media-carousel__controls > button:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 
 .media-carousel__controls > span {
