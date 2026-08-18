@@ -1,6 +1,6 @@
 <script setup>
 defineProps({
-  posts: {
+  items: {
     type: Array,
     default: () => [],
   },
@@ -8,35 +8,35 @@ defineProps({
 </script>
 
 <template>
-  <div class="text-post-list">
+  <div class="post-row-list">
     <RouterLink
-      v-for="post in posts"
-      :key="post.id ?? post.number"
-      class="text-post-list__item"
-      :to="post.link"
+      v-for="item in items"
+      :key="item.key"
+      class="post-row"
+      :to="item.link"
     >
-      <span class="text-post-list__thumbnail">
+      <span class="post-row__image">
         <img
-          v-if="post.thumbnail || post.mainFile?.mediaType === 'photo'"
-          :src="post.thumbnail || post.mainFile.link"
-          :alt="post.label || post.name"
+          v-if="item.image"
+          :src="item.image"
+          :alt="item.alt || item.label"
           loading="lazy"
         />
       </span>
-      <span class="text-post-list__name">{{ post.label || post.name }}</span>
-      <span v-if="post.date" class="text-post-list__date">{{ post.date }}</span>
+      <span class="post-row__label">{{ item.label }}</span>
+      <span v-if="item.date" class="post-row__date">{{ item.date }}</span>
     </RouterLink>
   </div>
 </template>
 
 <style scoped>
-.text-post-list {
+.post-row-list {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
 }
 
-.text-post-list__item {
+.post-row {
   min-width: 0;
   min-height: 100px;
   display: grid;
@@ -55,7 +55,7 @@ defineProps({
     transform 180ms ease;
 }
 
-.text-post-list__thumbnail {
+.post-row__image {
   width: 100px;
   height: 100px;
   align-self: stretch;
@@ -64,14 +64,14 @@ defineProps({
   background: rgba(0, 0, 0, 0.12);
 }
 
-.text-post-list__thumbnail img {
+.post-row__image img {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
 }
 
-.text-post-list__name {
+.post-row__label {
   min-width: 0;
   padding-block: 1rem;
   overflow-wrap: anywhere;
@@ -79,7 +79,7 @@ defineProps({
   font-size: clamp(1rem, 2.5vw, 1.2rem);
 }
 
-.text-post-list__date {
+.post-row__date {
   flex: 0 0 auto;
   padding: 1rem 1.15rem 1rem 0;
   color: var(--color-muted);
@@ -87,8 +87,8 @@ defineProps({
   font-variant-numeric: tabular-nums;
 }
 
-.text-post-list__item:hover,
-.text-post-list__item:focus-visible {
+.post-row:hover,
+.post-row:focus-visible {
   border-color: rgba(215, 240, 111, 0.55);
   background: var(--color-surface-raised);
   outline: none;
@@ -96,23 +96,23 @@ defineProps({
 }
 
 @media (max-width: 480px) {
-  .text-post-list__item {
+  .post-row {
     grid-template-columns: 100px minmax(0, 1fr);
     align-items: start;
   }
 
-  .text-post-list__name {
+  .post-row__label {
     padding-right: 0.75rem;
   }
 
-  .text-post-list__date {
+  .post-row__date {
     grid-column: 2;
     padding: 0 0.75rem 0.75rem 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .text-post-list__item {
+  .post-row {
     transition: none;
   }
 }

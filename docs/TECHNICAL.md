@@ -266,9 +266,10 @@ The shared frontend building blocks are:
 - `LoginLink` for the login/logout icon revealed by the header logo;
 - `ProjectGrid` for a responsive grid of at most three cards per row;
 - `ProjectCard` for public and visually locked project states.
-- `RatedPostGrid` for project types whose cards share an image, name, and rating;
+- `PostCardList` for presentation-only square cards with an optional caption
+  and rating;
 - `RatedPostHeader` for detail types whose title sits beside an overall rating.
-- `TextPostList` for the shared row list used by text and travel types;
+- `PostRowList` for presentation-only rows with a media slot, label, and date;
 - `DatedPostHeader` for text detail pages with an optional date;
 - `MarkdownContent` for styled, HTML-disabled Markdown rendering.
 - `PostTag` for non-interactive tag labels on post detail pages;
@@ -286,7 +287,10 @@ first.
 The project-posts page fetches a project and its posts from the REST API, then
 uses an explicit mapping from the project's `postListType` code to a component in
 `components/post-list-types`. Each list component receives the project's
-`posts` array. List entries contain only the fields required by list components;
+`posts` array and maps its type-specific fields into display data for either
+`PostCardList` or `PostRowList`. The two base components contain only rendering
+logic and do not inspect API post shapes. List entries contain only the fields
+required by list components;
 they do not expose `extra`, additional files, tags, or detail-page metadata.
 List `mainFile` data includes the stored `mediaType` so presentation types can
 distinguish photos, videos, audio, and other files without filename parsing.

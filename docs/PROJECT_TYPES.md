@@ -19,8 +19,13 @@ combined independently.
 - Plain post body text uses the shared sans-serif face at `1.2rem`.
 - Headers that contain both a name and date place the name on the left and the
   date on the right.
-- Types that show a name and overall rating share the `RatedPostGrid` and
-  `RatedPostHeader` components.
+- Card lists use the shared `PostCardList`: every image is square-cropped and an
+  optional caption below it can contain a label and rating.
+- Row lists use the shared `PostRowList` with a 100-pixel media slot, label, and
+  optional date.
+- Type-specific list components decide which post data becomes the image,
+  label, rating, and date; the shared components only render those values.
+- Detail types that show a name and overall rating share `RatedPostHeader`.
 
 ## `door` — Doors
 
@@ -28,7 +33,7 @@ The project contains photographs of doors.
 
 List:
 
-- four square cards per row on wide screens;
+- three square cards per row on wide screens;
 - each photograph is center-cropped;
 - `text` appears below it in the format `🚪 Country, City`;
 - the grid decreases to two columns and then one on mobile devices.
@@ -43,7 +48,7 @@ Post:
 
 List:
 
-- four square previews per row;
+- three square previews per row;
 - images are center-cropped;
 - captions and names are not displayed;
 - each card opens an individual post.
@@ -58,10 +63,9 @@ Post:
 
 List:
 
-- the regular 600-pixel preview of the main photograph appears in a decorative
-  frame rather than its square thumbnail;
-- two cards appear per row on wide screens and one on mobile devices;
-- cards have a slight rotation and straighten on hover;
+- the regular 600-pixel preview of the main photograph appears square-cropped
+  in the shared card layout rather than using its square thumbnail;
+- three cards appear per row on wide screens, decreasing responsively;
 - name and text are not displayed.
 
 Post:
@@ -78,7 +82,7 @@ The project contains write-ups about watched anime.
 
 List:
 
-- four square cards per row;
+- three square cards per row;
 - `name` appears below the main image on the left, with the overall rating on
   the right;
 - the overall rating is provided by the dedicated list field `rating`, extracted
@@ -173,7 +177,7 @@ Post:
 
 ## `text_md` — Markdown Texts
 
-The list is identical to `text` and uses the shared `TextPostList` component:
+The list is identical to `text` and uses the shared `PostRowList` component:
 
 - each item is a full-width row with a fixed 100-pixel thumbnail slot;
 - `name` follows the slot and the optional `date` appears on the right;
@@ -190,7 +194,7 @@ Post:
 
 ## `travel` — Travel
 
-The list is identical to `text` and `text_md` and uses `TextPostList`:
+The list is identical to `text` and `text_md` and uses `PostRowList`:
 
 - each item is a full-width row with a fixed 100-pixel thumbnail slot;
 - an image `mainFile` appears in that slot;
