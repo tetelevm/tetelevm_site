@@ -22,6 +22,7 @@ const screenshots = computed(() =>
   <PostLayout spacing="loose">
     <RatedPostHeader
       :title="post.name"
+      :title-suffix="post.extra?.season"
       :subtitle="post.extra?.original_title"
       :rating="post.extra?.rating"
       title-size="compact"

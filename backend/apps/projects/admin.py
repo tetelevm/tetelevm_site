@@ -13,8 +13,12 @@ from .models import Post, PostFile, PostType, Project, Tag
 
 
 EXTRA_TEMPLATES: dict[str, dict[str, object]] = {
+    PostType.POST: {
+        "md": False,
+    },
     PostType.ANIME: {
         "original_title": "",
+        "season": "",
         "rating": None,
         "result": "",
     },

@@ -8,6 +8,10 @@ defineProps({
     type: String,
     default: "",
   },
+  suffix: {
+    type: String,
+    default: "",
+  },
   size: {
     type: String,
     default: "normal",
@@ -18,7 +22,10 @@ defineProps({
 
 <template>
   <div class="post-title" :class="`post-title--${size}`">
-    <h1>{{ title }}</h1>
+    <h1>
+      <span>{{ title }}</span>
+      <em v-if="suffix" class="post-title__suffix">{{ suffix }}</em>
+    </h1>
     <p v-if="subtitle">{{ subtitle }}</p>
   </div>
 </template>
@@ -40,6 +47,14 @@ defineProps({
 
 .post-title--compact h1 {
   font-size: clamp(1.4rem, 4vw, 2.25rem);
+}
+
+.post-title__suffix {
+  margin-left: 0.45em;
+  color: var(--color-muted);
+  font-size: 0.65em;
+  font-style: italic;
+  font-weight: 400;
 }
 
 .post-title p {

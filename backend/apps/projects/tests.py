@@ -176,6 +176,28 @@ class PostAdminTests(TestCase):
             },
         )
 
+    def test_anime_extra_template_includes_season(self) -> None:
+        self.project.post_type = PostType.ANIME
+        self.project.save(update_fields=("post_type",))
+
+        form = PostAdminForm()
+        templates = json.loads(
+            form.fields["extra"].widget.attrs["data-project-extra-templates"]
+        )
+
+        self.assertEqual(templates[str(self.project.id)]["season"], "")
+
+    def test_general_post_extra_template_includes_markdown_flag(self) -> None:
+        self.project.post_type = PostType.POST
+        self.project.save(update_fields=("post_type",))
+
+        form = PostAdminForm()
+        templates = json.loads(
+            form.fields["extra"].widget.attrs["data-project-extra-templates"]
+        )
+
+        self.assertIs(templates[str(self.project.id)]["md"], False)
+
 
 class ProjectApiTests(APITestCase):
     def setUp(self) -> None:

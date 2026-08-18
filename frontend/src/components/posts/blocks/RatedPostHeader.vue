@@ -10,6 +10,10 @@ defineProps({
     type: String,
     default: "",
   },
+  titleSuffix: {
+    type: String,
+    default: "",
+  },
   rating: {
     type: [Number, String],
     default: null,
@@ -24,7 +28,12 @@ defineProps({
 
 <template>
   <header class="rated-post-header">
-    <PostTitle :title="title" :subtitle="subtitle" :size="titleSize" />
+    <PostTitle
+      :title="title"
+      :subtitle="subtitle"
+      :suffix="titleSuffix"
+      :size="titleSize"
+    />
     <div
       v-if="rating !== null && rating !== undefined"
       class="rated-post-header__rating"
