@@ -20,6 +20,11 @@ EXTRA_TEMPLATES: dict[str, dict[str, object]] = {
     },
     PostType.ABANDONED: {
         "rating": None,
+        "location": {
+            "latitude": None,
+            "longitude": None,
+            "link": "",
+        },
         "uniqueness": None,
         "monumentality": None,
         "atmosphere": None,
