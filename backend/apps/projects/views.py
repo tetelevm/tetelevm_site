@@ -53,7 +53,8 @@ class ProjectPostsView(RetrieveAPIView):
     ) -> Response:
         project = self.get_object()
         posts = (
-            project.posts.select_related("project", "main_file")
+            project.posts.with_display_file_counts()
+            .select_related("project", "main_file")
             .annotate(rating=KeyTransform("rating", "extra"))
             .defer("extra")
             .order_by("-number", "-id")

@@ -3,7 +3,8 @@
 Personal website built with Django REST Framework and Vue.
 
 The first frontend prototype is complete. It includes a responsive Projects
-page, an empty About page, session login, and backend-driven project pages.
+page, an About-page construction notice, session login, and backend-driven
+project pages.
 
 ## Start development
 
@@ -39,7 +40,7 @@ The frontend container runs `npm install` on startup so its persistent
 
 Implemented Vue routes:
 
-- `/` — empty About page with a non-persistent `ru/en` UI switch;
+- `/` — About-page construction notice with a non-persistent `ru/en` UI switch;
 - `/projects/` — responsive project card grid loaded from the REST API;
 - `/login/` — session login form for guests and administrators.
 

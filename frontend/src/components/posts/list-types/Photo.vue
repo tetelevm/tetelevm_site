@@ -15,8 +15,8 @@ const items = computed(() =>
     key: post.id ?? post.number,
     link: post.link,
     image: post.mainFile?.link,
-    label: "",
-    alt: post.name || post.text || `Фотография ${post.number}`,
+    label: post.label,
+    alt: post.label,
   })),
 )
 </script>

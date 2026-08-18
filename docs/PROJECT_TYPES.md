@@ -25,6 +25,10 @@ combined independently.
   optional date.
 - Type-specific list components decide which post data becomes the image,
   label, rating, and date; the shared components only render those values.
+- Every list item displays the shared post label. It prefers a trimmed `name`,
+  then a whitespace-normalized `text` excerpt of at most 120 characters, then
+  unique-file counts such as `📷 3 · 🎬 1 · 🎵 1 · 📎 2`; a completely empty
+  post uses `🌀`.
 - Detail types that show a name and overall rating share `RatedPostHeader`.
 - Detail pages compose the shared `PostLayout`, `PostTitle`, `PlainPostText`,
   `PostImage`, media, and connection blocks where applicable. Type components
@@ -38,7 +42,8 @@ List:
 
 - three square cards per row on wide screens;
 - each photograph is center-cropped;
-- `text` appears below it in the format `🚪 Country, City`;
+- the shared label appears below it; for the usual nameless door post this is
+  its `text` in the format `🚪 Country, City`;
 - the grid decreases to two columns and then one on mobile devices.
 
 Post:
@@ -53,7 +58,7 @@ List:
 
 - three square previews per row;
 - images are center-cropped;
-- captions and names are not displayed;
+- the shared label is displayed below the image;
 - each card opens an individual post.
 
 Post:
@@ -69,7 +74,7 @@ List:
 - the regular 600-pixel preview of the main photograph appears square-cropped
   in the shared card layout rather than using its square thumbnail;
 - three cards appear per row on wide screens, decreasing responsively;
-- name and text are not displayed.
+- the shared label is displayed below the image.
 
 Post:
 
@@ -86,8 +91,8 @@ The project contains write-ups about watched anime.
 List:
 
 - three square cards per row;
-- `name` appears below the main image on the left, with the overall rating on
-  the right;
+- the shared label appears below the main image on the left, with the overall
+  rating on the right;
 - the overall rating is provided by the dedicated list field `rating`, extracted
   from `extra.rating`;
 - the grid decreases to two columns and then one on mobile devices.
@@ -125,7 +130,7 @@ The project contains descriptions and ratings of abandoned buildings.
 List:
 
 - it uses the same card grid as Anime;
-- each card contains a square main image, `name`, and overall `rating`.
+- each card contains a square main image, the shared label, and overall `rating`.
 
 Post:
 
@@ -167,7 +172,7 @@ List:
 - an image `mainFile` fills that slot with its square thumbnail;
 - the slot remains empty for a missing or non-image `mainFile`, keeping all
   names aligned; there is no media-slot divider when no image is present;
-- `name` appears after the media slot;
+- the shared label appears after the media slot;
 - the optional model field `date` appears on the right.
 
 Post:
@@ -183,7 +188,8 @@ Post:
 The list is identical to `text` and uses the shared `PostRowList` component:
 
 - each item is a full-width row with a fixed 100-pixel thumbnail slot;
-- `name` follows the slot and the optional `date` appears on the right;
+- the shared label follows the slot and the optional `date` appears on the
+  right;
 - the thumbnail slot remains empty when there is no image `mainFile`.
 
 Post:
@@ -201,7 +207,8 @@ The list is identical to `text` and `text_md` and uses `PostRowList`:
 
 - each item is a full-width row with a fixed 100-pixel thumbnail slot;
 - an image `mainFile` appears in that slot;
-- `name` follows the thumbnail and optional `date` appears on the right.
+- the shared label follows the thumbnail and optional `date` appears on the
+  right.
 
 Post:
 
@@ -221,10 +228,7 @@ List:
 - posts use the same full-width row structure as the text lists;
 - the first available photo from `mainFile` or ordered additional files appears
   in the fixed 100-pixel thumbnail slot;
-- the label uses `name` when present, otherwise a 120-character `text` excerpt;
-- when both are empty, the label summarizes files as counts such as
-  `📷 3 · 🎬 1 · 🎵 1 · 📎 2`;
-- a completely empty post uses `🌀`;
+- the row uses the shared post label;
 - optional `date` appears on the right.
 
 Post:

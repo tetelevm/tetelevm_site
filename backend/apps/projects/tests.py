@@ -54,6 +54,109 @@ class ProjectModelTests(TestCase):
             )
 
 
+class PostDisplayLabelTests(TestCase):
+    def setUp(self) -> None:
+        self.cover = File.objects.create(content="cover.jpg")
+        self.project = Project.objects.create(
+            name="Project",
+            link="project",
+            cover=self.cover,
+        )
+
+    def test_display_label_prefers_name_then_text(self) -> None:
+        post = Post.objects.create(
+            project=self.project,
+            number=1,
+            name="  A post name  ",
+            text="Ignored text",
+        )
+
+        self.assertEqual(post.display_label, "A post name")
+
+        post.name = ""
+        post.text = "  A text\nexcerpt  "
+        self.assertEqual(post.display_label, "A text excerpt")
+
+    def test_display_label_truncates_long_text(self) -> None:
+        post = Post.objects.create(
+            project=self.project,
+            number=1,
+            text="word " * 40,
+        )
+
+        self.assertEqual(len(post.display_label), 120)
+        self.assertTrue(post.display_label.endswith("..."))
+
+    def test_annotated_file_labels_do_not_make_n_plus_one_queries(self) -> None:
+        photo = File.objects.create(
+            original_name="photo.jpg",
+            file_type=FileType.PHOTO,
+            content="content/photo.jpg",
+        )
+        audio = File.objects.create(
+            original_name="audio.mp3",
+            file_type=FileType.AUDIO,
+            content="content/audio.mp3",
+        )
+        post_with_files = Post.objects.create(
+            project=self.project,
+            number=1,
+            main_file=photo,
+        )
+        PostFile.objects.create(post=post_with_files, file=photo, order=0)
+        PostFile.objects.create(post=post_with_files, file=audio, order=1)
+        Post.objects.create(project=self.project, number=2)
+
+        with self.assertNumQueries(1):
+            labels = [
+                post.display_label
+                for post in Post.objects.with_display_file_counts().order_by(
+                    "number"
+                )
+            ]
+
+        self.assertEqual(labels, ["📷 1 · 🎵 1", "🌀"])
+
+    def test_string_representation_uses_display_label(self) -> None:
+        post = Post.objects.create(
+            project=self.project,
+            number=7,
+            text="A text-only post",
+        )
+
+        self.assertEqual(str(post), "Project: #7 — A text-only post")
+
+
+class PostAdminTests(TestCase):
+    def setUp(self) -> None:
+        cover = File.objects.create(content="cover.jpg")
+        project = Project.objects.create(
+            name="Project",
+            link="project",
+            cover=cover,
+        )
+        post = Post.objects.create(project=project, number=1)
+        photo = File.objects.create(
+            original_name="photo.jpg",
+            file_type=FileType.PHOTO,
+            content="content/photo.jpg",
+        )
+        PostFile.objects.create(post=post, file=photo, order=0)
+        user_model = get_user_model()
+        self.admin = user_model.objects.create_superuser(
+            "admin",
+            password="admin",
+        )
+
+    def test_post_changelist_uses_display_label(self) -> None:
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("admin:projects_post_changelist"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "📷 1")
+
+
 class ProjectApiTests(APITestCase):
     def setUp(self) -> None:
         self.cover = File.objects.create(content="cover.jpg")
@@ -110,6 +213,7 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["postListType"], PostListType.TRAVEL)
         self.assertEqual(response.data["posts"][0]["rating"], 8)
+        self.assertEqual(response.data["posts"][0]["label"], "Public post")
         self.assertEqual(response.data["posts"][0]["date"], "2026-08-17")
         self.assertNotIn("extra", response.data["posts"][0])
         self.assertNotIn("files", response.data["posts"][0])
@@ -175,6 +279,26 @@ class ProjectApiTests(APITestCase):
         )
 
         self.assertEqual(response.data["posts"][0]["label"], "A text excerpt")
+
+    def test_every_post_list_type_uses_shared_label(self) -> None:
+        self.public_post.name = ""
+        self.public_post.text = "  A shared\nlabel  "
+        self.public_post.save(update_fields=("name", "text"))
+
+        for post_list_type in PostListType:
+            with self.subTest(post_list_type=post_list_type):
+                self.public_project.post_list_type = post_list_type
+                self.public_project.save(update_fields=("post_list_type",))
+
+                response = self.client.get(
+                    reverse(
+                        "projects:project-posts",
+                        kwargs={"project_code": "public"},
+                    )
+                )
+
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.data["posts"][0]["label"], "A shared label")
 
     def test_general_post_list_summarizes_files_and_uses_first_photo(self) -> None:
         self.public_project.post_list_type = PostListType.POST

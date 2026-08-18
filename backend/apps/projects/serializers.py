@@ -115,6 +115,7 @@ class PostSerializer(serializers.ModelSerializer):
 
 class PostListSerializer(serializers.ModelSerializer):
     link = serializers.CharField(read_only=True)
+    label = serializers.CharField(source="display_label", read_only=True)
     mainFile = FileListSerializer(source="main_file", read_only=True)
     rating = serializers.JSONField(read_only=True, allow_null=True)
 
@@ -124,8 +125,7 @@ class PostListSerializer(serializers.ModelSerializer):
             "id",
             "number",
             "link",
-            "name",
-            "text",
+            "label",
             "mainFile",
             "rating",
             "date",
@@ -145,41 +145,12 @@ def post_summary_files(obj: Post) -> list[File]:
 
 class GeneralPostListSerializer(serializers.ModelSerializer):
     link = serializers.CharField(read_only=True)
-    label = serializers.SerializerMethodField()
+    label = serializers.CharField(source="display_label", read_only=True)
     thumbnail = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = ("id", "number", "link", "label", "thumbnail", "date")
-
-    def get_label(self, obj: Post) -> str:
-        if obj.name.strip():
-            return obj.name.strip()
-
-        excerpt = " ".join(obj.text.split())
-        if excerpt:
-            return excerpt if len(excerpt) <= 120 else f"{excerpt[:117].rstrip()}..."
-
-        counts = {
-            FileType.PHOTO: 0,
-            FileType.VIDEO: 0,
-            FileType.AUDIO: 0,
-            FileType.OTHER: 0,
-        }
-        for file in post_summary_files(obj):
-            counts[file.file_type] += 1
-
-        parts = [
-            f"{emoji} {counts[file_type]}"
-            for file_type, emoji in (
-                (FileType.PHOTO, "📷"),
-                (FileType.VIDEO, "🎬"),
-                (FileType.AUDIO, "🎵"),
-                (FileType.OTHER, "📎"),
-            )
-            if counts[file_type]
-        ]
-        return " · ".join(parts) or "🌀"
 
     def get_thumbnail(self, obj: Post) -> str | None:
         return next(

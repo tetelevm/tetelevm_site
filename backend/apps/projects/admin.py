@@ -5,6 +5,9 @@ from typing import Any
 
 from django import forms
 from django.contrib import admin
+from django.db.models import QuerySet
+from django.http import HttpRequest
+from django.utils.translation import gettext_lazy as _
 
 from .models import Post, PostFile, PostType, Project, Tag
 
@@ -89,12 +92,24 @@ class PostFileInline(admin.TabularInline):
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     form = PostAdminForm
-    list_display = ("number", "name", "project")
+    list_display = ("number", "display_label", "project")
     list_filter = ("project",)
     search_fields = ("name", "text")
     ordering = ("-id",)
     autocomplete_fields = ("main_file", "related_post", "tags")
     inlines = (PostFileInline,)
+
+    @admin.display(description=_("Name"), ordering="name")
+    def display_label(self, obj: Post) -> str:
+        return obj.display_label
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Post]:
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("project", "main_file")
+            .with_display_file_counts()
+        )
 
     class Media:
         js = ("projects/admin/post_extra.js",)

@@ -15,9 +15,9 @@ const items = computed(() =>
     key: post.id ?? post.number,
     link: post.link,
     image: post.mainFile?.mediaType === "photo" ? post.mainFile.link : "",
-    label: post.name,
+    label: post.label,
     date: post.date,
-    alt: post.name,
+    alt: post.label,
   })),
 )
 </script>
