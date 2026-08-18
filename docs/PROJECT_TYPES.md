@@ -98,8 +98,8 @@ Post:
 - selecting a screenshot opens its original in a full-screen lightbox;
 - the main `text` follows;
 - the bottom row contains the Russian label “стоит смотреть:” (“worth
-  watching:”) followed by the italicized `extra.result`; the label and result
-  use the same font size.
+  watching:”) in slightly smaller uppercase text, followed by the italicized
+  `extra.result`.
 
 Expected `extra` structure:
 
