@@ -54,7 +54,9 @@ made editable when there is a practical need.
 Until the presentation content is ready, the page shows a short localized
 notice that it is still under construction.
 
-The About page provides a compact `ru/en` language switch in its header.
+The About page provides a compact `ru/en` language switch in its header. It
+switches the construction notice, main navigation labels, and footer between
+Russian and English for the current page visit; the selection is not persisted.
 
 ### Content
 

@@ -12,7 +12,7 @@ const constructionMessage = {
 </script>
 
 <template>
-  <MainLayout active-page="home">
+  <MainLayout active-page="home" :language="language">
     <template #header-action>
       <LanguageSwitch v-model="language" />
     </template>

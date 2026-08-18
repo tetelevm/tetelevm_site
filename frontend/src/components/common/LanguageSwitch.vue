@@ -10,7 +10,10 @@ const emit = defineEmits(["update:modelValue"])
 </script>
 
 <template>
-  <div class="language-switch" aria-label="Выбор языка">
+  <div
+    class="language-switch"
+    :aria-label="modelValue === 'en' ? 'Language selection' : 'Выбор языка'"
+  >
     <button
       class="language-switch__option"
       :class="{ 'language-switch__option--active': modelValue === 'ru' }"

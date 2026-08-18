@@ -353,8 +353,10 @@ card presentation can distinguish them.
 
 The login form uses Django session authentication with CSRF protection and
 redirects successful logins to the project grid. The header action reflects the
-current session and provides logout. The language switch stores its selection
-only in component state and does not translate or persist content.
+current session and provides logout. The About-page language switch stores its
+selection only in component state. It translates that page's construction
+notice, navigation labels, and footer, but does not persist the selection or
+translate project content.
 
 Global frontend styling uses a dark editorial palette defined through CSS
 custom properties, a compact pill-based header, serif display headings, and a
