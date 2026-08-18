@@ -1,14 +1,27 @@
 <script setup>
-import TextPostList from "../TextPostList.vue"
+import { computed } from "vue"
 
-defineProps({
+import PostRowList from "../PostRowList.vue"
+
+const props = defineProps({
   posts: {
     type: Array,
     default: () => [],
   },
 })
+
+const items = computed(() =>
+  props.posts.map((post) => ({
+    key: post.id ?? post.number,
+    link: post.link,
+    image: post.mainFile?.mediaType === "photo" ? post.mainFile.link : "",
+    label: post.name,
+    date: post.date,
+    alt: post.name,
+  })),
+)
 </script>
 
 <template>
-  <TextPostList :posts="posts" />
+  <PostRowList :items="items" />
 </template>

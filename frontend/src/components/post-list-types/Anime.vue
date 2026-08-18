@@ -1,14 +1,27 @@
 <script setup>
-import RatedPostGrid from "../RatedPostGrid.vue"
+import { computed } from "vue"
 
-defineProps({
+import PostCardList from "../PostCardList.vue"
+
+const props = defineProps({
   posts: {
     type: Array,
     default: () => [],
   },
 })
+
+const items = computed(() =>
+  props.posts.map((post) => ({
+    key: post.id ?? post.number,
+    link: post.link,
+    image: post.mainFile?.link,
+    label: post.name,
+    rating: post.rating,
+    alt: post.name,
+  })),
+)
 </script>
 
 <template>
-  <RatedPostGrid :posts="posts" />
+  <PostCardList :items="items" />
 </template>

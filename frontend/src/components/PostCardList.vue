@@ -1,6 +1,6 @@
 <script setup>
 defineProps({
-  posts: {
+  items: {
     type: Array,
     default: () => [],
   },
@@ -8,29 +8,30 @@ defineProps({
 </script>
 
 <template>
-  <div class="rated-post-grid">
+  <div class="post-card-list">
     <RouterLink
-      v-for="post in posts"
-      :key="post.id ?? post.number"
-      class="rated-post-card"
-      :to="post.link"
+      v-for="item in items"
+      :key="item.key"
+      class="post-card"
+      :to="item.link"
+      :aria-label="item.alt || item.label"
     >
-      <span class="rated-post-card__image">
+      <span class="post-card__image">
         <img
-          v-if="post.mainFile?.link"
-          :src="post.mainFile.link"
-          :alt="post.name"
+          v-if="item.image"
+          :src="item.image"
+          :alt="item.alt || item.label"
           loading="lazy"
         />
       </span>
-      <span class="rated-post-card__caption">
-        <span class="rated-post-card__name">{{ post.name }}</span>
+      <span v-if="item.label" class="post-card__caption">
+        <span class="post-card__label">{{ item.label }}</span>
         <span
-          v-if="post.rating !== null && post.rating !== undefined"
-          class="rated-post-card__rating"
+          v-if="item.rating !== null && item.rating !== undefined"
+          class="post-card__rating"
           aria-label="Оценка"
         >
-          {{ post.rating }}
+          {{ item.rating }}
         </span>
       </span>
     </RouterLink>
@@ -38,19 +39,19 @@ defineProps({
 </template>
 
 <style scoped>
-.rated-post-grid {
+.post-card-list {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.75rem 1rem;
 }
 
-.rated-post-card {
+.post-card {
   min-width: 0;
   color: var(--color-text);
   text-decoration: none;
 }
 
-.rated-post-card__image {
+.post-card__image {
   aspect-ratio: 1;
   display: block;
   overflow: hidden;
@@ -63,7 +64,7 @@ defineProps({
     transform 180ms ease;
 }
 
-.rated-post-card__image img {
+.post-card__image img {
   width: 100%;
   height: 100%;
   display: block;
@@ -71,7 +72,7 @@ defineProps({
   object-position: center;
 }
 
-.rated-post-card__caption {
+.post-card__caption {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -79,7 +80,7 @@ defineProps({
   margin-top: 0.55rem;
 }
 
-.rated-post-card__name {
+.post-card__label {
   min-width: 0;
   overflow-wrap: anywhere;
   color: var(--color-muted);
@@ -87,7 +88,7 @@ defineProps({
   line-height: 1.35;
 }
 
-.rated-post-card__rating {
+.post-card__rating {
   flex: 0 0 auto;
   color: var(--color-accent);
   font-size: 0.82rem;
@@ -95,38 +96,38 @@ defineProps({
   line-height: 1.35;
 }
 
-.rated-post-card:hover .rated-post-card__image,
-.rated-post-card:focus-visible .rated-post-card__image {
+.post-card:hover .post-card__image,
+.post-card:focus-visible .post-card__image {
   border-color: rgba(215, 240, 111, 0.65);
   box-shadow: var(--shadow-card);
   transform: translateY(-0.2rem);
 }
 
-.rated-post-card:hover .rated-post-card__name,
-.rated-post-card:focus-visible .rated-post-card__name,
-.rated-post-card:hover .rated-post-card__rating,
-.rated-post-card:focus-visible .rated-post-card__rating {
+.post-card:hover .post-card__label,
+.post-card:focus-visible .post-card__label,
+.post-card:hover .post-card__rating,
+.post-card:focus-visible .post-card__rating {
   color: var(--color-text);
 }
 
-.rated-post-card:focus-visible {
+.post-card:focus-visible {
   outline: none;
 }
 
 @media (max-width: 640px) {
-  .rated-post-grid {
+  .post-card-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 360px) {
-  .rated-post-grid {
+  .post-card-list {
     grid-template-columns: 1fr;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rated-post-card__image {
+  .post-card__image {
     transition: none;
   }
 }
