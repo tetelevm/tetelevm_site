@@ -1,28 +1,48 @@
 <script setup>
-defineProps({
+const props = defineProps({
   activePage: {
     type: String,
     default: "",
   },
+  language: {
+    type: String,
+    default: "ru",
+  },
 })
+
+const navigationText = {
+  ru: {
+    label: "Основная навигация",
+    home: "главная",
+    projects: "проекты",
+  },
+  en: {
+    label: "Main navigation",
+    home: "home",
+    projects: "projects",
+  },
+}
 </script>
 
 <template>
   <header class="site-header">
-    <nav class="site-header__nav" aria-label="Основная навигация">
+    <nav
+      class="site-header__nav"
+      :aria-label="navigationText[props.language].label"
+    >
       <RouterLink
         class="site-header__link"
         :class="{ 'site-header__link--active': activePage === 'home' }"
         to="/"
       >
-        главная
+        {{ navigationText[props.language].home }}
       </RouterLink>
       <RouterLink
         class="site-header__link"
         :class="{ 'site-header__link--active': activePage === 'projects' }"
         to="/projects/"
       >
-        проекты
+        {{ navigationText[props.language].projects }}
       </RouterLink>
     </nav>
 

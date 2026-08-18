@@ -8,12 +8,16 @@ defineProps({
     type: String,
     default: "",
   },
+  language: {
+    type: String,
+    default: "ru",
+  },
 })
 </script>
 
 <template>
-  <div class="main-layout">
-    <AppHeader :active-page="activePage">
+  <div class="main-layout" :lang="language">
+    <AppHeader :active-page="activePage" :language="language">
       <template #action>
         <div class="main-layout__header-action">
           <slot name="header-action" />
@@ -30,7 +34,7 @@ defineProps({
       <slot />
     </main>
 
-    <AppFooter />
+    <AppFooter :language="language" />
   </div>
 </template>
 

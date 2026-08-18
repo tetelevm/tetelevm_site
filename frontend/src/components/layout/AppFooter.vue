@@ -1,10 +1,22 @@
 <script setup>
+const props = defineProps({
+  language: {
+    type: String,
+    default: "ru",
+  },
+})
+
 const currentYear = new Date().getFullYear()
+
+const footerText = {
+  ru: `Это футер. А сейчас ${currentYear} год.`,
+  en: `This is the footer. The year is ${currentYear}.`,
+}
 </script>
 
 <template>
   <footer class="app-footer">
-    <p>Это футер. А сейчас {{ currentYear }} год.</p>
+    <p>{{ footerText[props.language] }}</p>
   </footer>
 </template>
 
