@@ -1,3 +1,4 @@
+import json
 from datetime import date
 
 from django.contrib.auth import get_user_model
@@ -8,6 +9,7 @@ from rest_framework.test import APITestCase
 
 from apps.core.models import File, FileType
 
+from .admin import PostAdminForm
 from .models import Post, PostFile, PostListType, PostType, Project
 
 
@@ -129,13 +131,13 @@ class PostDisplayLabelTests(TestCase):
 
 class PostAdminTests(TestCase):
     def setUp(self) -> None:
-        cover = File.objects.create(content="cover.jpg")
-        project = Project.objects.create(
+        self.cover = File.objects.create(content="cover.jpg")
+        self.project = Project.objects.create(
             name="Project",
             link="project",
-            cover=cover,
+            cover=self.cover,
         )
-        post = Post.objects.create(project=project, number=1)
+        post = Post.objects.create(project=self.project, number=1)
         photo = File.objects.create(
             original_name="photo.jpg",
             file_type=FileType.PHOTO,
@@ -155,6 +157,24 @@ class PostAdminTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "📷 1")
+
+    def test_abandoned_extra_template_includes_location(self) -> None:
+        self.project.post_type = PostType.ABANDONED
+        self.project.save(update_fields=("post_type",))
+
+        form = PostAdminForm()
+        templates = json.loads(
+            form.fields["extra"].widget.attrs["data-project-extra-templates"]
+        )
+
+        self.assertEqual(
+            templates[str(self.project.id)]["location"],
+            {
+                "latitude": None,
+                "longitude": None,
+                "link": "",
+            },
+        )
 
 
 class ProjectApiTests(APITestCase):

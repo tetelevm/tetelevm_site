@@ -20,6 +20,37 @@ const criteria = computed(() => [
   { label: "жизненность", value: props.post.extra?.liveliness },
 ])
 
+function coordinateText(value) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value)
+  }
+  return typeof value === "string" ? value.trim() : ""
+}
+
+const locationLabel = computed(() => {
+  const latitude = coordinateText(props.post.extra?.location?.latitude)
+  const longitude = coordinateText(props.post.extra?.location?.longitude)
+  return latitude && longitude ? `${latitude}, ${longitude}` : ""
+})
+
+const locationHref = computed(() => {
+  const value = props.post.extra?.location?.link
+  if (typeof value !== "string" || !value.trim()) {
+    return ""
+  }
+
+  const candidate = value.trim()
+  const normalized = /^[a-z][a-z\d+.-]*:/i.test(candidate)
+    ? candidate
+    : `https://${candidate}`
+  try {
+    const url = new URL(normalized)
+    return ["http:", "https:"].includes(url.protocol) ? url.href : ""
+  } catch {
+    return ""
+  }
+})
+
 function normalizedRating(value) {
   const rating = Number.parseInt(value, 10)
   return Number.isFinite(rating) ? Math.min(5, Math.max(1, rating)) : null
@@ -33,7 +64,18 @@ function ratingHouses(value) {
 
 <template>
   <PostLayout>
-    <RatedPostHeader :title="post.name" :rating="post.extra?.rating" />
+    <div class="abandoned-post__heading">
+      <RatedPostHeader :title="post.name" :rating="post.extra?.rating" />
+      <a
+        v-if="locationLabel && locationHref"
+        class="abandoned-post__location"
+        :href="locationHref"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {{ locationLabel }}
+      </a>
+    </div>
 
     <PlainPostText :text="post.text" />
 
@@ -55,6 +97,28 @@ function ratingHouses(value) {
 </template>
 
 <style scoped>
+.abandoned-post__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.abandoned-post__location {
+  width: fit-content;
+  color: var(--color-accent);
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+  text-decoration-color: rgba(215, 240, 111, 0.48);
+  text-underline-offset: 0.22em;
+}
+
+.abandoned-post__location:hover,
+.abandoned-post__location:focus-visible {
+  color: var(--color-text);
+  text-decoration-color: var(--color-accent);
+  outline: none;
+}
+
 .abandoned-post__criteria {
   display: flex;
   flex-direction: column;
