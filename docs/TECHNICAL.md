@@ -86,6 +86,8 @@ Relations to potentially large collections use Django Admin's built-in AJAX
 autocomplete widgets. They keep the default 20-result pages and load further
 results on scroll. File choices are searchable by original upload name and ordered
 by newest upload first; post choices are ordered by descending database ID.
+Post choices and the post changelist use the same derived display label as the
+public lists.
 
 Expected read capabilities include:
 
@@ -161,6 +163,13 @@ position and is unique within that project.
 Additional post files are connected through `PostFile`, which stores their
 order. Avoid a generic page builder or universal CMS schema without a
 demonstrated need.
+
+`Post.display_label` is the single source for list and administrative labels. It
+prefers a trimmed name, then a whitespace-normalized 120-character text excerpt,
+then counts of unique files by media type, and finally `🌀`. A custom
+`PostQuerySet.with_display_file_counts()` method annotates the four file counts.
+List API and admin querysets opt into it explicitly, avoiding per-post queries
+without adding aggregation overhead to unrelated post queries.
 
 Project status describes its lifecycle and does not control authorization.
 Visibility for anonymous and authenticated visitors continues to depend only
@@ -248,7 +257,7 @@ HTML is disabled; Markdown-generated markup is styled by the dedicated
 The current router implements:
 
 ```text
-/                Empty About page
+/                About-page construction notice
 /projects/        Projects loaded from the REST API
 /projects/:project/ Project posts loaded from the REST API
 /projects/:project/:postNumber/ Individual post loaded from the REST API
@@ -318,12 +327,13 @@ uses an explicit mapping from the project's `postListType` code to a component i
 logic and do not inspect API post shapes. List entries contain only the fields
 required by list components;
 they do not expose `extra`, additional files, tags, or detail-page metadata.
-List `mainFile` data includes the stored `mediaType` so presentation types can
-distinguish photos, videos, audio, and other files without filename parsing.
+Every list response includes the model-derived `label`. List `mainFile` data
+includes the stored `mediaType` so presentation types can distinguish photos,
+videos, audio, and other files without filename parsing.
 Post dates come from the optional model field rather than `extra`. PostgreSQL
 extracts only `rating` from `extra` for its dedicated list field. General post
-lists use a dedicated summary serializer that returns a thumbnail and a label
-derived from name, text excerpt, or file-type counts. Project posts use
+lists use a dedicated summary serializer that also selects the first available
+photo thumbnail. Project posts use
 page-number pagination with 50 posts per page;
 the response includes the current page, page size, total pages, and total posts.
 The frontend keeps the selected page in the URL query string and renders numeric

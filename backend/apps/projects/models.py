@@ -3,7 +3,7 @@ from __future__ import annotations
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.models import File
+from apps.core.models import File, FileType
 
 
 class PostType(models.TextChoices):
@@ -28,6 +28,40 @@ class PostListType(models.TextChoices):
     ANIME = "anime", _("Anime")
     PLASTICINE = "plasticine", _("Plasticine")
     ABANDONED = "abandoned", _("Abandoned")
+
+
+DISPLAY_FILE_TYPES: tuple[tuple[str, str, str], ...] = (
+    (FileType.PHOTO, "📷", "display_photo_count"),
+    (FileType.VIDEO, "🎬", "display_video_count"),
+    (FileType.AUDIO, "🎵", "display_audio_count"),
+    (FileType.OTHER, "📎", "display_other_count"),
+)
+
+
+def display_file_count(file_type: str) -> models.Expression:
+    additional_files = models.Q(post_files__file__file_type=file_type) & (
+        models.Q(main_file_id__isnull=True)
+        | ~models.Q(post_files__file_id=models.F("main_file_id"))
+    )
+    return models.Count(
+        "post_files__file_id",
+        filter=additional_files,
+        distinct=True,
+    ) + models.Case(
+        models.When(main_file__file_type=file_type, then=models.Value(1)),
+        default=models.Value(0),
+        output_field=models.IntegerField(),
+    )
+
+
+class PostQuerySet(models.QuerySet["Post"]):
+    def with_display_file_counts(self) -> PostQuerySet:
+        return self.annotate(
+            **{
+                attribute: display_file_count(file_type)
+                for file_type, _emoji, attribute in DISPLAY_FILE_TYPES
+            }
+        )
 
 
 class Project(models.Model):
@@ -88,6 +122,8 @@ class Tag(models.Model):
 
 
 class Post(models.Model):
+    objects = PostQuerySet.as_manager()
+
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
@@ -144,9 +180,52 @@ class Post(models.Model):
     def link(self) -> str:
         return f"/projects/{self.project.link}/{self.number}/"
 
+    @property
+    def display_label(self) -> str:
+        name = self.name.strip()
+        if name:
+            return name
+
+        excerpt = " ".join(self.text.split())
+        if excerpt:
+            return (
+                excerpt
+                if len(excerpt) <= 120
+                else f"{excerpt[:117].rstrip()}..."
+            )
+
+        counts = self._display_file_counts()
+        parts = [
+            f"{emoji} {counts[file_type]}"
+            for file_type, emoji, _attribute in DISPLAY_FILE_TYPES
+            if counts[file_type]
+        ]
+        return " · ".join(parts) or "🌀"
+
+    def _display_file_counts(self) -> dict[str, int]:
+        attributes = [attribute for _type, _emoji, attribute in DISPLAY_FILE_TYPES]
+        if not all(hasattr(self, attribute) for attribute in attributes):
+            if self.pk is None:
+                return {
+                    file_type: 0
+                    for file_type, _emoji, _attribute in DISPLAY_FILE_TYPES
+                }
+
+            annotated_counts = (
+                type(self).objects.with_display_file_counts()
+                .values(*attributes)
+                .get(pk=self.pk)
+            )
+            for attribute, value in annotated_counts.items():
+                setattr(self, attribute, value)
+
+        return {
+            file_type: int(getattr(self, attribute))
+            for file_type, _emoji, attribute in DISPLAY_FILE_TYPES
+        }
+
     def __str__(self) -> str:
-        label = self.name or self.number
-        return f"{self.project}: {label}"
+        return f"{self.project}: #{self.number} — {self.display_label}"
 
 
 class PostFile(models.Model):

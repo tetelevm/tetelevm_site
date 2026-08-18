@@ -51,6 +51,9 @@ contacts, photographs, and other personal presentation blocks.
 Most of this page is expected to be relatively static. Individual parts may be
 made editable when there is a practical need.
 
+Until the presentation content is ready, the page shows a short localized
+notice that it is still under construction.
+
 The About page provides a compact `ru/en` language switch in its header.
 
 ### Content
@@ -93,6 +96,11 @@ A project determines:
 An item contains the actual material, such as text, images, video, or a
 combination of media. The supported project presentation types and their visual
 behavior are specified in `docs/PROJECT_TYPES.md`.
+
+Every post has a shared label for list and administrative displays. It uses the
+post name when available, otherwise the beginning of its text, otherwise a
+summary of attached file types. A completely empty post uses a neutral fallback
+symbol.
 
 ## Visibility
 
