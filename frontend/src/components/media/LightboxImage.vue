@@ -23,7 +23,14 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  loading: {
+    type: String,
+    default: "lazy",
+    validator: (value) => ["eager", "lazy"].includes(value),
+  },
 })
+
+const emit = defineEmits(["previewLoad"])
 
 const dialog = ref(null)
 const isOpen = ref(false)
@@ -52,6 +59,13 @@ function closeOnBackdrop(event) {
   }
 }
 
+function reportPreviewSize(event) {
+  emit("previewLoad", {
+    width: event.currentTarget.naturalWidth,
+    height: event.currentTarget.naturalHeight,
+  })
+}
+
 onBeforeUnmount(() => {
   document.body.style.overflow = previousBodyOverflow
 })
@@ -70,7 +84,8 @@ onBeforeUnmount(() => {
       :src="previewSrc"
       :alt="alt"
       :style="{ objectFit: previewFit }"
-      loading="lazy"
+      :loading="loading"
+      @load="reportPreviewSize"
     />
   </button>
 
