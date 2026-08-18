@@ -27,6 +27,9 @@ class FileModelTests(TestCase):
                     self.assertEqual(preview.size, (600, 400))
                 with Image.open(uploaded.thumbnail.path) as thumbnail:
                     self.assertEqual(thumbnail.size, (150, 150))
+                with Image.open(uploaded.content.path) as original:
+                    self.assertEqual(original.size, (1500, 1000))
+                    self.assertEqual(original.format, "JPEG")
 
                 self.assertEqual(uploaded.original_name, "photo.jpg")
                 self.assertEqual(uploaded.file_type, FileType.PHOTO)
@@ -42,6 +45,35 @@ class FileModelTests(TestCase):
                     uploaded.thumbnail.name,
                     f"thumbnail/{uploaded.id}.jpg",
                 )
+
+    def test_replacing_image_regenerates_all_image_versions(self) -> None:
+        first = BytesIO()
+        Image.new("RGB", (1200, 800), "red").save(first, format="JPEG")
+        replacement = BytesIO()
+        Image.new("RGB", (800, 1200), "blue").save(replacement, format="PNG")
+
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root, MEDIA_URL="/files/"):
+                uploaded = File.objects.create(
+                    content=SimpleUploadedFile("first.jpg", first.getvalue())
+                )
+                uploaded.content = SimpleUploadedFile(
+                    "replacement.png",
+                    replacement.getvalue(),
+                )
+                uploaded.save()
+
+                uploaded.refresh_from_db()
+                self.assertEqual(uploaded.original_name, "replacement.png")
+                self.assertEqual(uploaded.content.name, f"content/{uploaded.id}.jpg")
+                with Image.open(uploaded.content.path) as original:
+                    self.assertEqual(original.size, (800, 1200))
+                    red, green, blue = original.getpixel((0, 0))
+                    self.assertGreater(blue, red + green)
+                with Image.open(uploaded.preview.path) as preview:
+                    self.assertEqual(preview.size, (400, 600))
+                with Image.open(uploaded.thumbnail.path) as thumbnail:
+                    self.assertEqual(thumbnail.size, (150, 150))
 
     def test_thumbnail_upscales_small_images(self) -> None:
         source = BytesIO()

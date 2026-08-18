@@ -124,3 +124,4 @@ publishing platforms.
 The public interface must be usable and visually coherent on desktop and mobile
 devices. Detailed visual design and the presentation of individual project
 types will be defined separately as the corresponding content is designed.
+Every public page ends with a small footer showing the current year.

@@ -1,5 +1,6 @@
 <script setup>
 import AppHeader from "./AppHeader.vue"
+import AppFooter from "./AppFooter.vue"
 import HeaderAccessAction from "./HeaderAccessAction.vue"
 
 defineProps({
@@ -28,6 +29,8 @@ defineProps({
     <main class="main-layout__content">
       <slot />
     </main>
+
+    <AppFooter />
   </div>
 </template>
 
@@ -35,6 +38,8 @@ defineProps({
 .main-layout {
   position: relative;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   background:
     radial-gradient(circle at 12% -10%, rgba(215, 240, 111, 0.08), transparent 28rem),
@@ -66,6 +71,7 @@ defineProps({
   width: min(100% - 2rem, 800px);
   margin-inline: auto;
   padding-block: clamp(2rem, 5vw, 4.5rem) 6rem;
+  flex: 1;
 }
 
 .main-layout__subheader {
