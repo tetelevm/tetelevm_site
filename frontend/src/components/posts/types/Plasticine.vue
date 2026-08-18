@@ -1,18 +1,31 @@
 <script setup>
+import { computed } from "vue"
+
+import MediaCarousel from "../../media/MediaCarousel.vue"
 import PostImage from "../blocks/PostImage.vue"
 import PostLayout from "../blocks/PostLayout.vue"
 
-defineProps({
+const props = defineProps({
   post: {
     type: Object,
     required: true,
   },
 })
+
+const additionalPhotos = computed(() =>
+  (props.post.files ?? []).filter((file) => file.mediaType === "photo"),
+)
 </script>
 
 <template>
   <PostLayout spacing="compact" align="center">
-    <figure v-if="post.mainFile?.link" class="plasticine-post__figure plasticine-post__figure--main">
+    <figure
+      v-if="post.mainFile?.link"
+      class="plasticine-post__main"
+      :class="{
+        'plasticine-post__main--with-gallery': additionalPhotos.length,
+      }"
+    >
       <PostImage
         :src="post.mainFile.linkFull || post.mainFile.link"
         :full-src="post.mainFile.linkFull"
@@ -21,31 +34,26 @@ defineProps({
       />
     </figure>
 
-    <figure
-      v-for="(file, index) in post.files"
-      :key="file.id ?? index"
-      class="plasticine-post__figure"
-    >
-      <PostImage
-        v-if="file.link"
-        :src="file.linkFull || file.link"
-        :full-src="file.linkFull"
-        :alt="`${post.name || 'Пластилинка'} — дополнительное фото ${index + 1}`"
-        lightbox
-      />
-    </figure>
+    <MediaCarousel
+      class="plasticine-post__carousel"
+      :items="additionalPhotos"
+      label="Дополнительные фотографии"
+    />
   </PostLayout>
 </template>
 
 <style scoped>
-.plasticine-post__figure {
+.plasticine-post__main {
   width: 100%;
   margin: 0;
 }
 
-.plasticine-post__figure--main {
+.plasticine-post__main--with-gallery {
   padding-bottom: clamp(1rem, 2.5vw, 1.5rem);
   border-bottom: 1px solid var(--color-line);
 }
 
+.plasticine-post__carousel {
+  width: 100%;
+}
 </style>
