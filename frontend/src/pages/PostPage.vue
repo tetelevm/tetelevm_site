@@ -3,29 +3,14 @@ import { computed, ref, watch } from "vue"
 import { useRoute } from "vue-router"
 
 import { getPost } from "../api/projects.js"
-import MainLayout from "../components/MainLayout.vue"
-import ProjectHeaderAction from "../components/ProjectHeaderAction.vue"
-import AbandonedPost from "../components/post-types/Abandoned.vue"
-import DoorPost from "../components/post-types/Door.vue"
-import PhotoPost from "../components/post-types/Photo.vue"
-import PlasticinePost from "../components/post-types/Plasticine.vue"
-import Post from "../components/post-types/Post.vue"
-import AnimePost from "../components/post-types/Anime.vue"
-import TextPost from "../components/post-types/Text.vue"
-import TextMdPost from "../components/post-types/TextMd.vue"
-import TravelPost from "../components/post-types/Travel.vue"
-
-const POST_COMPONENTS = {
-  post: Post,
-  photo: PhotoPost,
-  travel: TravelPost,
-  text: TextPost,
-  text_md: TextMdPost,
-  door: DoorPost,
-  anime: AnimePost,
-  plasticine: PlasticinePost,
-  abandoned: AbandonedPost,
-}
+import PageStatus from "../components/common/PageStatus.vue"
+import PageSubheader from "../components/common/PageSubheader.vue"
+import MainLayout from "../components/layout/MainLayout.vue"
+import ProjectHeaderAction from "../components/projects/ProjectHeaderAction.vue"
+import {
+  DEFAULT_POST_COMPONENT,
+  POST_COMPONENTS,
+} from "../config/postTypes.js"
 
 const route = useRoute()
 const post = ref(null)
@@ -33,7 +18,7 @@ const isLoading = ref(false)
 const errorMessage = ref("")
 
 const postComponent = computed(
-  () => POST_COMPONENTS[post.value?.postType] ?? Post,
+  () => POST_COMPONENTS[post.value?.postType] ?? DEFAULT_POST_COMPONENT,
 )
 
 async function loadPost(projectCode, postNumber) {
@@ -67,45 +52,20 @@ watch(
     </template>
 
     <template #subheader>
-      <RouterLink
+      <PageSubheader
         v-if="post"
-        class="post-page__back"
-        :to="`/projects/${post.projectCode}/`"
-      >
-        ← к проекту
-      </RouterLink>
+        :back-to="`/projects/${post.projectCode}/`"
+        back-label="← к проекту"
+      />
     </template>
 
-    <p v-if="isLoading" class="post-page__status">Загрузка…</p>
-    <p v-else-if="errorMessage" class="post-page__status" role="alert">
-      {{ errorMessage }}
-    </p>
+    <PageStatus
+      v-if="isLoading || errorMessage"
+      :loading="isLoading"
+      :error="errorMessage"
+    />
     <template v-else-if="post">
       <component :is="postComponent" :post="post" />
     </template>
   </MainLayout>
 </template>
-
-<style scoped>
-.post-page__status {
-  margin: 0;
-  color: var(--color-muted);
-  text-align: center;
-}
-
-.post-page__back {
-  display: inline-block;
-  color: var(--color-muted);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-decoration: none;
-  text-transform: uppercase;
-}
-
-.post-page__back:hover,
-.post-page__back:focus-visible {
-  color: var(--color-accent);
-  outline: none;
-}
-</style>

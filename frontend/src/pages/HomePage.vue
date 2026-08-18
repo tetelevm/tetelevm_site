@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue"
-import LanguageSwitch from "../components/LanguageSwitch.vue"
-import MainLayout from "../components/MainLayout.vue"
+import LanguageSwitch from "../components/common/LanguageSwitch.vue"
+import MainLayout from "../components/layout/MainLayout.vue"
 
 const language = ref("ru")
 </script>

@@ -270,11 +270,37 @@ The shared frontend building blocks are:
   and rating;
 - `RatedPostHeader` for detail types whose title sits beside an overall rating.
 - `PostRowList` for presentation-only rows with a media slot, label, and date;
-- `DatedPostHeader` for text detail pages with an optional date;
+- `PostLayout` for the shared vertical composition and spacing of detail posts;
+- `PostTitle` for shared detail-title and optional subtitle typography;
+- `DatedPostHeader` and `RatedPostHeader` for compositions of `PostTitle` with
+  right-side metadata;
+- `PlainPostText` for consistently styled plain-text post bodies;
+- `PostImage` for natural-size or framed standalone images, optionally using
+  the shared lightbox;
 - `MarkdownContent` for styled, HTML-disabled Markdown rendering.
 - `PostTag` for non-interactive tag labels on post detail pages;
 - `RelatedPostLink` for links to a post's optional same-project relation.
+- `PostConnections` for composing the optional related-post link and tag list;
 - `PostFileList` for non-image and non-video file links using original names.
+- `PageStatus`, `PageSubheader`, and `PaginationNav` for shared page-level
+  feedback, secondary navigation, and pagination presentation.
+
+Frontend components are grouped by responsibility rather than kept in one flat
+directory:
+
+```text
+components/
+├── auth/                 concealed login/logout controls
+├── common/               reusable page-level UI
+├── layout/               global header, footer, and page shell
+├── media/                lightbox and media carousel
+├── posts/
+│   ├── blocks/           reusable detail-post building blocks
+│   ├── lists/            base card and row renderers
+│   ├── list-types/       type-specific list data adapters
+│   └── types/            detail-post compositions
+└── projects/             project cards, grid, and header action
+```
 
 Detail post responses expose `relatedPost` as an object containing its `number`
 and model-generated `link`. The frontend uses that link directly and does not
@@ -286,7 +312,7 @@ first.
 
 The project-posts page fetches a project and its posts from the REST API, then
 uses an explicit mapping from the project's `postListType` code to a component in
-`components/post-list-types`. Each list component receives the project's
+`components/posts/list-types`. Each list component receives the project's
 `posts` array and maps its type-specific fields into display data for either
 `PostCardList` or `PostRowList`. The two base components contain only rendering
 logic and do not inspect API post shapes. List entries contain only the fields
@@ -304,8 +330,12 @@ The frontend keeps the selected page in the URL query string and renders numeric
 page controls.
 
 The individual-post page selects its component through an explicit mapping from
-the API's `postType` value. Concrete list and post presentation behavior is
-specified in `docs/PROJECT_TYPES.md`.
+the API's `postType` value. Both list and detail mappings live together in
+`frontend/src/config/postTypes.js`, keeping the supported type registry explicit.
+Concrete type components compose shared presentation blocks while retaining
+their own data selection and type-specific markup. This is deliberately a set
+of static Vue compositions, not a runtime page-builder. Concrete list and post
+presentation behavior is specified in `docs/PROJECT_TYPES.md`.
 
 Projects come from the REST API. Anonymous users never receive private projects;
 authenticated guests receive them with `isPublic: false` so the existing locked
