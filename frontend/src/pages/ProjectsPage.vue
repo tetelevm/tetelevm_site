@@ -23,6 +23,7 @@ async function loadProjects() {
       image: project.cover,
       isPrivate: !project.isPublic,
       status: project.status,
+      postCount: project.postCount,
     }))
   } catch (error) {
     errorMessage.value = error.message || "Не удалось загрузить проекты"

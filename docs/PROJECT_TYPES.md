@@ -19,21 +19,30 @@ combined independently.
 - Media carousels preserve the active image or video's aspect ratio instead of
   cropping it into a fixed frame. Their height changes when visitors switch
   between portrait and landscape items.
+- Carousel navigation is bounded: the previous control is disabled on the
+  first item and the next control on the last. Carousels do not bind keyboard
+  arrow keys, leaving browser shortcuts such as `Alt+←` and `Alt+→` intact.
+- The active carousel image loads eagerly. During a slide change, the stage
+  retains the current item's aspect ratio until the next item has loaded, then
+  resizes once to the new ratio instead of collapsing in between.
 - Framed standalone images also preserve their natural aspect ratio; the frame
   follows the image instead of imposing a fixed shape.
 - Plain post body text uses the shared sans-serif face at `1.2rem`.
 - Headers that contain both a name and date place the name on the left and the
   date on the right.
-- Card lists use the shared `PostCardList`: every image is square-cropped and an
-  optional caption below it can contain a label and rating.
+- Card lists use the shared `PostCardList`: one outer frame encloses the
+  square-cropped image and an optional caption containing a label and rating,
+  so they read as a single card. Image-only cards omit the caption section.
 - Row lists use the shared `PostRowList` with a 100-pixel media slot, label, and
   optional date positioned near the bottom edge of the row.
 - Type-specific list components decide which post data becomes the image,
   label, rating, and date; the shared components only render those values.
-- Every list item displays the shared post label. It prefers a trimmed `name`,
+- Every list item receives the shared post label. It prefers a trimmed `name`,
   then a whitespace-normalized `text` excerpt of at most 120 characters, then
   unique-file counts such as `📷 3 · 🎬 1 · 🎵 1 · 📎 2`; a completely empty
-  post uses `🌀`.
+  post uses `🌀`. Type-specific lists may omit the visible caption when their
+  presentation is intentionally image-only, while still using the label for
+  accessible image text.
 - Detail types that show a name and overall rating share `RatedPostHeader`.
 - Detail pages compose the shared `PostLayout`, `PostTitle`, `PlainPostText`,
   `PostImage`, media, and connection blocks where applicable. Type components
@@ -63,7 +72,7 @@ List:
 
 - three square previews per row;
 - images are center-cropped;
-- the shared label is displayed below the image;
+- no caption is displayed; the card contains only the image;
 - each card opens an individual post.
 
 Post:
@@ -79,13 +88,14 @@ List:
 - the regular 600-pixel preview of the main photograph appears square-cropped
   in the shared card layout rather than using its square thumbnail;
 - three cards appear per row on wide screens, decreasing responsively;
-- the shared label is displayed below the image.
+- no caption is displayed; the card contains only the image.
 
 Post:
 
 - the full main photograph appears first;
 - a simple horizontal divider separates it from the additional photographs;
-- full additional photographs follow vertically in `PostFile.order`;
+- additional photographs appear in the shared adaptive carousel in
+  `PostFile.order`;
 - photographs open their originals in the shared full-screen lightbox;
 - name and text are not displayed.
 
@@ -141,6 +151,9 @@ Post:
 
 - a large `name` appears at the top, with a circular overall `extra.rating` on
   the right;
+- when `extra.location.latitude`, `longitude`, and `link` are all present, the
+  coordinates appear directly below the title as a working external link such
+  as `12.345, 34.567`;
 - the main `text` follows;
 - four individual rating rows appear below it;
 - values from 1 to 5 are represented by the corresponding number of `🏚` emoji;
@@ -149,14 +162,19 @@ Post:
 - a carousel of additional files in `PostFile.order` appears below the ratings.
 
 The carousel supports images and videos. Images open in a lightbox, while videos
-use the native player controls. It provides arrows, dots, a counter, and ←/→
-keyboard navigation.
+use the native player controls. It provides bounded on-screen arrows, dots, and
+a counter without keyboard-arrow navigation.
 
 Expected `extra` structure:
 
 ```json
 {
   "rating": null,
+  "location": {
+    "latitude": null,
+    "longitude": null,
+    "link": ""
+  },
   "uniqueness": null,
   "monumentality": null,
   "atmosphere": null,
@@ -256,8 +274,8 @@ Post:
 is selected, the admin prepopulates a template based on its `post_type`:
 
 - `anime` receives `original_title`, `rating`, and `result`;
-- `abandoned` receives `rating`, `uniqueness`, `monumentality`, `atmosphere`,
-  and `liveliness`;
+- `abandoned` receives `rating`, nested `location` coordinates and link,
+  `uniqueness`, `monumentality`, `atmosphere`, and `liveliness`;
 - all other types receive an empty `{}` object.
 
 An automatically inserted template may be replaced when the project changes.

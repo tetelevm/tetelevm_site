@@ -100,15 +100,22 @@ projects have no status label, paused projects show “на паузе” in a w
 yellow-orange color, and closed projects show “завершён” in red. Private
 projects may remain visually dimmed, but their public/private state is not
 written on the card.
+Each project card shows its total number of posts in a small circle at the
+bottom-left of its cover.
 
 An item contains the actual material, such as text, images, video, or a
 combination of media. The supported project presentation types and their visual
 behavior are specified in `docs/PROJECT_TYPES.md`.
 
-Every post has a shared label for list and administrative displays. It uses the
-post name when available, otherwise the beginning of its text, otherwise a
-summary of attached file types. A completely empty post uses a neutral fallback
-symbol.
+An abandoned-building post may include linked latitude and longitude. When all
+location values are present, the coordinates appear as an external map link
+directly below the post title and above its text.
+
+Every post has a shared label available to list and administrative displays. It
+uses the post name when available, otherwise the beginning of its text,
+otherwise a summary of attached file types. A completely empty post uses a
+neutral fallback symbol. Image-only project presentations may omit the visible
+label while retaining it as the image's accessible description.
 
 ## Visibility
 
@@ -143,4 +150,11 @@ types will be defined separately as the corresponding content is designed.
 Standalone media frames and carousels show images without cropping and follow
 their natural aspect ratio. Carousels resize when one gallery mixes portrait
 and landscape media.
+Carousel navigation stops at the first and last item and does not capture the
+keyboard arrow keys used by browser shortcuts. While the next image loads, the
+carousel retains the current frame's size and then resizes directly to the new
+aspect ratio, avoiding an intermediate collapse that disrupts page scrolling.
+Post card lists use a single framed surface for the image and, when present,
+its caption and rating. Image-only cards keep the same frame without an empty
+caption area.
 Every public page ends with a small footer showing the current year.

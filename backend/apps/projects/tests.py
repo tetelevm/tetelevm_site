@@ -222,6 +222,42 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual([project["link"] for project in response.data], ["public"])
 
+    def test_project_list_includes_post_count(self) -> None:
+        Post.objects.create(
+            project=self.public_project,
+            number=2,
+            name="Another public post",
+        )
+
+        response = self.client.get(reverse("projects:project-list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[0]["postCount"], 2)
+
+    def test_project_list_uses_explicit_order_then_id(self) -> None:
+        self.public_project.order = 2
+        self.public_project.save(update_fields=("order",))
+        Project.objects.create(
+            name="First",
+            link="first",
+            cover=self.cover,
+            order=1,
+        )
+        Project.objects.create(
+            name="Same order, later id",
+            link="same-order",
+            cover=self.cover,
+            order=2,
+        )
+
+        response = self.client.get(reverse("projects:project-list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [project["link"] for project in response.data],
+            ["first", "public", "same-order"],
+        )
+
     def test_anonymous_user_can_retrieve_public_project_posts(self) -> None:
         response = self.client.get(
             reverse(
@@ -231,6 +267,7 @@ class ProjectApiTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["postCount"], 1)
         self.assertEqual(response.data["postListType"], PostListType.TRAVEL)
         self.assertEqual(response.data["posts"][0]["rating"], 8)
         self.assertEqual(response.data["posts"][0]["label"], "Public post")

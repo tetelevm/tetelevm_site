@@ -24,6 +24,10 @@ defineProps({
     type: String,
     default: "open",
   },
+  postCount: {
+    type: Number,
+    default: 0,
+  },
 })
 
 const statusBadges = {
@@ -43,8 +47,8 @@ const statusBadges = {
     class="project-card"
     :to="href"
     :aria-label="statusBadges[status]
-      ? `${title}, ${statusBadges[status].label}`
-      : title"
+      ? `${title}, ${statusBadges[status].label}, постов: ${postCount}`
+      : `${title}, постов: ${postCount}`"
   >
     <span class="project-card__frame">
       <span
@@ -54,6 +58,9 @@ const statusBadges = {
         <img v-if="image" :src="image" :alt="`Обложка проекта «${title}»`" />
         <span v-else class="project-card__placeholder" aria-hidden="true">
           {{ title.slice(0, 1) }}
+        </span>
+        <span class="project-card__post-count" aria-hidden="true">
+          {{ postCount }}
         </span>
       </span>
 
@@ -144,6 +151,26 @@ const statusBadges = {
   font-weight: 800;
   line-height: 1;
   text-transform: uppercase;
+}
+
+.project-card__post-count {
+  position: absolute;
+  bottom: 0.65rem;
+  left: 0.65rem;
+  z-index: 2;
+  width: 1.9rem;
+  height: 1.9rem;
+  display: grid;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 50%;
+  color: var(--color-text);
+  background: rgba(21, 22, 18, 0.82);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+  line-height: 1;
+  place-items: center;
+  backdrop-filter: blur(0.4rem);
 }
 
 .project-card__title {
