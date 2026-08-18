@@ -89,6 +89,7 @@ const screenshots = computed(() =>
 .anime-post__result {
   display: flex;
   flex-wrap: wrap;
+  align-items: baseline;
   gap: 0.35rem 0.65rem;
   padding-top: 1rem;
   border-top: 1px solid var(--color-line);
@@ -100,6 +101,7 @@ const screenshots = computed(() =>
 
 .anime-post__result span {
   color: var(--color-accent);
+  font-size: 0.9em;
   font-weight: 750;
   letter-spacing: 0.09em;
   text-transform: uppercase;
