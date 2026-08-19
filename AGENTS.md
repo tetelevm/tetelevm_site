@@ -65,11 +65,6 @@ builder without an explicit requirement.
 - Store secrets and production credentials in environment configuration, never
   in the repository.
 
-## Temporary rules
-
-- The project is currently in test development. Backward compatibility with
-  existing data is not required unless a task explicitly asks for it.
-
 ## Verification
 
 Test behavior in proportion to its risk. Backend coverage should prioritize
