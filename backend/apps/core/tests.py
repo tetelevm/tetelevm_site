@@ -113,6 +113,49 @@ class FileModelTests(TestCase):
         self.assertEqual(detect_file_type("document.pdf"), FileType.OTHER)
 
 
+class FileAdminTests(TestCase):
+    def setUp(self) -> None:
+        user_model = get_user_model()
+        self.admin = user_model.objects.create_superuser(
+            "admin",
+            password="admin-pass",
+        )
+
+    def test_file_changelist_displays_image_thumbnail(self) -> None:
+        uploaded = File.objects.create(
+            original_name="photo.jpg",
+            file_type=FileType.PHOTO,
+            content="content/photo.jpg",
+            thumbnail="thumbnail/photo.jpg",
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("admin:core_file_changelist"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, uploaded.thumbnail.url)
+        self.assertContains(response, 'width="64"')
+        self.assertContains(response, 'height="64"')
+
+    def test_file_change_page_displays_image_preview(self) -> None:
+        uploaded = File.objects.create(
+            original_name="photo.jpg",
+            file_type=FileType.PHOTO,
+            content="content/photo.jpg",
+            preview="preview/photo.jpg",
+            thumbnail="thumbnail/photo.jpg",
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse("admin:core_file_change", args=(uploaded.id,))
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, uploaded.preview.url)
+        self.assertContains(response, "max-height:600px")
+
+
 class AuthenticationApiTests(TestCase):
     def setUp(self) -> None:
         user_model = get_user_model()

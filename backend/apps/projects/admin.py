@@ -8,6 +8,7 @@ from django import forms
 from django.contrib import admin
 from django.db.models import QuerySet
 from django.http import HttpRequest
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from .models import Post, PostFile, PostType, Project, Tag
@@ -95,8 +96,23 @@ class TagAdmin(admin.ModelAdmin):
 class PostFileInline(admin.TabularInline):
     model = PostFile
     extra = 0
+    fields = ("file_thumbnail", "file", "order")
+    readonly_fields = ("file_thumbnail",)
     ordering = ("order",)
     autocomplete_fields = ("file",)
+
+    @admin.display(description=_("Thumbnail"), empty_value="—")
+    def file_thumbnail(self, obj: PostFile) -> str | None:
+        if not obj.file_id or not obj.file.thumbnail:
+            return None
+        return format_html(
+            '<img src="{}" alt="" width="64" height="64" loading="lazy" '
+            'style="display:block;object-fit:cover;border-radius:4px">',
+            obj.file.thumbnail.url,
+        )
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[PostFile]:
+        return super().get_queryset(request).select_related("file")
 
 
 @admin.register(Post)
