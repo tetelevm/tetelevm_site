@@ -1,54 +1,41 @@
 "use strict"
 
-function setupProjectExtraTemplate() {
+function setupPostExtraFields() {
   const projectField = document.querySelector("#id_project")
-  const extraField = document.querySelector("#id_extra")
+  const extraFields = Array.from(
+    document.querySelectorAll("[data-post-extra-type]"),
+  )
 
-  if (!projectField || !extraField) {
+  if (!projectField || extraFields.length === 0) {
     return
   }
 
-  let templates
+  let postTypesByProject
   try {
-    templates = JSON.parse(extraField.dataset.projectExtraTemplates || "{}")
+    postTypesByProject = JSON.parse(
+      projectField.dataset.projectPostTypes || "{}",
+    )
   } catch {
     return
   }
 
-  let lastApplied = null
+  function updateExtraFields() {
+    const selectedPostType = postTypesByProject[projectField.value]
 
-  function formattedTemplate() {
-    const template = templates[projectField.value] ?? {}
-    return JSON.stringify(template, null, 2)
-  }
-
-  function isEmptyJson(value) {
-    const normalized = value.trim()
-    return normalized === "" || normalized === "{}" || normalized === "null"
-  }
-
-  function applyTemplate() {
-    const currentValue = extraField.value.trim()
-    if (!isEmptyJson(currentValue) && currentValue !== lastApplied) {
-      return
+    for (const field of extraFields) {
+      const isActive = field.dataset.postExtraType === selectedPostType
+      field.disabled = !isActive
+      field.required =
+        isActive && field.dataset.postExtraRequired === "true"
     }
-
-    const nextTemplate = formattedTemplate()
-    extraField.value = nextTemplate
-    lastApplied = nextTemplate
   }
 
-  const selectedTemplate = formattedTemplate()
-  if (extraField.value.trim() === selectedTemplate) {
-    lastApplied = selectedTemplate
-  }
-
-  projectField.addEventListener("change", applyTemplate)
-  applyTemplate()
+  projectField.addEventListener("change", updateExtraFields)
+  updateExtraFields()
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", setupProjectExtraTemplate)
+  document.addEventListener("DOMContentLoaded", setupPostExtraFields)
 } else {
-  setupProjectExtraTemplate()
+  setupPostExtraFields()
 }
