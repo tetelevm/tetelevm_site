@@ -75,61 +75,61 @@ class PostAdminForm(forms.ModelForm):
         required=False,
     )
     extra_original_title = forms.CharField(
-        label=_("Оригинальное название"),
+        label=_("Original title"),
         required=False,
     )
     extra_season = forms.CharField(
-        label=_("Сезон"),
+        label=_("Season"),
         required=False,
     )
     extra_anime_rating = forms.IntegerField(
-        label=_("Оценка"),
+        label=_("Rating"),
         min_value=1,
         max_value=10,
         required=False,
     )
     extra_result = forms.CharField(
-        label=_("Стоит смотреть"),
+        label=_("Worth watching"),
         required=False,
     )
     extra_abandoned_rating = forms.FloatField(
-        label=_("Оценка"),
+        label=_("Rating"),
         min_value=1,
         max_value=5,
         required=False,
     )
     extra_location_latitude = forms.FloatField(
-        label=_("Широта"),
+        label=_("Latitude"),
         required=False,
     )
     extra_location_longitude = forms.FloatField(
-        label=_("Долгота"),
+        label=_("Longitude"),
         required=False,
     )
     extra_location_link = forms.CharField(
-        label=_("Ссылка на расположение"),
+        label=_("Location link"),
         required=False,
     )
     extra_uniqueness = forms.IntegerField(
-        label=_("Уникальность"),
+        label=_("Uniqueness"),
         min_value=1,
         max_value=5,
         required=False,
     )
     extra_monumentality = forms.IntegerField(
-        label=_("Монументальность"),
+        label=_("Monumentality"),
         min_value=1,
         max_value=5,
         required=False,
     )
     extra_atmosphere = forms.IntegerField(
-        label=_("Атмосфера"),
+        label=_("Atmosphere"),
         min_value=1,
         max_value=5,
         required=False,
     )
     extra_liveliness = forms.IntegerField(
-        label=_("Жизненность"),
+        label=_("Liveliness"),
         min_value=1,
         max_value=5,
         required=False,
