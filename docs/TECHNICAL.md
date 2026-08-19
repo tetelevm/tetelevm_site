@@ -75,22 +75,49 @@ Django Admin is the primary authoring interface. A broad write API is therefore
 unnecessary. The REST API should remain small and be expanded in response to
 actual frontend use cases.
 
-The post admin keeps `extra` as a validated raw JSON textarea. A small admin
-script prepopulates it from an explicit `post_type` template when the project is
-selected. It may replace a previously auto-applied template but never overwrites
-manually edited JSON. The project-to-template map is embedded in the form; this
-is intentionally simpler than an additional endpoint for the site's small
-project collection.
-The `abandoned` template includes a nested `location` object with `latitude`,
-`longitude`, and `link`. Its Vue detail component renders complete locations as
-an `http(s)` external link and ignores incomplete or unsafe values.
+The post admin excludes the raw `extra` JSON field and exposes explicit virtual
+form fields for the supported type-specific metadata. `PostAdminForm` selects
+the applicable fields from the chosen project's `post_type`, applies numeric
+ranges and required-field validation, and serializes the cleaned values back
+into `Post.extra`. Anime and abandoned-building ratings use separate form
+fields because one is an integer from 1 through 10 and the other is a float
+from 1 through 5, although both remain `extra.rating` in storage. Known fields
+from other post types are removed when saving; unrecognized top-level and
+nested location keys are retained to avoid accidental data loss.
+
+A small admin script receives the project-to-post-type map from a data attribute
+on the project widget's inner `<select>`, then enables and marks required only
+the relevant metadata fields as the project changes. The attribute is assigned
+to the inner widget explicitly because Django Admin wraps related fields in a
+`RelatedFieldWidgetWrapper`. All supported metadata controls remain visible
+together in one dedicated fieldset, with inapplicable fields disabled. Every
+post field occupies its own form row.
+Dedicated admin CSS makes the name input wider, caps the related-post
+autocomplete at 700 pixels, and keeps both autocomplete fields responsive on
+mobile.
+
+For general posts the Markdown checkbox writes a JSON boolean; the detail
+component uses `MarkdownContent` only when it is `true` and otherwise keeps the
+plain-text renderer. Anime's optional `season` is rendered inline in italics
+after the post name; `PostTitle` places an explicit line-break opportunity
+before it so the suffix wraps independently. Abandoned posts store `latitude`,
+`longitude`, and `link` below a nested `location` key. Their Vue detail
+component renders complete locations as an `http(s)` external link and ignores
+incomplete or unsafe values.
 
 Relations to potentially large collections use Django Admin's built-in AJAX
 autocomplete widgets. They keep the default 20-result pages and load further
 results on scroll. File choices are searchable by original upload name and ordered
-by newest upload first; post choices are ordered by descending database ID.
+by newest upload first. The main file changelist displays existing image
+thumbnails inline at 64 by 64 pixels and leaves the preview cell empty for
+non-image files. An image file's change page shows its aspect-ratio-preserving
+600-pixel preview. Saved `PostFileInline` rows show 64-pixel thumbnails and use
+`select_related("file")` to avoid per-row queries; post choices are ordered by
+descending database ID.
 Post choices and the post changelist use the same derived display label as the
-public lists.
+public lists. Post search also covers the project name and exact post number;
+an isolated hash before digits is removed so combined autocomplete queries such
+as `погулялки #10` use Django Admin's normal per-term matching.
 
 Expected read capabilities include:
 
@@ -152,7 +179,7 @@ Post
     optional name and text
     optional main_file -> File
     extra: JSON
-    optional related_post -> Post
+    related_posts -> Post (symmetric many-to-many)
     files -> File through ordered PostFile
     tags -> Tag
 ```
@@ -164,8 +191,10 @@ types use separate explicit choice lists, currently containing `post`, `photo`,
 options. A post belongs to exactly one project; its number determines its
 position and is unique within that project.
 Additional post files are connected through `PostFile`, which stores their
-order. Avoid a generic page builder or universal CMS schema without a
-demonstrated need.
+order. Post relationships use Django's implicit self-referential many-to-many
+table and are symmetric: adding either side makes the other side related too.
+Avoid a generic page builder or universal CMS schema without a demonstrated
+need.
 
 `Post.display_label` is the single source for list and administrative labels. It
 prefers a trimmed name, then a whitespace-normalized 120-character text excerpt,
@@ -173,6 +202,9 @@ then counts of unique files by media type, and finally `🌀`. A custom
 `PostQuerySet.with_display_file_counts()` method annotates the four per-type
 counts. List API and admin querysets opt into it explicitly, avoiding per-post
 queries without adding aggregation overhead to unrelated post queries.
+`PostQuerySet.with_adjacent_post_ids()` uses correlated subqueries scoped by
+`project_id` to annotate the nearest lower-numbered and higher-numbered post
+IDs. Gaps in numbering therefore require no special handling.
 
 Project status describes its lifecycle and does not control authorization.
 Project cards show no badge for `open`, a warm yellow-orange “на паузе” badge
@@ -255,9 +287,10 @@ The frontend uses Vue, Vue Router, and Vite. Public pages, including login,
 belong to Vue. Different project types may use different components, but the
 application should not become a runtime page-builder.
 
-Markdown post text is rendered client-side with `markdown-it`. Embedded raw
-HTML is disabled; Markdown-generated markup is styled by the dedicated
-`MarkdownContent` component.
+Markdown post text is rendered client-side with `markdown-it`. The `text_md`
+type always uses it, while the general `post` type opts in per item through
+`extra.md === true`. Embedded raw HTML is disabled; Markdown-generated markup
+is styled by the dedicated `MarkdownContent` component.
 
 The current router implements:
 
@@ -294,8 +327,10 @@ The shared frontend building blocks are:
   images, optionally using the shared lightbox;
 - `MarkdownContent` for styled, HTML-disabled Markdown rendering.
 - `PostTag` for non-interactive tag labels on post detail pages;
-- `RelatedPostLink` for links to a post's optional same-project relation.
-- `PostConnections` for composing the optional related-post link and tag list;
+- `PostConnections` for adapting related-post summaries to `PostRowList` and
+  composing that list with the post's tags;
+- `PostNavigation` for the previous and next post links at the bottom of every
+  detail page;
 - `PostFileList` for non-image and non-video file links using original names.
 - `PageStatus`, `PageSubheader`, and `PaginationNav` for shared page-level
   feedback, secondary navigation, and pagination presentation.
@@ -322,9 +357,23 @@ keeps that ratio as the stage reservation while the next item loads, then
 updates the stage once from the new image or video dimensions. This avoids an
 intermediate zero-height layout without adding media dimensions to the API.
 
-Detail post responses expose `relatedPost` as an object containing its `number`
-and model-generated `link`. The frontend uses that link directly and does not
-reconstruct backend routes.
+Detail post responses expose `relatedPosts` as an array containing each visible
+related post's ID, number, model-generated link, display label, optional photo
+thumbnail, and date. The relation prefetch applies the same project-visibility
+rules as normal post access, annotates display-label file counts, and prefetches
+thumbnail candidates so rendering multiple related cards does not cause N+1
+queries. Results use project order followed by descending post number. The
+frontend passes these summaries through the shared `PostRowList` renderer and
+does not reconstruct backend routes.
+The detail queryset also annotates adjacent post IDs. The view loads both
+adjacent objects together with annotated display-label counts and exposes them
+as nullable `previousPost` and `nextPost` summaries containing `number`, `link`,
+and `label`. `PostPage` renders those summaries below the type-specific content,
+using the current project name in the link text. `PostNavigation` truncates only
+the visible label portion to 80 Unicode characters, retains the full value in
+the accessible link label, permits breaks inside uninterrupted strings, and
+frames each complete link rather than its arrow alone. `PlainPostText` and
+`MarkdownContent` apply the same overflow protection to post bodies.
 
 Projects are returned in ascending explicit project order. Posts within a
 project are returned by descending post number, with the highest-numbered item
