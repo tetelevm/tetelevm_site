@@ -114,9 +114,33 @@ class PostDetailView(RetrieveAPIView):
         posts = Post.objects.filter(
             project__in=visible_projects(user_is_authenticated),
             project__link=self.kwargs["project_code"],
-        )
+        ).with_adjacent_post_ids()
         return posts.select_related("project", "main_file").prefetch_related(
             "post_files__file",
             "tags",
             Prefetch("related_posts", queryset=related_posts),
         )
+
+    def retrieve(
+        self,
+        request: Request,
+        *args: object,
+        **kwargs: object,
+    ) -> Response:
+        post = self.get_object()
+        adjacent_ids = {
+            post_id
+            for post_id in (post.previous_post_id, post.next_post_id)
+            if post_id is not None
+        }
+        adjacent_posts = {
+            adjacent_post.id: adjacent_post
+            for adjacent_post in (
+                Post.objects.filter(id__in=adjacent_ids)
+                .with_display_file_counts()
+                .select_related("project", "main_file")
+            )
+        }
+        post.previous_post_summary = adjacent_posts.get(post.previous_post_id)
+        post.next_post_summary = adjacent_posts.get(post.next_post_id)
+        return Response(self.get_serializer(post).data)

@@ -24,6 +24,7 @@ defineProps({
   <div class="post-title" :class="`post-title--${size}`">
     <h1>
       <span>{{ title }}</span>
+      <wbr v-if="suffix" />
       <em v-if="suffix" class="post-title__suffix">{{ suffix }}</em>
     </h1>
     <p v-if="subtitle">{{ subtitle }}</p>
@@ -50,11 +51,15 @@ defineProps({
 }
 
 .post-title__suffix {
+  max-width: 100%;
+  display: inline-block;
   margin-left: 0.45em;
+  overflow-wrap: anywhere;
   color: var(--color-muted);
   font-size: 0.65em;
   font-style: italic;
   font-weight: 400;
+  vertical-align: baseline;
 }
 
 .post-title p {

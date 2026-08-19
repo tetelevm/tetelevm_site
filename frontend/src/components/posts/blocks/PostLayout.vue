@@ -27,6 +27,7 @@ defineProps({
 
 <style scoped>
 .post-layout {
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }

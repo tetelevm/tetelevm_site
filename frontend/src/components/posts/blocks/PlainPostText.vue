@@ -24,10 +24,13 @@ defineProps({
 
 <style scoped>
 .plain-post-text {
+  min-width: 0;
   color: var(--color-text);
   font-size: 1.2rem;
   line-height: 1.65;
+  overflow-wrap: anywhere;
   white-space: pre-line;
+  word-break: break-word;
 }
 
 .plain-post-text--center {

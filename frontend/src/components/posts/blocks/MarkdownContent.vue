@@ -25,10 +25,12 @@ const rendered = computed(() => markdown.render(props.source))
 
 <style scoped>
 .markdown-content {
+  min-width: 0;
   overflow-wrap: anywhere;
   color: var(--color-text);
   font-size: 1.2rem;
   line-height: 1.7;
+  word-break: break-word;
 }
 
 .markdown-content :deep(:first-child) {

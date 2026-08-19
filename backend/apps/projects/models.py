@@ -63,6 +63,22 @@ class PostQuerySet(models.QuerySet["Post"]):
             }
         )
 
+    def with_adjacent_post_ids(self) -> PostQuerySet:
+        previous_posts = self.model.objects.filter(
+            project_id=models.OuterRef("project_id"),
+            number__lt=models.OuterRef("number"),
+        ).order_by("-number", "-id")
+        next_posts = self.model.objects.filter(
+            project_id=models.OuterRef("project_id"),
+            number__gt=models.OuterRef("number"),
+        ).order_by("number", "id")
+        return self.annotate(
+            previous_post_id=models.Subquery(
+                previous_posts.values("id")[:1]
+            ),
+            next_post_id=models.Subquery(next_posts.values("id")[:1]),
+        )
+
 
 class Project(models.Model):
     class Status(models.TextChoices):

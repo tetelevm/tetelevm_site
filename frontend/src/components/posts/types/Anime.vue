@@ -21,6 +21,7 @@ const screenshots = computed(() =>
 <template>
   <PostLayout spacing="loose">
     <RatedPostHeader
+      class="anime-post__header"
       :title="post.name"
       :title-suffix="post.extra?.season"
       :subtitle="post.extra?.original_title"
@@ -54,6 +55,11 @@ const screenshots = computed(() =>
 </template>
 
 <style scoped>
+.anime-post__header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
 .anime-post__screenshots {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -78,9 +84,7 @@ const screenshots = computed(() =>
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.35rem 0.65rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--color-line);
-  margin: -1rem 0 0;
+  margin: 0;
   color: var(--color-text);
   font-size: 1.2rem;
   line-height: 1.5;
