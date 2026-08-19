@@ -2,12 +2,11 @@
 
 ## Scope and status
 
-The repository contains a working development foundation: Django REST Framework,
-Vue, Vue Router, Vite, PostgreSQL, and Docker Compose. The first frontend
-prototype is implemented and builds successfully. Domain models and read-only
-project API endpoints, project-grid integration, and session authentication
-exist. Broader media integration and production deployment are still to be
-implemented.
+The repository contains a working Django REST Framework, Vue, Vue Router, Vite,
+PostgreSQL, and Docker Compose application. The first frontend prototype is
+implemented and builds successfully. Domain models and read-only project API
+endpoints, project-grid integration, session authentication, media processing,
+and a single-server production deployment exist.
 
 This document describes the intended architecture. A capability mentioned here
 should not be treated as already implemented unless it exists in the codebase.
@@ -35,6 +34,26 @@ automation.
 
 The project is a monorepo. It is deliberately optimized for clarity and simple
 operation rather than independent service deployment or high traffic.
+
+## Production deployment
+
+Production is designed for one low-traffic Debian or Ubuntu VPS. The separate
+`compose.prod.yaml` runs PostgreSQL, Django under a single Gunicorn worker with
+two threads, and Caddy. Caddy is the only publicly exposed service. It obtains
+and renews TLS certificates, serves the built Vue application and persistent
+media, serves collected Django static files, and proxies API and admin requests
+to Django. PostgreSQL and Gunicorn do not publish host ports.
+
+The production frontend image builds Vue once with Vite and copies the output
+into the Caddy image; Node and the Vite development server do not run in
+production. PostgreSQL data, collected static files, and Caddy state use named
+volumes. Uploaded media remains a bind-mounted repository-root `media/`
+directory so it can be backed up and restored alongside the database.
+
+Production configuration is supplied by an ignored `.env.production` file.
+HTTPS-related Django settings remain environment-driven so local development
+continues to use HTTP. Operational commands and backup requirements are in
+`docs/DEPLOYMENT.md`.
 
 ## System boundaries
 
