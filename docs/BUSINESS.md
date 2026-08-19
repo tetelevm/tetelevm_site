@@ -37,8 +37,14 @@ The administrator is the site owner. The administrator can:
 
 - create and manage projects;
 - create and edit project items;
+- edit type-specific item metadata through individual validated fields instead
+  of raw JSON;
 - upload media used by the content;
+- see generated image thumbnails directly in the administrative file list and
+  post-file inlines, and a larger preview on an image file's change page;
 - mark projects as public or private;
+- find related posts in the administrative selector by project name and post
+  number, including combined queries such as `погулялки #10`;
 - manage the site through an administrative interface.
 
 ## Main areas
@@ -110,6 +116,21 @@ behavior are specified in `docs/PROJECT_TYPES.md`.
 An abandoned-building post may include linked latitude and longitude. When all
 location values are present, the coordinates appear as an external map link
 directly below the post title and above its text.
+An anime post may include a season string. When present, it appears in italics
+immediately after the post name on the same title line.
+General posts display their body as plain text by default. An optional boolean
+flag enables Markdown rendering for an individual general post.
+Posts may be connected to any number of other posts through symmetric
+relationships. Detail pages show every related post visible to the current
+visitor as a row card; links to private content remain hidden from anonymous
+visitors.
+At the bottom of every post detail page, navigation links point to the nearest
+lower-numbered and higher-numbered posts in the same project. Missing numbers
+are skipped, and a link is omitted at the corresponding project boundary. The
+visible label excerpt is limited to 80 characters and wraps even when it
+contains no natural break points. Each entire neighboring-post link is enclosed
+in a frame. Post body text also remains within the content width when it
+contains a long uninterrupted string.
 
 Every post has a shared label available to list and administrative displays. It
 uses the post name when available, otherwise the beginning of its text,

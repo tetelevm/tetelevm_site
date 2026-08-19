@@ -27,7 +27,8 @@ combined independently.
   resizes once to the new ratio instead of collapsing in between.
 - Framed standalone images also preserve their natural aspect ratio; the frame
   follows the image instead of imposing a fixed shape.
-- Plain post body text uses the shared sans-serif face at `1.2rem`.
+- Plain post body text uses the shared sans-serif face at `1.2rem`; long
+  uninterrupted strings wrap instead of extending beyond the post width.
 - Headers that contain both a name and date place the name on the left and the
   date on the right.
 - Card lists use the shared `PostCardList`: one outer frame encloses the
@@ -47,6 +48,11 @@ combined independently.
 - Detail pages compose the shared `PostLayout`, `PostTitle`, `PlainPostText`,
   `PostImage`, media, and connection blocks where applicable. Type components
   retain only their data selection and genuinely type-specific markup.
+- Every detail page ends with text links to the nearest lower-numbered and
+  higher-numbered posts in the same project. Each link contains an arrow, the
+  project name, post number, and up to 80 characters of the shared post label.
+  The whole link is framed, and uninterrupted text wraps within its half of the
+  navigation row instead of overlapping the other link.
 
 ## `door` — Doors
 
@@ -114,7 +120,11 @@ List:
 
 Post:
 
-- a moderately sized `name` appears at the top;
+- a moderately sized `name` appears at the top, followed by a divider with
+  spacing between the title block and the line;
+- optional `extra.season` appears in italics immediately after `name` on the
+  same title line; when both no longer fit, the season moves separately rather
+  than taking the title's final word with it;
 - `extra.original_title` appears directly below it in italics;
 - a circular overall `extra.rating` sits to the right of the title block;
 - three square screenshots from the first three additional files appear below;
@@ -122,17 +132,21 @@ Post:
 - the main `text` follows;
 - the bottom row contains the Russian label “стоит смотреть:” (“worth
   watching:”) in slightly smaller uppercase text, followed by the italicized
-  `extra.result`.
+  `extra.result`, without its own top divider.
 
 Expected `extra` structure:
 
 ```json
 {
-  "original_title": "",
-  "rating": null,
-  "result": ""
+  "original_title": "Sousou no Frieren",
+  "season": "Сезон 2",
+  "rating": 9,
+  "result": "точно да"
 }
 ```
+
+`original_title` and the one-line `result` are required strings, `season` is an
+optional string, and `rating` is an integer from 1 through 10 inclusive.
 
 The model and admin currently do not enforce exactly three screenshots. Missing
 files produce empty slots, while additional files beyond the first three are
@@ -169,18 +183,22 @@ Expected `extra` structure:
 
 ```json
 {
-  "rating": null,
+  "rating": 4.5,
   "location": {
-    "latitude": null,
-    "longitude": null,
-    "link": ""
+    "latitude": 41.6880746,
+    "longitude": 44.8216462,
+    "link": "https://www.openstreetmap.org/"
   },
-  "uniqueness": null,
-  "monumentality": null,
-  "atmosphere": null,
-  "liveliness": null
+  "uniqueness": 5,
+  "monumentality": 3,
+  "atmosphere": 4,
+  "liveliness": 2
 }
 ```
+
+The overall `rating` is a float from 1 through 5 inclusive. Coordinates are
+floats and the location link is a string. The four individual ratings are
+integers from 1 through 5 inclusive.
 
 The individual rating labels shown in the current Russian interface are
 “уникальность” (uniqueness), “монументальность” (monumentality), “атмосфера”
@@ -240,8 +258,8 @@ Post:
   `PostFile.order`; `mainFile` is not duplicated in the post carousel;
 - selecting a photograph opens its original in the shared lightbox;
 - the plain `text` appears below the carousel with line breaks preserved;
-- when `relatedPost` is set, a `related with: #<number>` link to that post
-  appears below the text;
+- visible `relatedPosts` appear below the text as the same thumbnail, label,
+  and date rows used by project lists;
 - related tags appear at the bottom as non-interactive rectangular labels.
 
 ## `post` — General Posts
@@ -258,25 +276,41 @@ Post:
 
 - the shared dated header shows `name` on the left and optional `date` on the
   right;
-- plain `text` appears below the header with line breaks preserved;
+- `text` appears below the header as plain text with line breaks preserved by
+  default;
+- when `extra.md` is exactly `true`, `text` uses the shared Markdown renderer
+  instead, with raw embedded HTML disabled;
 - an image `mainFile`, when present, appears below the text in an
   aspect-ratio-preserving frame and opens its original in the shared lightbox;
 - a carousel follows with additional files whose `mediaType` is `photo` or
   `video`;
 - remaining additional files appear as a vertical list of links using their
   original upload names;
-- an optional related-post link appears below the files;
+- visible `relatedPosts` appear below the files as the same thumbnail, label,
+  and date rows used by project lists;
 - non-interactive tag labels appear at the bottom.
 
-## JSON in Django Admin
+Expected `extra` structure:
 
-`Post.extra` remains editable as raw JSON in a single text area. When a project
-is selected, the admin prepopulates a template based on its `post_type`:
+```json
+{
+  "md": false
+}
+```
 
-- `anime` receives `original_title`, `rating`, and `result`;
-- `abandoned` receives `rating`, nested `location` coordinates and link,
-  `uniqueness`, `monumentality`, `atmosphere`, and `liveliness`;
-- all other types receive an empty `{}` object.
+## Type-specific fields in Django Admin
 
-An automatically inserted template may be replaced when the project changes.
-JSON that the administrator has edited manually is never overwritten.
+`Post.extra` is not shown as raw JSON. The admin displays all individual typed
+fields together in one block, enabling the subset selected by the project's
+`post_type`:
+
+- `post` shows the optional `md` checkbox;
+- `anime` shows `original_title`, optional `season`, integer `rating` from 1 to
+  10, and the one-line `result`;
+- `abandoned` shows float `rating` from 1 to 5, float location coordinates, a
+  string location link, and four integer ratings from 1 to 5;
+- all other types leave every `extra` control disabled.
+
+Changing the selected project switches which fields are enabled and required;
+the complete field set remains visible. Saving removes known metadata belonging
+to other post types while retaining unknown JSON keys.
