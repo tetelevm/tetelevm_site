@@ -1,28 +1,45 @@
 <script setup>
-import PostTag from "./PostTag.vue"
-import RelatedPostLink from "./RelatedPostLink.vue"
+import { computed } from "vue"
 
-defineProps({
-  relatedPost: {
-    type: Object,
-    default: null,
+import PostTag from "./PostTag.vue"
+import PostRowList from "../lists/PostRowList.vue"
+
+const props = defineProps({
+  relatedPosts: {
+    type: Array,
+    default: () => [],
   },
   tags: {
     type: Array,
     default: () => [],
   },
 })
+
+const relatedItems = computed(() =>
+  props.relatedPosts.map((post) => ({
+    key: post.id ?? `${post.link}-${post.number}`,
+    link: post.link,
+    image: post.thumbnail,
+    label: post.label,
+    alt: post.label,
+    date: post.date,
+  })),
+)
 </script>
 
 <template>
   <div
-    v-if="relatedPost || tags.length"
+    v-if="relatedPosts.length || tags.length"
     class="post-connections"
   >
-    <RelatedPostLink
-      v-if="relatedPost"
-      :related-post="relatedPost"
-    />
+    <section
+      v-if="relatedPosts.length"
+      class="post-connections__related"
+      aria-labelledby="related-posts-title"
+    >
+      <h2 id="related-posts-title">связанные посты</h2>
+      <PostRowList :items="relatedItems" />
+    </section>
 
     <ul v-if="tags.length" class="post-connections__tags" aria-label="Теги">
       <PostTag
@@ -37,6 +54,23 @@ defineProps({
 <style scoped>
 .post-connections {
   display: contents;
+}
+
+.post-connections__related {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-line);
+}
+
+.post-connections__related h2 {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .post-connections__tags {

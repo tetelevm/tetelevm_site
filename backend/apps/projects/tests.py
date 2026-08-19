@@ -158,6 +158,35 @@ class PostAdminTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "📷 1")
 
+    def test_related_post_autocomplete_searches_project_and_number(self) -> None:
+        self.project.name = "Погулялки"
+        self.project.save(update_fields=("name",))
+        target = Post.objects.create(project=self.project, number=10)
+        Post.objects.create(project=self.project, number=11)
+        other_project = Project.objects.create(
+            name="Другой проект",
+            link="other-project",
+            cover=self.cover,
+        )
+        Post.objects.create(project=other_project, number=10)
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse("admin:autocomplete"),
+            {
+                "app_label": "projects",
+                "model_name": "post",
+                "field_name": "related_posts",
+                "term": "погулялки #10",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [result["id"] for result in response.json()["results"]],
+            [str(target.id)],
+        )
+
     def test_abandoned_extra_template_includes_location(self) -> None:
         self.project.post_type = PostType.ABANDONED
         self.project.save(update_fields=("post_type",))
@@ -473,15 +502,24 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.data["projectName"], "Public")
         self.assertEqual(response.data["postType"], PostType.TEXT)
         self.assertEqual(response.data["link"], "/projects/public/1/")
+        self.assertEqual(response.data["relatedPosts"], [])
+        self.assertNotIn("relatedPost", response.data)
 
-    def test_post_detail_uses_related_post_link(self) -> None:
+    def test_related_posts_are_symmetric_and_use_row_summaries(self) -> None:
+        photo = File.objects.create(
+            original_name="related.jpg",
+            file_type=FileType.PHOTO,
+            content="content/related.jpg",
+            thumbnail="thumbnail/related.jpg",
+        )
         related_post = Post.objects.create(
             project=self.public_project,
             number=2,
+            date=date(2026, 8, 18),
             name="Related post",
+            main_file=photo,
         )
-        self.public_post.related_post = related_post
-        self.public_post.save(update_fields=("related_post",))
+        self.public_post.related_posts.add(related_post)
 
         response = self.client.get(
             reverse(
@@ -491,8 +529,59 @@ class ProjectApiTests(APITestCase):
         )
 
         self.assertEqual(
-            response.data["relatedPost"],
-            {"number": 2, "link": "/projects/public/2/"},
+            response.data["relatedPosts"],
+            [
+                {
+                    "id": related_post.id,
+                    "number": 2,
+                    "link": "/projects/public/2/",
+                    "label": "Related post",
+                    "thumbnail": "/files/thumbnail/related.jpg",
+                    "date": "2026-08-18",
+                }
+            ],
+        )
+
+        reverse_response = self.client.get(
+            reverse(
+                "projects:post-detail",
+                kwargs={"project_code": "public", "post_num": 2},
+            )
+        )
+
+        self.assertEqual(
+            [post["link"] for post in reverse_response.data["relatedPosts"]],
+            ["/projects/public/1/"],
+        )
+
+    def test_anonymous_user_does_not_receive_private_related_posts(self) -> None:
+        self.public_post.related_posts.add(self.private_post)
+
+        response = self.client.get(
+            reverse(
+                "projects:post-detail",
+                kwargs={"project_code": "public", "post_num": 1},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["relatedPosts"], [])
+
+    def test_guest_receives_private_related_posts(self) -> None:
+        self.public_post.related_posts.add(self.private_post)
+        self.client.force_login(self.guest)
+
+        response = self.client.get(
+            reverse(
+                "projects:post-detail",
+                kwargs={"project_code": "public", "post_num": 1},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [post["link"] for post in response.data["relatedPosts"]],
+            ["/projects/private/1/"],
         )
 
     def test_anonymous_user_cannot_retrieve_post_from_private_project(self) -> None:

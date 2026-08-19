@@ -70,12 +70,31 @@ class ProjectListSerializer(serializers.ModelSerializer):
         )
 
 
+def post_summary_files(obj: Post) -> list[File]:
+    files = ([obj.main_file] if obj.main_file else []) + [
+        post_file.file for post_file in obj.post_files.all()
+    ]
+    return list({file.id: file for file in files}.values())
+
+
 class RelatedPostSerializer(serializers.ModelSerializer):
     link = serializers.CharField(read_only=True)
+    label = serializers.CharField(source="display_label", read_only=True)
+    thumbnail = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ("number", "link")
+        fields = ("id", "number", "link", "label", "thumbnail", "date")
+
+    def get_thumbnail(self, obj: Post) -> str | None:
+        return next(
+            (
+                file.link_small
+                for file in post_summary_files(obj)
+                if file.file_type == FileType.PHOTO
+            ),
+            None,
+        )
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -86,8 +105,9 @@ class PostSerializer(serializers.ModelSerializer):
     mainFile = FileSerializer(source="main_file", read_only=True)
     files = serializers.SerializerMethodField()
     tags = TagSerializer(many=True, read_only=True)
-    relatedPost = RelatedPostSerializer(
-        source="related_post",
+    relatedPosts = RelatedPostSerializer(
+        source="related_posts",
+        many=True,
         read_only=True,
     )
 
@@ -107,7 +127,7 @@ class PostSerializer(serializers.ModelSerializer):
             "files",
             "tags",
             "extra",
-            "relatedPost",
+            "relatedPosts",
         )
 
     def get_files(self, obj: Post) -> list[dict[str, object]]:
@@ -136,13 +156,6 @@ class PostListSerializer(serializers.ModelSerializer):
 
 class PlasticinePostListSerializer(PostListSerializer):
     mainFile = FilePreviewListSerializer(source="main_file", read_only=True)
-
-
-def post_summary_files(obj: Post) -> list[File]:
-    files = ([obj.main_file] if obj.main_file else []) + [
-        post_file.file for post_file in obj.post_files.all()
-    ]
-    return list({file.id: file for file in files}.values())
 
 
 class GeneralPostListSerializer(serializers.ModelSerializer):

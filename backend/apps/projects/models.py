@@ -143,13 +143,11 @@ class Post(models.Model):
         null=True,
     )
     extra = models.JSONField(_("Extra"), default=dict, blank=True)
-    related_post = models.ForeignKey(
+    related_posts = models.ManyToManyField(
         "self",
-        on_delete=models.SET_NULL,
-        related_name="referenced_by_posts",
-        verbose_name=_("Related post"),
+        symmetrical=True,
+        verbose_name=_("Related posts"),
         blank=True,
-        null=True,
     )
     files = models.ManyToManyField(
         File,

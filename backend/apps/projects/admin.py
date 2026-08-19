@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from django import forms
@@ -103,9 +104,9 @@ class PostAdmin(admin.ModelAdmin):
     form = PostAdminForm
     list_display = ("number", "display_label", "project")
     list_filter = ("project",)
-    search_fields = ("name", "text")
+    search_fields = ("name", "text", "project__name", "number")
     ordering = ("-id",)
-    autocomplete_fields = ("main_file", "related_post", "tags")
+    autocomplete_fields = ("main_file", "related_posts", "tags")
     inlines = (PostFileInline,)
 
     @admin.display(description=_("Name"), ordering="name")
@@ -118,6 +119,23 @@ class PostAdmin(admin.ModelAdmin):
             .get_queryset(request)
             .select_related("project", "main_file")
             .with_display_file_counts()
+        )
+
+    def get_search_results(
+        self,
+        request: HttpRequest,
+        queryset: QuerySet[Post],
+        search_term: str,
+    ) -> tuple[QuerySet[Post], bool]:
+        normalized_search_term = re.sub(
+            r"(?<!\w)#(?=\d+\b)",
+            "",
+            search_term,
+        )
+        return super().get_search_results(
+            request,
+            queryset,
+            normalized_search_term,
         )
 
     class Media:
