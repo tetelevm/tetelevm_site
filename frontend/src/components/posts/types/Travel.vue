@@ -28,7 +28,7 @@ const photos = computed(() => {
     <PlainPostText :text="post.text" />
 
     <PostConnections
-      :related-post="post.relatedPost"
+      :related-posts="post.relatedPosts"
       :tags="post.tags"
     />
   </PostLayout>

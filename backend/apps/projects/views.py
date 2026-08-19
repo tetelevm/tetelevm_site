@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from django.db.models import Count, QuerySet
+from django.db.models import Count, Prefetch, QuerySet
 from django.db.models.fields.json import KeyTransform
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
@@ -100,12 +100,23 @@ class PostDetailView(RetrieveAPIView):
     lookup_url_kwarg = "post_num"
 
     def get_queryset(self) -> QuerySet[Post]:
+        user_is_authenticated = self.request.user.is_authenticated
+        related_posts = (
+            Post.objects.filter(
+                project__in=visible_projects(user_is_authenticated)
+            )
+            .with_display_file_counts()
+            .select_related("project", "main_file")
+            .prefetch_related("post_files__file")
+            .defer("extra")
+            .order_by("project__order", "project_id", "-number", "-id")
+        )
         posts = Post.objects.filter(
-            project__in=visible_projects(self.request.user.is_authenticated),
+            project__in=visible_projects(user_is_authenticated),
             project__link=self.kwargs["project_code"],
         )
-        return posts.select_related(
-            "project",
-            "main_file",
-            "related_post",
-        ).prefetch_related("post_files__file", "tags")
+        return posts.select_related("project", "main_file").prefetch_related(
+            "post_files__file",
+            "tags",
+            Prefetch("related_posts", queryset=related_posts),
+        )
