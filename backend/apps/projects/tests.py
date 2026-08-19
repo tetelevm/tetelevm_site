@@ -137,13 +137,14 @@ class PostAdminTests(TestCase):
             link="project",
             cover=self.cover,
         )
-        post = Post.objects.create(project=self.project, number=1)
+        self.post = Post.objects.create(project=self.project, number=1)
         photo = File.objects.create(
             original_name="photo.jpg",
             file_type=FileType.PHOTO,
             content="content/photo.jpg",
+            thumbnail="thumbnail/photo.jpg",
         )
-        PostFile.objects.create(post=post, file=photo, order=0)
+        PostFile.objects.create(post=self.post, file=photo, order=0)
         user_model = get_user_model()
         self.admin = user_model.objects.create_superuser(
             "admin",
@@ -157,6 +158,17 @@ class PostAdminTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "📷 1")
+
+    def test_post_file_inline_displays_thumbnail(self) -> None:
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse("admin:projects_post_change", args=(self.post.id,))
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "/files/thumbnail/photo.jpg")
+        self.assertContains(response, 'width="64"')
 
     def test_related_post_autocomplete_searches_project_and_number(self) -> None:
         self.project.name = "Погулялки"
