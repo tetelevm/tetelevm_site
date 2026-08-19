@@ -504,6 +504,82 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.data["link"], "/projects/public/1/")
         self.assertEqual(response.data["relatedPosts"], [])
         self.assertNotIn("relatedPost", response.data)
+        self.assertIsNone(response.data["previousPost"])
+        self.assertIsNone(response.data["nextPost"])
+
+    def test_post_detail_includes_nearest_adjacent_posts(self) -> None:
+        previous_post = Post.objects.create(
+            project=self.public_project,
+            number=4,
+            name="Earlier post",
+        )
+        current_post = Post.objects.create(
+            project=self.public_project,
+            number=10,
+            name="Current post",
+        )
+        next_post = Post.objects.create(
+            project=self.public_project,
+            number=14,
+            text="Later post without a name",
+        )
+        Post.objects.create(
+            project=self.public_project,
+            number=20,
+            name="Farther post",
+        )
+
+        response = self.client.get(
+            reverse(
+                "projects:post-detail",
+                kwargs={"project_code": "public", "post_num": 10},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data["previousPost"],
+            {
+                "number": previous_post.number,
+                "link": "/projects/public/4/",
+                "label": "Earlier post",
+            },
+        )
+        self.assertEqual(
+            response.data["nextPost"],
+            {
+                "number": next_post.number,
+                "link": "/projects/public/14/",
+                "label": "Later post without a name",
+            },
+        )
+        self.assertEqual(response.data["number"], current_post.number)
+
+    def test_post_detail_adjacent_navigation_has_project_boundaries(self) -> None:
+        last_post = Post.objects.create(
+            project=self.public_project,
+            number=3,
+            name="Last post",
+        )
+
+        first_response = self.client.get(
+            reverse(
+                "projects:post-detail",
+                kwargs={"project_code": "public", "post_num": 1},
+            )
+        )
+        last_response = self.client.get(
+            reverse(
+                "projects:post-detail",
+                kwargs={"project_code": "public", "post_num": 3},
+            )
+        )
+
+        self.assertIsNone(first_response.data["previousPost"])
+        self.assertEqual(first_response.data["nextPost"]["number"], 3)
+        self.assertEqual(last_response.data["previousPost"]["number"], 1)
+        self.assertIsNone(last_response.data["nextPost"])
+        self.assertEqual(last_response.data["number"], last_post.number)
 
     def test_related_posts_are_symmetric_and_use_row_summaries(self) -> None:
         photo = File.objects.create(

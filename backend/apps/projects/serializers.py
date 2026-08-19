@@ -97,6 +97,15 @@ class RelatedPostSerializer(serializers.ModelSerializer):
         )
 
 
+class AdjacentPostSerializer(serializers.ModelSerializer):
+    link = serializers.CharField(read_only=True)
+    label = serializers.CharField(source="display_label", read_only=True)
+
+    class Meta:
+        model = Post
+        fields = ("number", "link", "label")
+
+
 class PostSerializer(serializers.ModelSerializer):
     link = serializers.CharField(read_only=True)
     projectCode = serializers.CharField(source="project.link", read_only=True)
@@ -108,6 +117,14 @@ class PostSerializer(serializers.ModelSerializer):
     relatedPosts = RelatedPostSerializer(
         source="related_posts",
         many=True,
+        read_only=True,
+    )
+    previousPost = AdjacentPostSerializer(
+        source="previous_post_summary",
+        read_only=True,
+    )
+    nextPost = AdjacentPostSerializer(
+        source="next_post_summary",
         read_only=True,
     )
 
@@ -128,6 +145,8 @@ class PostSerializer(serializers.ModelSerializer):
             "tags",
             "extra",
             "relatedPosts",
+            "previousPost",
+            "nextPost",
         )
 
     def get_files(self, obj: Post) -> list[dict[str, object]]:
