@@ -1,6 +1,6 @@
-import json
 from datetime import date
 
+from django import forms
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from django.test import TestCase
@@ -9,7 +9,7 @@ from rest_framework.test import APITestCase
 
 from apps.core.models import File, FileType
 
-from .admin import PostAdminForm
+from .admin import PostAdmin, PostAdminForm
 from .models import Post, PostFile, PostListType, PostType, Project
 
 
@@ -170,6 +170,48 @@ class PostAdminTests(TestCase):
         self.assertContains(response, "/files/thumbnail/photo.jpg")
         self.assertContains(response, 'width="64"')
 
+    def test_post_change_form_uses_typed_extra_fields_and_custom_layout(
+        self,
+    ) -> None:
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse("admin:projects_post_change", args=(self.post.id,))
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'name="extra"')
+        self.assertContains(response, 'name="extra_md"')
+        self.assertContains(response, 'name="extra_original_title"')
+        self.assertContains(response, 'name="extra_location_latitude"')
+        self.assertContains(response, "data-project-post-types=")
+        self.assertNotContains(response, "field-project field-number")
+        self.assertNotContains(response, "field-name field-date")
+        self.assertNotContains(response, "field-related_posts field-tags")
+        self.assertContains(response, "projects/admin/post_form.css")
+        self.assertContains(response, "projects/admin/post_extra.js")
+
+    def test_post_change_form_loads_anime_extra_values(self) -> None:
+        self.project.post_type = PostType.ANIME
+        self.project.save(update_fields=("post_type",))
+        self.post.extra = {
+            "original_title": "Sousou no Frieren",
+            "season": "Сезон 2",
+            "rating": 9,
+            "result": "да",
+        }
+        self.post.save(update_fields=("extra",))
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse("admin:projects_post_change", args=(self.post.id,))
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="Sousou no Frieren"')
+        self.assertContains(response, 'value="Сезон 2"')
+        self.assertContains(response, 'value="9"')
+
     def test_related_post_autocomplete_searches_project_and_number(self) -> None:
         self.project.name = "Погулялки"
         self.project.save(update_fields=("name",))
@@ -199,45 +241,173 @@ class PostAdminTests(TestCase):
             [str(target.id)],
         )
 
-    def test_abandoned_extra_template_includes_location(self) -> None:
-        self.project.post_type = PostType.ABANDONED
-        self.project.save(update_fields=("post_type",))
+    def test_post_admin_uses_typed_extra_fields(self) -> None:
+        form = PostAdminForm(instance=self.post)
 
-        form = PostAdminForm()
-        templates = json.loads(
-            form.fields["extra"].widget.attrs["data-project-extra-templates"]
+        self.assertNotIn("extra", form.fields)
+        self.assertIsInstance(form.fields["extra_md"], forms.BooleanField)
+        self.assertFalse(form.fields["extra_md"].required)
+        self.assertFalse(form.fields["extra_md"].disabled)
+        self.assertIsInstance(
+            form.fields["extra_anime_rating"],
+            forms.IntegerField,
         )
+        self.assertIsInstance(
+            form.fields["extra_abandoned_rating"],
+            forms.FloatField,
+        )
+        self.assertTrue(form.fields["extra_anime_rating"].disabled)
+
+    def test_anime_extra_fields_use_existing_values(self) -> None:
+        self.project.post_type = PostType.ANIME
+        self.project.save(update_fields=("post_type",))
+        self.post.extra = {
+            "original_title": "Sousou no Frieren",
+            "season": "Сезон 2",
+            "rating": 9,
+            "result": "да",
+        }
+        self.post.save(update_fields=("extra",))
+
+        form = PostAdminForm(instance=self.post)
 
         self.assertEqual(
-            templates[str(self.project.id)]["location"],
-            {
-                "latitude": None,
-                "longitude": None,
-                "link": "",
-            },
+            form.initial["extra_original_title"],
+            "Sousou no Frieren",
         )
+        self.assertEqual(form.initial["extra_season"], "Сезон 2")
+        self.assertEqual(form.initial["extra_anime_rating"], 9)
+        self.assertTrue(form.fields["extra_original_title"].required)
+        self.assertFalse(form.fields["extra_season"].required)
+        self.assertFalse(form.fields["extra_anime_rating"].disabled)
+        self.assertEqual(form.fields["extra_anime_rating"].min_value, 1)
+        self.assertEqual(form.fields["extra_anime_rating"].max_value, 10)
 
-    def test_anime_extra_template_includes_season(self) -> None:
+    def test_anime_rating_is_limited_to_ten(self) -> None:
         self.project.post_type = PostType.ANIME
         self.project.save(update_fields=("post_type",))
 
-        form = PostAdminForm()
-        templates = json.loads(
-            form.fields["extra"].widget.attrs["data-project-extra-templates"]
+        form = PostAdminForm(
+            data={
+                "project": self.project.id,
+                "number": self.post.number,
+                "name": "",
+                "text": "",
+                "extra_original_title": "Title",
+                "extra_anime_rating": 11,
+                "extra_result": "да",
+            },
+            instance=self.post,
         )
 
-        self.assertEqual(templates[str(self.project.id)]["season"], "")
+        self.assertFalse(form.is_valid())
+        self.assertIn("extra_anime_rating", form.errors)
 
-    def test_general_post_extra_template_includes_markdown_flag(self) -> None:
-        self.project.post_type = PostType.POST
+    def test_abandoned_extra_fields_are_serialized_and_preserve_unknowns(
+        self,
+    ) -> None:
+        self.project.post_type = PostType.ABANDONED
         self.project.save(update_fields=("post_type",))
-
-        form = PostAdminForm()
-        templates = json.loads(
-            form.fields["extra"].widget.attrs["data-project-extra-templates"]
+        self.post.extra = {
+            "custom": {"kept": True},
+            "original_title": "remove me",
+            "location": {"note": "keep me", "link": "old"},
+        }
+        self.post.save(update_fields=("extra",))
+        form = PostAdminForm(
+            data={
+                "project": self.project.id,
+                "number": self.post.number,
+                "name": "",
+                "text": "",
+                "extra_abandoned_rating": "4.5",
+                "extra_location_latitude": "41.6880746",
+                "extra_location_longitude": "44.8216462",
+                "extra_location_link": "osm.link/qwerty",
+                "extra_uniqueness": 5,
+                "extra_monumentality": 3,
+                "extra_atmosphere": 4,
+                "extra_liveliness": 2,
+            },
+            instance=self.post,
         )
 
-        self.assertIs(templates[str(self.project.id)]["md"], False)
+        self.assertTrue(form.is_valid(), form.errors)
+        post = form.save()
+
+        self.assertEqual(post.extra["rating"], 4.5)
+        self.assertEqual(post.extra["location"]["latitude"], 41.6880746)
+        self.assertEqual(post.extra["location"]["longitude"], 44.8216462)
+        self.assertEqual(post.extra["location"]["link"], "osm.link/qwerty")
+        self.assertEqual(post.extra["location"]["note"], "keep me")
+        self.assertEqual(post.extra["custom"], {"kept": True})
+        self.assertNotIn("original_title", post.extra)
+
+    def test_abandoned_integer_scores_are_limited_to_five(self) -> None:
+        self.project.post_type = PostType.ABANDONED
+        self.project.save(update_fields=("post_type",))
+        form = PostAdminForm(
+            data={
+                "project": self.project.id,
+                "number": self.post.number,
+                "name": "",
+                "text": "",
+                "extra_abandoned_rating": "4.5",
+                "extra_location_latitude": "41.6",
+                "extra_location_longitude": "44.8",
+                "extra_location_link": "osm.link/qwerty",
+                "extra_uniqueness": 6,
+                "extra_monumentality": 3,
+                "extra_atmosphere": 4,
+                "extra_liveliness": 2,
+            },
+            instance=self.post,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("extra_uniqueness", form.errors)
+
+    def test_post_admin_field_layout(self) -> None:
+        self.assertEqual(
+            PostAdmin.fieldsets[0][1]["fields"],
+            (
+                "project",
+                "number",
+                "name",
+                "date",
+                "main_file",
+                "text",
+            ),
+        )
+        self.assertIn(
+            "fieldset-extra",
+            PostAdmin.fieldsets[1][1]["classes"],
+        )
+        self.assertEqual(
+            PostAdmin.fieldsets[1][1]["fields"],
+            (
+                "extra_md",
+                "extra_original_title",
+                "extra_season",
+                "extra_anime_rating",
+                "extra_result",
+                "extra_abandoned_rating",
+                "extra_location_link",
+                "extra_location_latitude",
+                "extra_location_longitude",
+                "extra_uniqueness",
+                "extra_monumentality",
+                "extra_atmosphere",
+                "extra_liveliness",
+            ),
+        )
+        self.assertEqual(
+            PostAdmin.fieldsets[2][1]["fields"],
+            (
+                "related_posts",
+                "tags",
+            ),
+        )
 
 
 class ProjectApiTests(APITestCase):
