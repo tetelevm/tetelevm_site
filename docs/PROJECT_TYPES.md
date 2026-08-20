@@ -31,6 +31,7 @@ combined independently.
   uninterrupted strings wrap instead of extending beyond the post width.
 - Headers that contain both a name and date place the name on the left and the
   date on the right.
+- All dates in the public frontend are displayed as `YYYY.MM.DD`.
 - Card lists use the shared `PostCardList`: one outer frame encloses the
   square-cropped image and an optional caption containing a label and rating,
   so they read as a single card. Image-only cards omit the caption section.
@@ -94,7 +95,8 @@ List:
 - the regular 600-pixel preview of the main photograph appears square-cropped
   in the shared card layout rather than using its square thumbnail;
 - three cards appear per row on wide screens, decreasing responsively;
-- no caption is displayed; the card contains only the image.
+- the optional post date appears below the image, aligned to the left;
+- the shared post label is not displayed.
 
 Post:
 
@@ -103,6 +105,7 @@ Post:
 - additional photographs appear in the shared adaptive carousel in
   `PostFile.order`;
 - photographs open their originals in the shared full-screen lightbox;
+- the optional post date appears centered below the carousel;
 - name and text are not displayed.
 
 ## `anime` — Anime

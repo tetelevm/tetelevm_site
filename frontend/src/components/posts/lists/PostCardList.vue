@@ -1,4 +1,6 @@
 <script setup>
+import { formatDate } from "../../../utils/date.js"
+
 defineProps({
   items: {
     type: Array,
@@ -24,8 +26,13 @@ defineProps({
           loading="lazy"
         />
       </span>
-      <span v-if="item.label" class="post-card__caption">
-        <span class="post-card__label">{{ item.label }}</span>
+      <span v-if="item.label || item.date" class="post-card__caption">
+        <span v-if="item.label" class="post-card__label">{{ item.label }}</span>
+        <time
+          v-if="item.date"
+          class="post-card__date"
+          :datetime="item.date"
+        >{{ formatDate(item.date) }}</time>
         <span
           v-if="item.rating !== null && item.rating !== undefined"
           class="post-card__rating"
@@ -101,6 +108,13 @@ defineProps({
   line-height: 1.35;
 }
 
+.post-card__date {
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+  font-size: clamp(0.82rem, 2vw, 0.95rem);
+  line-height: 1.3;
+}
+
 .post-card:hover,
 .post-card:focus-visible {
   z-index: 2;
@@ -112,6 +126,8 @@ defineProps({
 
 .post-card:hover .post-card__label,
 .post-card:focus-visible .post-card__label,
+.post-card:hover .post-card__date,
+.post-card:focus-visible .post-card__date,
 .post-card:hover .post-card__rating,
 .post-card:focus-visible .post-card__rating {
   color: var(--color-text);

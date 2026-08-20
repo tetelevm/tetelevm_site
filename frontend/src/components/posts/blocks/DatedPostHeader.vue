@@ -1,4 +1,6 @@
 <script setup>
+import { formatDate } from "../../../utils/date.js"
+
 import PostTitle from "./PostTitle.vue"
 
 defineProps({
@@ -16,7 +18,11 @@ defineProps({
 <template>
   <header class="dated-post-header">
     <PostTitle :title="title" />
-    <span v-if="date" class="dated-post-header__date">{{ date }}</span>
+    <time
+      v-if="date"
+      class="dated-post-header__date"
+      :datetime="date"
+    >{{ formatDate(date) }}</time>
   </header>
 </template>
 

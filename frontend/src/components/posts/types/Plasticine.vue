@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from "vue"
 
+import { formatDate } from "../../../utils/date.js"
 import MediaCarousel from "../../media/MediaCarousel.vue"
 import PostImage from "../blocks/PostImage.vue"
 import PostLayout from "../blocks/PostLayout.vue"
@@ -39,6 +40,12 @@ const additionalPhotos = computed(() =>
       :items="additionalPhotos"
       label="Дополнительные фотографии"
     />
+
+    <time
+      v-if="post.date"
+      class="plasticine-post__date"
+      :datetime="post.date"
+    >{{ formatDate(post.date) }}</time>
   </PostLayout>
 </template>
 
@@ -55,5 +62,14 @@ const additionalPhotos = computed(() =>
 
 .plasticine-post__carousel {
   width: 100%;
+}
+
+.plasticine-post__date {
+  align-self: center;
+  color: var(--color-muted);
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  margin-top: 1.5rem;
 }
 </style>
