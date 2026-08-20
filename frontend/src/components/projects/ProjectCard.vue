@@ -59,6 +59,12 @@ const statusBadges = {
         <span v-else class="project-card__placeholder" aria-hidden="true">
           {{ title.slice(0, 1) }}
         </span>
+        <span
+          v-if="isPrivate"
+          class="project-card__private-lock"
+          aria-label="Приватный проект"
+          title="Приватный проект"
+        >🔒</span>
         <span class="project-card__post-count" aria-hidden="true">
           {{ postCount }}
         </span>
@@ -72,7 +78,6 @@ const statusBadges = {
       >
         {{ statusBadges[status].label }}
       </span>
-      <span v-if="isPrivate" class="project-card__shade" aria-hidden="true" />
     </span>
   </RouterLink>
 </template>
@@ -187,12 +192,23 @@ const statusBadges = {
   text-overflow: ellipsis;
 }
 
-.project-card__shade {
+.project-card__private-lock {
   position: absolute;
-  inset: 0;
+  top: 0.65rem;
+  left: 0.65rem;
   z-index: 1;
-  background: rgba(15, 16, 13, 0.22);
-  pointer-events: none;
+  width: 1.8rem;
+  height: 1.8rem;
+  display: grid;
+  border: 1px solid rgba(190, 194, 184, 0.38);
+  border-radius: 50%;
+  color: #909090;
+  background: rgba(21, 22, 18, 0.78);
+  font-size: 0.78rem;
+  filter: grayscale(1);
+  line-height: 1;
+  place-items: center;
+  backdrop-filter: blur(0.4rem);
 }
 
 .project-card__badge {

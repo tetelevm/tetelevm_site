@@ -105,8 +105,8 @@ A project determines:
 Project cards communicate lifecycle status separately from visibility. Open
 projects have no status label, paused projects show “на паузе” in a warm
 yellow-orange color, and closed projects show “завершён” in red. Private
-projects may remain visually dimmed, but their public/private state is not
-written on the card.
+projects are not dimmed; a small gray lock in the top-left corner of the cover
+communicates their visibility without a written status label.
 The project page repeats a paused or closed status beside its material count,
 using the same warm or red status color; open projects show only the count.
 Each project card shows its total number of posts in a small circle at the
