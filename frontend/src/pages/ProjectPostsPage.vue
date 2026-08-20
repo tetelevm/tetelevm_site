@@ -81,6 +81,7 @@ watch(
         back-to="/projects/"
         back-label="← все проекты"
         :meta="pagination ? `материалов: ${pagination.totalItems}` : ''"
+        :status="project?.status"
         :description="project?.description"
       />
     </template>
