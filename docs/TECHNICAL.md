@@ -219,7 +219,7 @@ Avoid a generic page builder or universal CMS schema without a demonstrated
 need.
 
 `Post.display_label` is the single source for list and administrative labels. It
-prefers a trimmed name, then a whitespace-normalized 120-character text excerpt,
+prefers a trimmed name, then a whitespace-normalized 90-character text excerpt,
 then counts of unique files by media type, and finally `🌀`. A custom
 `PostQuerySet.with_display_file_counts()` method annotates the four per-type
 counts. List API and admin querysets opt into it explicitly, avoiding per-post
