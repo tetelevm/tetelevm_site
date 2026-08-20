@@ -1,4 +1,6 @@
 <script setup>
+import { formatDate } from "../../../utils/date.js"
+
 defineProps({
   items: {
     type: Array,
@@ -24,7 +26,11 @@ defineProps({
         />
       </span>
       <span class="post-row__label">{{ item.label }}</span>
-      <span v-if="item.date" class="post-row__date">{{ item.date }}</span>
+      <time
+        v-if="item.date"
+        class="post-row__date"
+        :datetime="item.date"
+      >{{ formatDate(item.date) }}</time>
     </RouterLink>
   </div>
 </template>
