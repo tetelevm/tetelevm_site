@@ -204,8 +204,8 @@ class Post(models.Model):
         if excerpt:
             return (
                 excerpt
-                if len(excerpt) <= 120
-                else f"{excerpt[:117].rstrip()}..."
+                if len(excerpt) <= 90
+                else f"{excerpt[:87].rstrip()}..."
             )
 
         counts = self._display_file_counts()

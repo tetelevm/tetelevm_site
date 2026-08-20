@@ -86,7 +86,7 @@ class PostDisplayLabelTests(TestCase):
             text="word " * 40,
         )
 
-        self.assertEqual(len(post.display_label), 120)
+        self.assertEqual(len(post.display_label), 90)
         self.assertTrue(post.display_label.endswith("..."))
 
     def test_annotated_file_labels_do_not_make_n_plus_one_queries(self) -> None:

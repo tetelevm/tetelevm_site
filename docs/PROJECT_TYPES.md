@@ -40,7 +40,7 @@ combined independently.
 - Type-specific list components decide which post data becomes the image,
   label, rating, and date; the shared components only render those values.
 - Every list item receives the shared post label. It prefers a trimmed `name`,
-  then a whitespace-normalized `text` excerpt of at most 120 characters, then
+  then a whitespace-normalized `text` excerpt of at most 90 characters, then
   unique-file counts such as `📷 3 · 🎬 1 · 🎵 1 · 📎 2`; a completely empty
   post uses `🌀`. Type-specific lists may omit the visible caption when their
   presentation is intentionally image-only, while still using the label for
@@ -100,12 +100,12 @@ List:
 
 Post:
 
+- the optional post date appears on the right in the shared dated header;
 - the full main photograph appears first;
 - a simple horizontal divider separates it from the additional photographs;
 - additional photographs appear in the shared adaptive carousel in
   `PostFile.order`;
 - photographs open their originals in the shared full-screen lightbox;
-- the optional post date appears centered below the carousel;
 - name and text are not displayed.
 
 ## `anime` — Anime

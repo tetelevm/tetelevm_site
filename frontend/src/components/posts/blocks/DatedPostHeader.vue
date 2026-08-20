@@ -6,7 +6,7 @@ import PostTitle from "./PostTitle.vue"
 defineProps({
   title: {
     type: String,
-    required: true,
+    default: "",
   },
   date: {
     type: String,
@@ -17,7 +17,7 @@ defineProps({
 
 <template>
   <header class="dated-post-header">
-    <PostTitle :title="title" />
+    <PostTitle v-if="title" :title="title" />
     <time
       v-if="date"
       class="dated-post-header__date"
@@ -28,6 +28,7 @@ defineProps({
 
 <style scoped>
 .dated-post-header {
+  width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
@@ -37,7 +38,7 @@ defineProps({
 .dated-post-header__date {
   grid-column: 2;
   color: var(--color-muted);
-  font-size: 0.82rem;
+  font-size: 1.25rem;
   font-variant-numeric: tabular-nums;
 }
 
