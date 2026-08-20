@@ -106,6 +106,8 @@ projects have no status label, paused projects show “на паузе” in a w
 yellow-orange color, and closed projects show “завершён” in red. Private
 projects may remain visually dimmed, but their public/private state is not
 written on the card.
+The project page repeats a paused or closed status beside its material count,
+using the same warm or red status color; open projects show only the count.
 Each project card shows its total number of posts in a small circle at the
 bottom-left of its cover.
 
