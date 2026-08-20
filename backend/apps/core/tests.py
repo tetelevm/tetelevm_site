@@ -155,6 +155,46 @@ class FileAdminTests(TestCase):
         self.assertContains(response, uploaded.preview.url)
         self.assertContains(response, "max-height:600px")
 
+    def test_file_changelist_links_to_bulk_upload(self) -> None:
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("admin:core_file_changelist"))
+
+        self.assertContains(response, reverse("admin:core_file_bulk_upload"))
+
+    def test_bulk_upload_creates_one_record_per_file(self) -> None:
+        self.client.force_login(self.admin)
+
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root, MEDIA_URL="/files/"):
+                response = self.client.post(
+                    reverse("admin:core_file_bulk_upload"),
+                    {
+                        "files": [
+                            SimpleUploadedFile("first.txt", b"first"),
+                            SimpleUploadedFile("second.mp3", b"second"),
+                        ]
+                    },
+                )
+
+        self.assertRedirects(response, reverse("admin:core_file_changelist"))
+        self.assertEqual(File.objects.count(), 2)
+        self.assertCountEqual(
+            File.objects.values_list("original_name", flat=True),
+            ["first.txt", "second.mp3"],
+        )
+
+    def test_bulk_upload_requires_add_permission(self) -> None:
+        user_model = get_user_model()
+        staff = user_model.objects.create_user("staff", password="staff-pass")
+        staff.is_staff = True
+        staff.save(update_fields=["is_staff"])
+        self.client.force_login(staff)
+
+        response = self.client.get(reverse("admin:core_file_bulk_upload"))
+
+        self.assertEqual(response.status_code, 403)
+
 
 class AuthenticationApiTests(TestCase):
     def setUp(self) -> None:
