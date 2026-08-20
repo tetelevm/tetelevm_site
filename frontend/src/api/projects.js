@@ -14,7 +14,7 @@ async function getJson(path, notFoundMessage) {
 }
 
 export function getProjects() {
-  return getJson("/_api/projects/", "Проекты не найдены")
+  return getJson("/_api/projects/", "Архив не найден")
 }
 
 export function getProjectPosts(projectCode, page = 1) {

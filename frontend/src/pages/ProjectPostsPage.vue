@@ -78,8 +78,8 @@ watch(
 
     <template #subheader>
       <PageSubheader
-        back-to="/projects/"
-        back-label="← все проекты"
+        back-to="/archive/"
+        back-label="← архив"
         :meta="pagination ? `материалов: ${pagination.totalItems}` : ''"
         :status="project?.status"
         :description="project?.description"

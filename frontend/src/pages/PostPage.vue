@@ -55,7 +55,7 @@ watch(
     <template #subheader>
       <PageSubheader
         v-if="post"
-        :back-to="`/projects/${post.projectCode}/`"
+        :back-to="`/archive/${post.projectCode}/`"
         back-label="← к проекту"
       />
     </template>

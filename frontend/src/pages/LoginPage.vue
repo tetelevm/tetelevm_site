@@ -17,7 +17,7 @@ async function submitLogin() {
 
   try {
     await loginUser(username.value, password.value)
-    await router.push("/projects/")
+    await router.push("/archive/")
   } catch (error) {
     errorMessage.value =
       error.message === "Invalid credentials"
@@ -34,7 +34,7 @@ onMounted(async () => {
       await loadSession()
     }
     if (authState.isAuthenticated) {
-      await router.replace("/projects/")
+      await router.replace("/archive/")
     }
   } catch {
     errorMessage.value = "не удалось проверить сессию"

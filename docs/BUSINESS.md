@@ -70,9 +70,10 @@ The Content area contains material created by the site owner, including
 articles, notes, photographs, anime write-ups, long-form text, and media
 publications.
 
-The Content landing page shows projects, not a single feed mixing unrelated
-items. Each project is an independent collection with its own list of material
-and may use a presentation suited to its purpose.
+The public section is named “Archive” and is available at `/archive/`. Its
+landing page shows projects, not a single feed mixing unrelated items. Each
+project is an independent collection with its own list of material and may use
+a presentation suited to its purpose.
 
 ### Login
 
