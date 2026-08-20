@@ -39,7 +39,7 @@ The administrator is the site owner. The administrator can:
 - create and edit project items;
 - edit type-specific item metadata through individual validated fields instead
   of raw JSON;
-- upload media used by the content;
+- upload media used by the content, including many files in one operation;
 - see generated image thumbnails directly in the administrative file list and
   post-file inlines, and a larger preview on an image file's change page;
 - mark projects as public or private;

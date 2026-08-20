@@ -130,7 +130,10 @@ results on scroll. File choices are searchable by original upload name and order
 by newest upload first. The main file changelist displays existing image
 thumbnails inline at 64 by 64 pixels and leaves the preview cell empty for
 non-image files. An image file's change page shows its aspect-ratio-preserving
-600-pixel preview. Saved `PostFileInline` rows show 64-pixel thumbnails and use
+600-pixel preview. The file changelist also links to an admin-only bulk upload
+form that accepts multiple browser-selected files and creates one `File` record
+per upload using the model's normal media-processing path. Saved `PostFileInline`
+rows show 64-pixel thumbnails and use
 `select_related("file")` to avoid per-row queries; post choices are ordered by
 descending database ID.
 Post choices and the post changelist use the same derived display label as the
