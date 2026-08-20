@@ -197,7 +197,7 @@ Post
     project -> Project
     number: unique within project
     optional date
-    link: /projects/<project link>/<number>/
+    link: /archive/<project link>/<number>/
     optional name and text
     optional main_file -> File
     extra: JSON
@@ -245,9 +245,9 @@ The intended routes are:
 ```text
 /                               About
 /login/                         Guest login
-/projects/                      Projects visible to the visitor
-/projects/<project>/            Items in a project
-/projects/<project>/<item>/     Item detail when the project needs one
+/archive/                       Projects visible to the visitor
+/archive/<project>/             Items in a project
+/archive/<project>/<item>/      Item detail when the project needs one
 ```
 
 Exact identifiers and slug behavior remain deferred. The Content landing page
@@ -271,7 +271,7 @@ them from the public site structure. Current routes are:
 ```
 
 Future internal endpoints should follow the same `/_name/` convention. Public
-pages such as `/`, `/login/`, and `/projects/` do not use this prefix.
+pages such as `/`, `/login/`, and `/archive/` do not use this prefix.
 
 ## Media
 
@@ -318,9 +318,9 @@ The current router implements:
 
 ```text
 /                About-page construction notice
-/projects/        Projects loaded from the REST API
-/projects/:project/ Project posts loaded from the REST API
-/projects/:project/:postNumber/ Individual post loaded from the REST API
+/archive/                       Projects loaded from the REST API
+/archive/:project/              Project posts loaded from the REST API
+/archive/:project/:postNumber/  Individual post loaded from the REST API
 /login/          Session login
 ```
 

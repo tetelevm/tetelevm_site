@@ -14,12 +14,12 @@ const navigationText = {
   ru: {
     label: "Основная навигация",
     home: "главная",
-    projects: "проекты",
+    projects: "архив",
   },
   en: {
     label: "Main navigation",
     home: "home",
-    projects: "projects",
+    projects: "archive",
   },
 }
 </script>
@@ -40,7 +40,7 @@ const navigationText = {
       <RouterLink
         class="site-header__link"
         :class="{ 'site-header__link--active': activePage === 'projects' }"
-        to="/projects/"
+        to="/archive/"
       >
         {{ navigationText[props.language].projects }}
       </RouterLink>

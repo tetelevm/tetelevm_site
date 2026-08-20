@@ -192,7 +192,7 @@ class Post(models.Model):
 
     @property
     def link(self) -> str:
-        return f"/projects/{self.project.link}/{self.number}/"
+        return f"/archive/{self.project.link}/{self.number}/"
 
     @property
     def display_label(self) -> str:

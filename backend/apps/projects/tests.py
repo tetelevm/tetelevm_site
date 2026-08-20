@@ -683,7 +683,7 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.data["projectCode"], "public")
         self.assertEqual(response.data["projectName"], "Public")
         self.assertEqual(response.data["postType"], PostType.TEXT)
-        self.assertEqual(response.data["link"], "/projects/public/1/")
+        self.assertEqual(response.data["link"], "/archive/public/1/")
         self.assertEqual(response.data["relatedPosts"], [])
         self.assertNotIn("relatedPost", response.data)
         self.assertIsNone(response.data["previousPost"])
@@ -723,7 +723,7 @@ class ProjectApiTests(APITestCase):
             response.data["previousPost"],
             {
                 "number": previous_post.number,
-                "link": "/projects/public/4/",
+                "link": "/archive/public/4/",
                 "label": "Earlier post",
             },
         )
@@ -731,7 +731,7 @@ class ProjectApiTests(APITestCase):
             response.data["nextPost"],
             {
                 "number": next_post.number,
-                "link": "/projects/public/14/",
+                "link": "/archive/public/14/",
                 "label": "Later post without a name",
             },
         )
@@ -792,7 +792,7 @@ class ProjectApiTests(APITestCase):
                 {
                     "id": related_post.id,
                     "number": 2,
-                    "link": "/projects/public/2/",
+                    "link": "/archive/public/2/",
                     "label": "Related post",
                     "thumbnail": "/files/thumbnail/related.jpg",
                     "date": "2026-08-18",
@@ -809,7 +809,7 @@ class ProjectApiTests(APITestCase):
 
         self.assertEqual(
             [post["link"] for post in reverse_response.data["relatedPosts"]],
-            ["/projects/public/1/"],
+            ["/archive/public/1/"],
         )
 
     def test_anonymous_user_does_not_receive_private_related_posts(self) -> None:
@@ -839,7 +839,7 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             [post["link"] for post in response.data["relatedPosts"]],
-            ["/projects/private/1/"],
+            ["/archive/private/1/"],
         )
 
     def test_anonymous_user_cannot_retrieve_post_from_private_project(self) -> None:

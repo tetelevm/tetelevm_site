@@ -19,14 +19,14 @@ async function loadProjects() {
     projects.value = response.map((project) => ({
       id: project.id,
       title: project.name,
-      href: `/projects/${project.link}/`,
+      href: `/archive/${project.link}/`,
       image: project.cover,
       isPrivate: !project.isPublic,
       status: project.status,
       postCount: project.postCount,
     }))
   } catch (error) {
-    errorMessage.value = error.message || "Не удалось загрузить проекты"
+    errorMessage.value = error.message || "Не удалось загрузить архив"
   } finally {
     isLoading.value = false
   }
@@ -37,7 +37,7 @@ onMounted(loadProjects)
 
 <template>
   <MainLayout active-page="projects">
-    <h1 class="visually-hidden">Проекты</h1>
+    <h1 class="visually-hidden">Архив</h1>
     <PageStatus
       v-if="isLoading || errorMessage"
       :loading="isLoading"

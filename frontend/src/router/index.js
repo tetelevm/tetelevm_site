@@ -14,17 +14,17 @@ const router = createRouter({
       component: HomePage,
     },
     {
-      path: "/projects/",
+      path: "/archive/",
       name: "projects",
       component: ProjectsPage,
     },
     {
-      path: "/projects/:project/",
+      path: "/archive/:project/",
       name: "project-posts",
       component: ProjectPostsPage,
     },
     {
-      path: "/projects/:project/:postNumber/",
+      path: "/archive/:project/:postNumber/",
       name: "post",
       component: PostPage,
     },
@@ -32,6 +32,24 @@ const router = createRouter({
       path: "/login/",
       name: "login",
       component: LoginPage,
+    },
+    {
+      path: "/projects/",
+      redirect: "/archive/",
+    },
+    {
+      path: "/projects/:project/",
+      redirect: (to) => ({
+        path: `/archive/${to.params.project}/`,
+        query: to.query,
+      }),
+    },
+    {
+      path: "/projects/:project/:postNumber/",
+      redirect: (to) => ({
+        path: `/archive/${to.params.project}/${to.params.postNumber}/`,
+        query: to.query,
+      }),
     },
     {
       path: "/:pathMatch(.*)*",
