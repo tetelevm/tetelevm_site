@@ -36,18 +36,6 @@ function shortenedPostLabel(post) {
     aria-label="Соседние посты"
   >
     <RouterLink
-      v-if="previousPost"
-      class="post-navigation__link post-navigation__link--previous"
-      :to="previousPost.link"
-      :aria-label="`Предыдущий пост: ${fullPostLabel(previousPost)}`"
-    >
-      <span class="post-navigation__arrow" aria-hidden="true">←</span>
-      <span class="post-navigation__text">
-        {{ shortenedPostLabel(previousPost) }}
-      </span>
-    </RouterLink>
-
-    <RouterLink
       v-if="nextPost"
       class="post-navigation__link post-navigation__link--next"
       :to="nextPost.link"
@@ -57,6 +45,18 @@ function shortenedPostLabel(post) {
         {{ shortenedPostLabel(nextPost) }}
       </span>
       <span class="post-navigation__arrow" aria-hidden="true">→</span>
+    </RouterLink>
+
+    <RouterLink
+      v-if="previousPost"
+      class="post-navigation__link post-navigation__link--previous"
+      :to="previousPost.link"
+      :aria-label="`Предыдущий пост: ${fullPostLabel(previousPost)}`"
+    >
+      <span class="post-navigation__arrow" aria-hidden="true">←</span>
+      <span class="post-navigation__text">
+        {{ shortenedPostLabel(previousPost) }}
+      </span>
     </RouterLink>
   </nav>
 </template>
@@ -93,7 +93,7 @@ function shortenedPostLabel(post) {
   word-break: break-word;
 }
 
-.post-navigation__link--next {
+.post-navigation__link--previous {
   grid-column: 2;
   justify-content: flex-end;
   text-align: right;
@@ -135,7 +135,7 @@ function shortenedPostLabel(post) {
     grid-template-columns: 1fr;
   }
 
-  .post-navigation__link--next {
+  .post-navigation__link--previous {
     grid-column: 1;
   }
 }
