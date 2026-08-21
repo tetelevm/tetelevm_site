@@ -590,25 +590,46 @@ class ProjectApiTests(APITestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.data["posts"][0]["label"], "A shared label")
 
-    def test_general_post_list_summarizes_files_and_uses_first_photo(self) -> None:
+    def test_post_and_plasticine_lists_use_main_file_thumbnail(self) -> None:
+        photo = File.objects.create(
+            original_name="photo.jpg",
+            file_type=FileType.PHOTO,
+            content="content/photo.jpg",
+            preview="preview/photo.jpg",
+            thumbnail="thumbnail/photo.jpg",
+        )
+        self.public_post.main_file = photo
+        self.public_post.save(update_fields=("main_file",))
+
+        for post_list_type in (PostListType.POST, PostListType.PLASTICINE):
+            with self.subTest(post_list_type=post_list_type):
+                self.public_project.post_list_type = post_list_type
+                self.public_project.save(update_fields=("post_list_type",))
+
+                response = self.client.get(
+                    reverse(
+                        "projects:project-posts",
+                        kwargs={"project_code": "public"},
+                    )
+                )
+
+                summary = response.data["posts"][0]
+                self.assertEqual(
+                    summary["mainFile"]["link"],
+                    "/files/thumbnail/photo.jpg",
+                )
+                self.assertNotIn("thumbnail", summary)
+
+    def test_general_post_list_does_not_select_an_additional_photo(self) -> None:
         self.public_project.post_list_type = PostListType.POST
         self.public_project.save(update_fields=("post_list_type",))
-        self.public_post.name = ""
-        self.public_post.text = ""
-        self.public_post.save(update_fields=("name", "text"))
         photo = File.objects.create(
             original_name="photo.jpg",
             file_type=FileType.PHOTO,
             content="content/photo.jpg",
             thumbnail="thumbnail/photo.jpg",
         )
-        audio = File.objects.create(
-            original_name="song.mp3",
-            file_type=FileType.AUDIO,
-            content="content/song.mp3",
-        )
         PostFile.objects.create(post=self.public_post, file=photo, order=0)
-        PostFile.objects.create(post=self.public_post, file=audio, order=1)
 
         response = self.client.get(
             reverse(
@@ -618,33 +639,8 @@ class ProjectApiTests(APITestCase):
         )
 
         summary = response.data["posts"][0]
-        self.assertEqual(summary["label"], "📷 1 · 🎵 1")
-        self.assertEqual(summary["thumbnail"], "/files/thumbnail/photo.jpg")
-
-    def test_plasticine_list_uses_preview_instead_of_thumbnail(self) -> None:
-        self.public_project.post_list_type = PostListType.PLASTICINE
-        self.public_project.save(update_fields=("post_list_type",))
-        photo = File.objects.create(
-            original_name="plasticine.jpg",
-            file_type=FileType.PHOTO,
-            content="content/plasticine.jpg",
-            preview="preview/plasticine.jpg",
-            thumbnail="thumbnail/plasticine.jpg",
-        )
-        self.public_post.main_file = photo
-        self.public_post.save(update_fields=("main_file",))
-
-        response = self.client.get(
-            reverse(
-                "projects:project-posts",
-                kwargs={"project_code": "public"},
-            )
-        )
-
-        self.assertEqual(
-            response.data["posts"][0]["mainFile"]["link"],
-            "/files/preview/plasticine.jpg",
-        )
+        self.assertIsNone(summary["mainFile"])
+        self.assertNotIn("thumbnail", summary)
 
     def test_anonymous_user_cannot_retrieve_private_project_posts(self) -> None:
         response = self.client.get(

@@ -7,10 +7,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from .models import Post, PostListType, Project
+from .models import Post, Project
 from .serializers import (
-    GeneralPostListSerializer,
-    PlasticinePostListSerializer,
     PostListSerializer,
     PostSerializer,
     ProjectListSerializer,
@@ -69,18 +67,12 @@ class ProjectPostsView(RetrieveAPIView):
             .defer("extra")
             .order_by("-number", "-id")
         )
-        list_serializer = PostListSerializer
-        if project.post_list_type == PostListType.PLASTICINE:
-            list_serializer = PlasticinePostListSerializer
-        if project.post_list_type == PostListType.POST:
-            posts = posts.prefetch_related("post_files__file")
-            list_serializer = GeneralPostListSerializer
         page = self.paginate_queryset(posts)
         assert page is not None
         assert self.paginator is not None
 
         data = dict(self.get_serializer(project).data)
-        data["posts"] = list_serializer(
+        data["posts"] = PostListSerializer(
             page,
             many=True,
             context=self.get_serializer_context(),
