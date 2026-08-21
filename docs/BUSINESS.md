@@ -40,6 +40,8 @@ The administrator is the site owner. The administrator can:
 - edit type-specific item metadata through individual validated fields instead
   of raw JSON;
 - upload media used by the content, including many files in one operation;
+- edit the original-name label of an uploaded file without renaming its stored
+  content;
 - see generated image thumbnails directly in the administrative file list and
   post-file inlines, and a larger preview on an image file's change page;
 - mark projects as public or private;
@@ -130,6 +132,9 @@ visitors.
 At the bottom of every post detail page, navigation links point to the nearest
 lower-numbered and higher-numbered posts in the same project. Missing numbers
 are skipped, and a link is omitted at the corresponding project boundary. The
+forward link to the higher-numbered post appears first on the left, while the
+back link to the lower-numbered post appears second on the right; on mobile they
+keep that top-to-bottom order. The
 visible label excerpt is limited to 80 characters and wraps even when it
 contains no natural break points. Each entire neighboring-post link is enclosed
 in a frame. Post body text also remains within the content width when it

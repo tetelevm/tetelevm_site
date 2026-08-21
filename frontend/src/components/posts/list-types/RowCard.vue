@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue"
 
-import PostCardList from "../lists/PostCardList.vue"
+import PostRowList from "./PostRowList.vue"
 
 const props = defineProps({
   posts: {
@@ -14,7 +14,8 @@ const items = computed(() =>
   props.posts.map((post) => ({
     key: post.id ?? post.number,
     link: post.link,
-    image: post.mainFile?.link,
+    image: post.mainFile?.mediaType === "photo" ? post.mainFile.link : "",
+    label: post.label,
     date: post.date,
     alt: post.label,
   })),
@@ -22,5 +23,5 @@ const items = computed(() =>
 </script>
 
 <template>
-  <PostCardList :items="items" />
+  <PostRowList :items="items" />
 </template>

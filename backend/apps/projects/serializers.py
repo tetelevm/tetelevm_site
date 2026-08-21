@@ -32,15 +32,6 @@ class FileListSerializer(serializers.ModelSerializer):
         fields = ("link", "mediaType")
 
 
-class FilePreviewListSerializer(serializers.ModelSerializer):
-    link = serializers.CharField(read_only=True)
-    mediaType = serializers.CharField(source="file_type", read_only=True)
-
-    class Meta:
-        model = File
-        fields = ("link", "mediaType")
-
-
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -170,28 +161,4 @@ class PostListSerializer(serializers.ModelSerializer):
             "mainFile",
             "rating",
             "date",
-        )
-
-
-class PlasticinePostListSerializer(PostListSerializer):
-    mainFile = FilePreviewListSerializer(source="main_file", read_only=True)
-
-
-class GeneralPostListSerializer(serializers.ModelSerializer):
-    link = serializers.CharField(read_only=True)
-    label = serializers.CharField(source="display_label", read_only=True)
-    thumbnail = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Post
-        fields = ("id", "number", "link", "label", "thumbnail", "date")
-
-    def get_thumbnail(self, obj: Post) -> str | None:
-        return next(
-            (
-                file.link_small
-                for file in post_summary_files(obj)
-                if file.file_type == FileType.PHOTO
-            ),
-            None,
         )

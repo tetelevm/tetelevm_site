@@ -2,7 +2,7 @@
 import { computed } from "vue"
 
 import PostTag from "./PostTag.vue"
-import PostRowList from "../lists/PostRowList.vue"
+import PostRowList from "../list-types/PostRowList.vue"
 
 const props = defineProps({
   relatedPosts: {

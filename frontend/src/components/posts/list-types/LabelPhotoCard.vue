@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue"
 
-import PostCardList from "../lists/PostCardList.vue"
+import PostCardList from "./PostCardList.vue"
 
 const props = defineProps({
   posts: {

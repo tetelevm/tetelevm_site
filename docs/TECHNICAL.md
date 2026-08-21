@@ -130,7 +130,9 @@ results on scroll. File choices are searchable by original upload name and order
 by newest upload first. The main file changelist displays existing image
 thumbnails inline at 64 by 64 pixels and leaves the preview cell empty for
 non-image files. An image file's change page shows its aspect-ratio-preserving
-600-pixel preview. The file changelist also links to an admin-only bulk upload
+600-pixel preview. A saved file's `original_name` can be edited as display
+metadata without renaming or moving stored content; during initial upload it is
+still derived from the browser-provided filename. The file changelist also links to an admin-only bulk upload
 form that accepts multiple browser-selected files and creates one `File` record
 per upload using the model's normal media-processing path. Saved `PostFileInline`
 rows show 64-pixel thumbnails and use
@@ -336,10 +338,11 @@ The shared frontend building blocks are:
 - `ProjectGrid` for a responsive grid of at most three cards per row;
 - `ProjectCard` for post counts, lifecycle-status badges, and visually dimmed
   private states.
-- `PostCardList` for unified framed square-image cards with an optional caption
-  and rating section;
+- `PostCardList` for rendering framed square-image cards with an optional
+  caption and rating section inside `list-types`;
 - `RatedPostHeader` for detail types whose title sits beside an overall rating.
-- `PostRowList` for presentation-only rows with a media slot, label, and date;
+- `PostRowList` for rendering rows with a media slot, label, and date inside
+  `list-types`;
 - `PostLayout` for the shared vertical composition and spacing of detail posts;
 - `PostTitle` for shared detail-title and optional subtitle typography;
 - `DatedPostHeader` and `RatedPostHeader` for compositions of `PostTitle` with
@@ -394,7 +397,9 @@ and `label`. `PostPage` renders those summaries below the type-specific content,
 using the current project name in the link text. `PostNavigation` truncates only
 the visible label portion to 80 Unicode characters, retains the full value in
 the accessible link label, permits breaks inside uninterrupted strings, and
-frames each complete link rather than its arrow alone. `PlainPostText` and
+frames each complete link rather than its arrow alone. It renders `nextPost`
+first on the left and `previousPost` second on the right, retaining the same
+order when the layout collapses to one column. `PlainPostText` and
 `MarkdownContent` apply the same overflow protection to post bodies.
 
 Projects are returned in ascending explicit project order. Posts within a
@@ -403,22 +408,26 @@ first.
 
 The project-posts page fetches a project and its posts from the REST API, then
 uses an explicit mapping from the project's `postListType` code to a component in
-`components/posts/list-types`. Each list component receives the project's
-`posts` array and maps its type-specific fields into display data for either
-`PostCardList` or `PostRowList`. The two base components contain only rendering
-logic and do not inspect API post shapes. List entries contain only the fields
-required by list components;
+`components/posts/list-types`. Several codes deliberately share adapters:
+`post`, `text`, `text_md`, and `travel` use `RowCard`; `anime` and `abandoned`
+use `RatedPhotoCard`; `door` and `plasticine` use `LabelPhotoCard`; and `photo`
+uses the image-only `PhotoCard`. Each adapter receives the project's `posts`
+array and maps the relevant fields into display data for `PostCardList` or
+`PostRowList`. Those two base renderers live beside the adapters and do not
+inspect API post shapes. List entries contain only the fields required by the
+adapters;
 they do not expose `extra`, additional files, tags, or detail-page metadata.
 Every list response includes the model-derived `label`. List `mainFile` data
 includes the stored `mediaType` so presentation types can distinguish photos,
 videos, audio, and other files without filename parsing.
-Image-only list adapters such as `photo` and `plasticine` use the label for
-accessible image text but intentionally pass an empty visible caption to
-`PostCardList`.
+The image-only `photo` adapter uses the label for accessible image text but
+passes no visible caption to `PostCardList`. `plasticine` now shares the visible
+label presentation used by `door`.
 Post dates come from the optional model field rather than `extra`. PostgreSQL
 extracts only `rating` from `extra` for its dedicated list field. General post
-lists use a dedicated summary serializer that also selects the first available
-photo thumbnail. Project posts use
+lists use the same `mainFile` summary as every other list type and do not search
+additional files for a thumbnail. All list types use one list serializer and
+standard square thumbnails. Project posts use
 page-number pagination with 50 posts per page;
 the response includes the current page, page size, total pages, and total posts.
 The frontend keeps the selected page in the URL query string and renders numeric

@@ -37,8 +37,8 @@ combined independently.
   so they read as a single card. Image-only cards omit the caption section.
 - Row lists use the shared `PostRowList` with a 100-pixel media slot, label, and
   optional date positioned near the bottom edge of the row.
-- Type-specific list components decide which post data becomes the image,
-  label, rating, and date; the shared components only render those values.
+- Shared list-type adapters decide which post data becomes the image, label,
+  rating, and date; `PostCardList` and `PostRowList` only render those values.
 - Every list item receives the shared post label. It prefers a trimmed `name`,
   then a whitespace-normalized `text` excerpt of at most 90 characters, then
   unique-file counts such as `📷 3 · 🎬 1 · 🎵 1 · 📎 2`; a completely empty
@@ -52,6 +52,8 @@ combined independently.
 - Every detail page ends with text links to the nearest lower-numbered and
   higher-numbered posts in the same project. Each link contains an arrow, the
   project name, post number, and up to 80 characters of the shared post label.
+  The higher-numbered forward link is on the left and precedes the
+  lower-numbered back link, including in the single-column mobile layout.
   The whole link is framed, and uninterrupted text wraps within its half of the
   navigation row instead of overlapping the other link.
 
@@ -92,11 +94,10 @@ Post:
 
 List:
 
-- the regular 600-pixel preview of the main photograph appears square-cropped
-  in the shared card layout rather than using its square thumbnail;
+- it uses the same labeled photo-card presentation as `door`;
+- the square thumbnail of `mainFile` appears center-cropped;
 - three cards appear per row on wide screens, decreasing responsively;
-- the optional post date appears below the image, aligned to the left;
-- the shared post label is not displayed.
+- the shared post label appears below the image; the date is not displayed.
 
 Post:
 
@@ -270,8 +271,8 @@ Post:
 List:
 
 - posts use the same full-width row structure as the text lists;
-- the first available photo from `mainFile` or ordered additional files appears
-  in the fixed 100-pixel thumbnail slot;
+- an image `mainFile` appears in the fixed 100-pixel thumbnail slot; the slot is
+  empty when `mainFile` is absent or is not an image;
 - the row uses the shared post label;
 - optional `date` appears on the right.
 

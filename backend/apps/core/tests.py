@@ -155,6 +155,23 @@ class FileAdminTests(TestCase):
         self.assertContains(response, uploaded.preview.url)
         self.assertContains(response, "max-height:600px")
 
+    def test_file_change_page_allows_editing_original_name(self) -> None:
+        uploaded = File.objects.create(
+            original_name="photo.jpg",
+            file_type=FileType.PHOTO,
+            content="content/photo.jpg",
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse("admin:core_file_change", args=(uploaded.id,)),
+            {"original_name": "renamed photo.jpg"},
+        )
+
+        self.assertRedirects(response, reverse("admin:core_file_changelist"))
+        uploaded.refresh_from_db()
+        self.assertEqual(uploaded.original_name, "renamed photo.jpg")
+
     def test_file_changelist_links_to_bulk_upload(self) -> None:
         self.client.force_login(self.admin)
 
