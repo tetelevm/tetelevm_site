@@ -64,8 +64,12 @@ class FileAdmin(admin.ModelAdmin):
         form = BulkFileUploadForm(request.POST or None, request.FILES or None)
         if request.method == "POST" and form.is_valid():
             files = form.cleaned_data["files"]
+            prefix = form.cleaned_data["prefix"]
             for uploaded_file in files:
-                File.objects.create(content=uploaded_file)
+                file = File.objects.create(content=uploaded_file)
+                if prefix:
+                    file.original_name = f"{prefix}{file.original_name}"
+                    file.save(update_fields=("original_name",))
             self.message_user(
                 request,
                 _("Successfully uploaded %(count)d files.") % {"count": len(files)},

@@ -354,7 +354,8 @@ class PostAdmin(admin.ModelAdmin):
             None,
             {
                 "fields": (
-                    ("project", "number"),
+                    "project",
+                    "number",
                     "name",
                     "date",
                     "main_file",
@@ -395,7 +396,7 @@ class PostAdmin(admin.ModelAdmin):
             },
         ),
     )
-    list_display = ("number", "display_label", "project")
+    list_display = ("project", "number", "display_label")
     list_filter = ("project",)
     search_fields = ("name", "text", "project__name", "number")
     ordering = ("-id",)
