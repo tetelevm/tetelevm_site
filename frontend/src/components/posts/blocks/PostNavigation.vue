@@ -41,10 +41,10 @@ function shortenedPostLabel(post) {
       :to="nextPost.link"
       :aria-label="`Следующий пост: ${fullPostLabel(nextPost)}`"
     >
+      <span class="post-navigation__arrow" aria-hidden="true">←</span>
       <span class="post-navigation__text">
         {{ shortenedPostLabel(nextPost) }}
       </span>
-      <span class="post-navigation__arrow" aria-hidden="true">→</span>
     </RouterLink>
 
     <RouterLink
@@ -53,10 +53,10 @@ function shortenedPostLabel(post) {
       :to="previousPost.link"
       :aria-label="`Предыдущий пост: ${fullPostLabel(previousPost)}`"
     >
-      <span class="post-navigation__arrow" aria-hidden="true">←</span>
       <span class="post-navigation__text">
         {{ shortenedPostLabel(previousPost) }}
       </span>
+      <span class="post-navigation__arrow" aria-hidden="true">→</span>
     </RouterLink>
   </nav>
 </template>
