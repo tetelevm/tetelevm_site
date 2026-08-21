@@ -74,7 +74,6 @@ class File(models.Model):
         _("Original name"),
         max_length=255,
         blank=True,
-        editable=False,
     )
     file_type = models.CharField(
         _("File type"),
