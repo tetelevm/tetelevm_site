@@ -1,5 +1,6 @@
 Django>=5.2,<5.3
 djangorestframework>=3.16,<4
 gunicorn>=23.0,<24
+ipython>=9.0,<10
 psycopg[binary]>=3.2,<4
 Pillow>=11.0,<12

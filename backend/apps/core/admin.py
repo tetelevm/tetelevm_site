@@ -21,7 +21,6 @@ class FileAdmin(admin.ModelAdmin):
     readonly_fields = (
         "image_preview",
         "id",
-        "original_name",
         "file_type",
         "preview",
         "thumbnail",
@@ -37,6 +36,16 @@ class FileAdmin(admin.ModelAdmin):
     list_filter = ("file_type",)
     search_fields = ("original_name",)
     ordering = ("-uploaded_at",)
+
+    def get_readonly_fields(
+        self,
+        request: HttpRequest,
+        obj: File | None = None,
+    ) -> tuple[str, ...]:
+        fields = super().get_readonly_fields(request, obj)
+        if obj is None:
+            return (*fields, "original_name")
+        return fields
 
     def get_urls(self) -> list[Any]:
         custom_urls = [
