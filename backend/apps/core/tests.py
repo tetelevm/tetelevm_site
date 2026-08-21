@@ -201,6 +201,28 @@ class FileAdminTests(TestCase):
             ["first.txt", "second.mp3"],
         )
 
+    def test_bulk_upload_adds_prefix_to_original_names(self) -> None:
+        self.client.force_login(self.admin)
+
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root, MEDIA_URL="/files/"):
+                response = self.client.post(
+                    reverse("admin:core_file_bulk_upload"),
+                    {
+                        "prefix": "ph-",
+                        "files": [
+                            SimpleUploadedFile("01.jpg", b"first"),
+                            SimpleUploadedFile("02.jpg", b"second"),
+                        ],
+                    },
+                )
+
+        self.assertRedirects(response, reverse("admin:core_file_changelist"))
+        self.assertCountEqual(
+            File.objects.values_list("original_name", flat=True),
+            ["ph-01.jpg", "ph-02.jpg"],
+        )
+
     def test_bulk_upload_requires_add_permission(self) -> None:
         user_model = get_user_model()
         staff = user_model.objects.create_user("staff", password="staff-pass")
