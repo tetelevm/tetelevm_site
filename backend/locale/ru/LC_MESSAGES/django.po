@@ -35,6 +35,16 @@ msgstr "Основное"
 msgid "Files"
 msgstr "Файлы"
 
+msgid "Original name prefix"
+msgstr "Префикс исходного имени"
+
+msgid "Added before each uploaded file name."
+msgstr "Добавляется перед именем каждого загружаемого файла."
+
+#, python-format
+msgid "Prefix and file name must contain at most 255 characters: %(name)s"
+msgstr "Префикс и имя файла должны содержать не более 255 символов: %(name)s"
+
 #: apps/core/forms.py:27
 msgid "Select all files you want to upload."
 msgstr "Выберите все файлы, которые хотите загрузить."

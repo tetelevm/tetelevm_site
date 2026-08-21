@@ -40,6 +40,8 @@ The administrator is the site owner. The administrator can:
 - edit type-specific item metadata through individual validated fields instead
   of raw JSON;
 - upload media used by the content, including many files in one operation;
+- optionally prepend one shared string to every original-name label during a
+  multi-file upload;
 - edit the original-name label of an uploaded file without renaming its stored
   content;
 - see generated image thumbnails directly in the administrative file list and

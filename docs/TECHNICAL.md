@@ -134,7 +134,10 @@ non-image files. An image file's change page shows its aspect-ratio-preserving
 metadata without renaming or moving stored content; during initial upload it is
 still derived from the browser-provided filename. The file changelist also links to an admin-only bulk upload
 form that accepts multiple browser-selected files and creates one `File` record
-per upload using the model's normal media-processing path. Saved `PostFileInline`
+per upload using the model's normal media-processing path. Its optional prefix
+is prepended to each resulting `original_name` after processing and therefore
+does not affect stored UUID paths or file-type detection. The post changelist
+places the project column before the post number and display label. Saved `PostFileInline`
 rows show 64-pixel thumbnails and use
 `select_related("file")` to avoid per-row queries; post choices are ordered by
 descending database ID.
