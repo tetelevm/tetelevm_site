@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from "vue"
 import MarkdownIt from "markdown-it"
+import markdownItContainer from "markdown-it-container"
 
 const props = defineProps({
   source: {
@@ -14,6 +15,18 @@ const markdown = new MarkdownIt({
   html: false,
   linkify: true,
   typographer: true,
+})
+
+markdown.use(markdownItContainer, "spoiler", {
+  validate: (params) => /^spoiler(?:\s+.*)?$/.test(params.trim()),
+  render: (tokens, index) => {
+    if (tokens[index].nesting === 1) {
+      const title = tokens[index].info.trim().slice("spoiler".length).trim()
+      const safeTitle = markdown.utils.escapeHtml(title || "Спойлер")
+      return `<details class="markdown-content__spoiler"><summary>${safeTitle}</summary>\n`
+    }
+    return "</details>\n"
+  },
 })
 
 const rendered = computed(() => markdown.render(props.source))
@@ -120,5 +133,28 @@ const rendered = computed(() => markdown.render(props.source))
   padding: 0.55rem 0.7rem;
   border: 1px solid var(--color-line);
   text-align: left;
+}
+
+.markdown-content :deep(.markdown-content__spoiler) {
+  margin: 0 0 1.2em;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+}
+
+.markdown-content :deep(.markdown-content__spoiler summary) {
+  color: var(--color-accent);
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.markdown-content :deep(.markdown-content__spoiler[open] summary) {
+  margin-bottom: 0.8rem;
+}
+
+.markdown-content :deep(.markdown-content__spoiler summary:focus-visible) {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 0.25rem;
 }
 </style>
