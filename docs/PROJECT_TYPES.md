@@ -5,8 +5,9 @@ for each project type. Component selection architecture and API structure are
 documented in `TECHNICAL.md`.
 
 A project defines `post_list_type` for its item list and `post_type` for an
-individual post. The codes are usually the same, but they can technically be
-combined independently.
+individual post. List types describe reusable card presentations and can be
+combined independently with detail post types. The supported list codes are
+`row_card`, `photo_card`, `label_photo_card`, and `rated_photo_card`.
 
 ## General rules
 
@@ -242,6 +243,8 @@ Post:
 - the header matches `text`, with `name` on the left and optional `date` on the
   right;
 - `text` is rendered as Markdown;
+- blocks written as `::: spoiler Optional title` through a closing `:::` are
+  collapsed by default and expand when their summary is activated;
 - headings, paragraphs, lists, links, blockquotes, code blocks, tables, images,
   and Markdown line breaks are styled for the site;
 - raw HTML embedded in Markdown is disabled and displayed as text.

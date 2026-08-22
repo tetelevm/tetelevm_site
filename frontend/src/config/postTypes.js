@@ -13,15 +13,10 @@ import TextMdPost from "../components/posts/types/TextMd.vue"
 import TravelPost from "../components/posts/types/Travel.vue"
 
 export const POST_LIST_COMPONENTS = {
-  post: RowCard,
-  photo: PhotoCard,
-  travel: RowCard,
-  text: RowCard,
-  text_md: RowCard,
-  door: LabelPhotoCard,
-  anime: RatedPhotoCard,
-  plasticine: LabelPhotoCard,
-  abandoned: RatedPhotoCard,
+  row_card: RowCard,
+  photo_card: PhotoCard,
+  label_photo_card: LabelPhotoCard,
+  rated_photo_card: RatedPhotoCard,
 }
 
 export const POST_COMPONENTS = {

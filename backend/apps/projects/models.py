@@ -19,15 +19,10 @@ class PostType(models.TextChoices):
 
 
 class PostListType(models.TextChoices):
-    POST = "post", _("Post")
-    PHOTO = "photo", _("Photo")
-    TRAVEL = "travel", _("Travel")
-    TEXT = "text", _("Text")
-    TEXT_MD = "text_md", _("Markdown text")
-    DOOR = "door", _("Door")
-    ANIME = "anime", _("Anime")
-    PLASTICINE = "plasticine", _("Plasticine")
-    ABANDONED = "abandoned", _("Abandoned")
+    ROW_CARD = "row_card", _("Row card")
+    PHOTO_CARD = "photo_card", _("Photo card")
+    LABEL_PHOTO_CARD = "label_photo_card", _("Labeled photo card")
+    RATED_PHOTO_CARD = "rated_photo_card", _("Rated photo card")
 
 
 DISPLAY_FILE_TYPES: tuple[tuple[str, str, str], ...] = (
@@ -104,7 +99,7 @@ class Project(models.Model):
         _("Post list type"),
         max_length=16,
         choices=PostListType.choices,
-        default=PostListType.POST,
+        default=PostListType.ROW_CARD,
     )
     is_public = models.BooleanField(_("Public"), default=True)
     status = models.CharField(

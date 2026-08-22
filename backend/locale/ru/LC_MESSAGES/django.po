@@ -188,6 +188,22 @@ msgstr "Пластилинки"
 msgid "Abandoned"
 msgstr "Заброшенное"
 
+#: apps/projects/models.py:23
+msgid "Row card"
+msgstr "Строка"
+
+#: apps/projects/models.py:24
+msgid "Photo card"
+msgstr "Фото"
+
+#: apps/projects/models.py:25
+msgid "Labeled photo card"
+msgstr "Фото с подписью"
+
+#: apps/projects/models.py:26
+msgid "Rated photo card"
+msgstr "Фото с рейтингом"
+
 #: apps/projects/models.py:85
 msgid "Open"
 msgstr "Открыт"
