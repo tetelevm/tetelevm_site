@@ -212,11 +212,12 @@ Post
 ```
 
 A project is an independent content collection. It owns the visibility and
-presentation context inherited by its posts. Its post and post-list presentation
-types use separate explicit choice lists, currently containing `post`, `photo`,
-`travel`, `text`, `text_md`, `door`, `anime`, `plasticine`, and `abandoned`
-options. A post belongs to exactly one project; its number determines its
-position and is unique within that project.
+presentation context inherited by its posts. Detail presentation types use the
+explicit `post`, `photo`, `travel`, `text`, `text_md`, `door`, `anime`,
+`plasticine`, and `abandoned` choices. List presentation is independent and
+uses reusable card choices: `row_card`, `photo_card`, `label_photo_card`, and
+`rated_photo_card`. A post belongs to exactly one project; its number determines
+its position and is unique within that project.
 Additional post files are connected through `PostFile`, which stores their
 order. Post relationships use Django's implicit self-referential many-to-many
 table and are symmetric: adding either side makes the other side related too.
@@ -317,7 +318,10 @@ application should not become a runtime page-builder.
 Markdown post text is rendered client-side with `markdown-it`. The `text_md`
 type always uses it, while the general `post` type opts in per item through
 `extra.md === true`. Embedded raw HTML is disabled; Markdown-generated markup
-is styled by the dedicated `MarkdownContent` component.
+is styled by the dedicated `MarkdownContent` component. The
+`markdown-it-container` plugin provides safe `::: spoiler [title]` containers,
+rendered as native `details` and `summary` elements while their body continues
+to support Markdown.
 
 The current router implements:
 
@@ -411,10 +415,9 @@ first.
 
 The project-posts page fetches a project and its posts from the REST API, then
 uses an explicit mapping from the project's `postListType` code to a component in
-`components/posts/list-types`. Several codes deliberately share adapters:
-`post`, `text`, `text_md`, and `travel` use `RowCard`; `anime` and `abandoned`
-use `RatedPhotoCard`; `door` and `plasticine` use `LabelPhotoCard`; and `photo`
-uses the image-only `PhotoCard`. Each adapter receives the project's `posts`
+`components/posts/list-types`: `row_card` uses `RowCard`, `photo_card` uses
+`PhotoCard`, `label_photo_card` uses `LabelPhotoCard`, and `rated_photo_card`
+uses `RatedPhotoCard`. Each adapter receives the project's `posts`
 array and maps the relevant fields into display data for `PostCardList` or
 `PostRowList`. Those two base renderers live beside the adapters and do not
 inspect API post shapes. List entries contain only the fields required by the
@@ -423,7 +426,7 @@ they do not expose `extra`, additional files, tags, or detail-page metadata.
 Every list response includes the model-derived `label`. List `mainFile` data
 includes the stored `mediaType` so presentation types can distinguish photos,
 videos, audio, and other files without filename parsing.
-The image-only `photo` adapter uses the label for accessible image text but
+The image-only `photo_card` adapter uses the label for accessible image text but
 passes no visible caption to `PostCardList`. `plasticine` now shares the visible
 label presentation used by `door`.
 Post dates come from the optional model field rather than `extra`. PostgreSQL
@@ -431,7 +434,7 @@ extracts only `rating` from `extra` for its dedicated list field. General post
 lists use the same `mainFile` summary as every other list type and do not search
 additional files for a thumbnail. All list types use one list serializer and
 standard square thumbnails. Project posts use
-page-number pagination with 50 posts per page;
+page-number pagination with 48 posts per page;
 the response includes the current page, page size, total pages, and total posts.
 The frontend keeps the selected page in the URL query string and renders numeric
 page controls.

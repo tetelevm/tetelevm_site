@@ -23,7 +23,7 @@ class ProjectModelTests(TestCase):
             link="second",
             cover=self.cover,
             post_type=PostType.TEXT,
-            post_list_type=PostListType.TEXT,
+            post_list_type=PostListType.ROW_CARD,
             order=2,
         )
         first = Project.objects.create(
@@ -31,7 +31,7 @@ class ProjectModelTests(TestCase):
             link="first",
             cover=self.cover,
             post_type=PostType.TEXT,
-            post_list_type=PostListType.TEXT,
+            post_list_type=PostListType.ROW_CARD,
             order=1,
         )
 
@@ -43,7 +43,7 @@ class ProjectModelTests(TestCase):
             link="same",
             cover=self.cover,
             post_type=PostType.TEXT,
-            post_list_type=PostListType.TEXT,
+            post_list_type=PostListType.ROW_CARD,
         )
 
         with self.assertRaises(IntegrityError):
@@ -52,7 +52,7 @@ class ProjectModelTests(TestCase):
                 link="same",
                 cover=self.cover,
                 post_type=PostType.TEXT,
-                post_list_type=PostListType.TEXT,
+                post_list_type=PostListType.ROW_CARD,
             )
 
 
@@ -423,7 +423,7 @@ class ProjectApiTests(APITestCase):
             link="public",
             cover=self.cover,
             post_type=PostType.TEXT,
-            post_list_type=PostListType.TRAVEL,
+            post_list_type=PostListType.ROW_CARD,
             is_public=True,
         )
         self.private_project = Project.objects.create(
@@ -431,7 +431,7 @@ class ProjectApiTests(APITestCase):
             link="private",
             cover=self.cover,
             post_type=PostType.PHOTO,
-            post_list_type=PostListType.PHOTO,
+            post_list_type=PostListType.PHOTO_CARD,
             is_public=False,
         )
         self.public_post = Post.objects.create(
@@ -505,7 +505,7 @@ class ProjectApiTests(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["postCount"], 1)
-        self.assertEqual(response.data["postListType"], PostListType.TRAVEL)
+        self.assertEqual(response.data["postListType"], PostListType.ROW_CARD)
         self.assertEqual(response.data["posts"][0]["rating"], 8)
         self.assertEqual(response.data["posts"][0]["label"], "Public post")
         self.assertEqual(response.data["posts"][0]["date"], "2026-08-17")
@@ -521,13 +521,13 @@ class ProjectApiTests(APITestCase):
             response.data["pagination"],
             {
                 "page": 1,
-                "pageSize": 50,
+                "pageSize": 48,
                 "totalPages": 1,
                 "totalItems": 1,
             },
         )
 
-    def test_project_posts_are_paginated_by_fifty(self) -> None:
+    def test_project_posts_are_paginated_by_forty_eight(self) -> None:
         Post.objects.bulk_create(
             [
                 Post(project=self.public_project, number=number)
@@ -551,15 +551,18 @@ class ProjectApiTests(APITestCase):
 
         self.assertEqual(first_page.status_code, 200)
         self.assertEqual(first_page.data["posts"][0]["number"], 51)
-        self.assertEqual(first_page.data["posts"][-1]["number"], 2)
+        self.assertEqual(first_page.data["posts"][-1]["number"], 4)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual([post["number"] for post in response.data["posts"]], [1])
+        self.assertEqual(
+            [post["number"] for post in response.data["posts"]],
+            [3, 2, 1],
+        )
         self.assertEqual(response.data["pagination"]["page"], 2)
         self.assertEqual(response.data["pagination"]["totalPages"], 2)
         self.assertEqual(response.data["pagination"]["totalItems"], 51)
 
     def test_general_post_list_uses_text_excerpt_when_name_is_missing(self) -> None:
-        self.public_project.post_list_type = PostListType.POST
+        self.public_project.post_list_type = PostListType.ROW_CARD
         self.public_project.save(update_fields=("post_list_type",))
         self.public_post.name = ""
         self.public_post.text = "  A text\nexcerpt  "
@@ -594,7 +597,7 @@ class ProjectApiTests(APITestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.data["posts"][0]["label"], "A shared label")
 
-    def test_post_and_plasticine_lists_use_main_file_thumbnail(self) -> None:
+    def test_card_lists_use_main_file_thumbnail(self) -> None:
         photo = File.objects.create(
             original_name="photo.jpg",
             file_type=FileType.PHOTO,
@@ -605,7 +608,10 @@ class ProjectApiTests(APITestCase):
         self.public_post.main_file = photo
         self.public_post.save(update_fields=("main_file",))
 
-        for post_list_type in (PostListType.POST, PostListType.PLASTICINE):
+        for post_list_type in (
+            PostListType.ROW_CARD,
+            PostListType.LABEL_PHOTO_CARD,
+        ):
             with self.subTest(post_list_type=post_list_type):
                 self.public_project.post_list_type = post_list_type
                 self.public_project.save(update_fields=("post_list_type",))
@@ -625,7 +631,7 @@ class ProjectApiTests(APITestCase):
                 self.assertNotIn("thumbnail", summary)
 
     def test_general_post_list_does_not_select_an_additional_photo(self) -> None:
-        self.public_project.post_list_type = PostListType.POST
+        self.public_project.post_list_type = PostListType.ROW_CARD
         self.public_project.save(update_fields=("post_list_type",))
         photo = File.objects.create(
             original_name="photo.jpg",
@@ -863,7 +869,10 @@ class ProjectApiTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["postListType"], PostListType.PHOTO)
+        self.assertEqual(
+            response.data["postListType"],
+            PostListType.PHOTO_CARD,
+        )
 
     def test_guest_cannot_write_projects(self) -> None:
         self.client.force_login(self.guest)
