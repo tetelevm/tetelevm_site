@@ -38,7 +38,7 @@ class ProjectListView(ListAPIView):
 
 
 class ProjectPostPagination(PageNumberPagination):
-    page_size = 50
+    page_size = 48
     page_query_param = "page"
 
 
