@@ -1,0 +1,41 @@
+{% extends "admin/change_form.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+  {{ block.super }}
+  {% if add %}
+    <script src="{% static 'core/admin/file_paste.js' %}" defer></script>
+  {% endif %}
+{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  {% if add %}
+    <link rel="stylesheet" href="{% static 'core/admin/file_paste.css' %}">
+  {% endif %}
+{% endblock %}
+
+{% block after_field_sets %}
+  {{ block.super }}
+  {% if add %}
+    <fieldset class="module aligned">
+      <div class="form-row">
+        <div>
+          <label>{% translate "Paste image" %}</label>
+          <div
+            class="clipboard-upload"
+            tabindex="0"
+            role="textbox"
+            aria-label="{% translate 'Paste image' %}"
+            data-added-text="{% translate 'Image added from clipboard:' %}"
+            data-no-image-text="{% translate 'The clipboard does not contain an image.' %}"
+          >
+            <span class="clipboard-upload__status">
+              {% translate "Focus here and paste an image with Ctrl+V or Command+V." %}
+            </span>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+  {% endif %}
+{% endblock %}

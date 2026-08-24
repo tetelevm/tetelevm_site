@@ -136,8 +136,8 @@ const rendered = computed(() => markdown.render(props.source))
 }
 
 .markdown-content :deep(.markdown-content__spoiler) {
-  margin: 0 0 1.2em;
-  padding: 0.8rem 1rem;
+  margin: 0 0 1em;
+  padding: 0.2rem 1rem;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-small);
   background: var(--color-surface);

@@ -154,6 +154,7 @@ class FileAdminTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, uploaded.preview.url)
         self.assertContains(response, "max-height:600px")
+        self.assertNotContains(response, 'class="clipboard-upload"')
 
     def test_file_change_page_allows_editing_original_name(self) -> None:
         uploaded = File.objects.create(
@@ -178,6 +179,24 @@ class FileAdminTests(TestCase):
         response = self.client.get(reverse("admin:core_file_changelist"))
 
         self.assertContains(response, reverse("admin:core_file_bulk_upload"))
+
+    def test_file_add_page_has_clipboard_image_control(self) -> None:
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("admin:core_file_add"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="clipboard-upload"')
+        self.assertContains(response, "core/admin/file_paste.js")
+        self.assertContains(response, "core/admin/file_paste.css")
+
+    def test_bulk_upload_page_has_no_clipboard_image_control(self) -> None:
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("admin:core_file_bulk_upload"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'class="clipboard-upload"')
 
     def test_bulk_upload_creates_one_record_per_file(self) -> None:
         self.client.force_login(self.admin)

@@ -159,6 +159,15 @@ class PostAdminTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "📷 1")
 
+    def test_project_description_mentions_markdown_and_spoilers(self) -> None:
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("admin:projects_project_add"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Markdown")
+        self.assertContains(response, "::: spoiler")
+
     def test_post_file_inline_displays_thumbnail(self) -> None:
         self.client.force_login(self.admin)
 
