@@ -1,0 +1,20 @@
+.clipboard-upload {
+  max-width: 42rem;
+  min-height: 5rem;
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border: 1px dashed var(--border-color);
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: var(--body-quiet-color);
+  background: var(--darkened-bg);
+  cursor: text;
+}
+
+.clipboard-upload:hover,
+.clipboard-upload:focus-visible {
+  border-color: var(--primary);
+  color: var(--body-fg);
+  outline: 2px solid transparent;
+}

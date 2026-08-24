@@ -303,6 +303,19 @@ class PostAdminForm(forms.ModelForm):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
+    def formfield_for_dbfield(
+        self,
+        db_field: Any,
+        request: HttpRequest,
+        **kwargs: Any,
+    ) -> forms.Field | None:
+        formfield = super().formfield_for_dbfield(db_field, request, **kwargs)
+        if db_field.name == "description" and formfield is not None:
+            formfield.help_text = _(
+                "Supports Markdown and ::: spoiler Title blocks."
+            )
+        return formfield
+
     list_display = (
         "name",
         "link",

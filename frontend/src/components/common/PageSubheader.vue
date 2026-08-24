@@ -1,4 +1,6 @@
 <script setup>
+import MarkdownContent from "../posts/blocks/MarkdownContent.vue"
+
 const statusLabels = {
   paused: "на паузе",
   closed: "завершён",
@@ -41,9 +43,11 @@ defineProps({
         >{{ statusLabels[status] }}</span>
       </span>
     </div>
-    <p v-if="description" class="page-subheader__description">
-      {{ description }}
-    </p>
+    <MarkdownContent
+      v-if="description"
+      class="page-subheader__description"
+      :source="description"
+    />
   </div>
 </template>
 
@@ -94,9 +98,5 @@ defineProps({
 .page-subheader__description {
   max-width: 42rem;
   margin: 2rem 0 0;
-  color: var(--color-text);
-  font-size: clamp(1.2rem,2vw,1.2rem);
-  line-height: 1.5;
-  white-space: pre-line;
 }
 </style>
