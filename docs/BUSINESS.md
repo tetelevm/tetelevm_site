@@ -81,6 +81,15 @@ landing page shows projects, not a single feed mixing unrelated items. Each
 project is an independent collection with its own list of material and may use
 a presentation suited to its purpose.
 
+Opening `/archive/random/` selects a random post from the material visible to
+the current visitor and opens that post. Anonymous visitors are never sent to
+private projects; authenticated guests and administrators may receive either
+public or private posts.
+
+Unknown public URLs and missing projects or posts show a localized not-found
+page instead of redirecting to the home page. It offers a `ru/en` switch and a
+link that opens a random post visible to the current visitor.
+
 ### Login
 
 The site provides a login page matching its own interface. Its main purpose is

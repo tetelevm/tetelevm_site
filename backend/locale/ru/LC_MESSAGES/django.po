@@ -97,6 +97,14 @@ msgstr ""
 msgid "Upload"
 msgstr "Загрузить"
 
+#: apps/core/forms.py
+msgid "Compress images"
+msgstr "Сжимать изображения"
+
+#: apps/core/forms.py
+msgid "Resize image originals to 1500 pixels and save them as JPEG."
+msgstr "Уменьшать оригиналы изображений до 1500 пикселей и сохранять в JPEG."
+
 #: apps/projects/admin.py:74
 msgid "Markdown"
 msgstr "Markdown"

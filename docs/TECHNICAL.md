@@ -255,8 +255,10 @@ The intended routes are:
 /                               About
 /login/                         Guest login
 /archive/                       Projects visible to the visitor
+/archive/random/                Open a random visible post
 /archive/<project>/             Items in a project
 /archive/<project>/<item>/      Item detail when the project needs one
+/<unknown path>                 Localized not-found page
 ```
 
 Exact identifiers and slug behavior remain deferred. The Content landing page
@@ -273,6 +275,7 @@ them from the public site structure. Current routes are:
 /_api/auth/session/            Current authentication state
 /_api/auth/login/              Session login
 /_api/auth/logout/             Session logout
+/_api/random-post/             Link to a random post visible to the visitor
 /_api/projects/                Projects visible to the current visitor
 /_api/projects/<project>/      Project metadata and paginated posts (`?page=N`)
 /_api/projects/<project>/<n>/  Individual post
@@ -281,6 +284,11 @@ them from the public site structure. Current routes are:
 
 Future internal endpoints should follow the same `/_name/` convention. Public
 pages such as `/`, `/login/`, and `/archive/` do not use this prefix.
+
+The random-post endpoint applies the same project-visibility queryset as the
+other read APIs before selecting a post. The Vue random route replaces its own
+history entry with the returned canonical post link, so refresh and sharing use
+the selected post URL rather than drawing another random result.
 
 ## Media
 
