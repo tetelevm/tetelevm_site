@@ -17,6 +17,10 @@ export function getProjects() {
   return getJson("/_api/projects/", "Архив не найден")
 }
 
+export function getRandomPost() {
+  return getJson("/_api/random-post/", "В архиве пока нет доступных постов")
+}
+
 export function getProjectPosts(projectCode, page = 1) {
   return getJson(
     `/_api/projects/${encodeURIComponent(projectCode)}/?page=${encodeURIComponent(page)}`,

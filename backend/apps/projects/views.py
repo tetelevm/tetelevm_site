@@ -6,6 +6,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import Post, Project
 from .serializers import (
@@ -35,6 +36,21 @@ class ProjectListView(ListAPIView):
         return with_post_count(
             visible_projects(self.request.user.is_authenticated)
         )
+
+
+class RandomPostView(APIView):
+    def get(self, request: Request) -> Response:
+        post = (
+            Post.objects.filter(
+                project__in=visible_projects(request.user.is_authenticated)
+            )
+            .select_related("project")
+            .order_by("?")
+            .first()
+        )
+        if post is None:
+            return Response({"detail": "No visible posts"}, status=404)
+        return Response({"link": post.link})
 
 
 class ProjectPostPagination(PageNumberPagination):

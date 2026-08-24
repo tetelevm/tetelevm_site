@@ -527,6 +527,30 @@ class ProjectApiTests(APITestCase):
             },
         )
 
+    def test_random_post_only_uses_projects_visible_to_anonymous_user(
+        self,
+    ) -> None:
+        response = self.client.get(reverse("projects:random-post"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, {"link": self.public_post.link})
+
+    def test_random_post_includes_private_projects_for_guest(self) -> None:
+        self.public_post.delete()
+        self.client.force_login(self.guest)
+
+        response = self.client.get(reverse("projects:random-post"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, {"link": self.private_post.link})
+
+    def test_random_post_returns_not_found_without_visible_posts(self) -> None:
+        self.public_post.delete()
+
+        response = self.client.get(reverse("projects:random-post"))
+
+        self.assertEqual(response.status_code, 404)
+
     def test_project_posts_are_paginated_by_forty_eight(self) -> None:
         Post.objects.bulk_create(
             [
