@@ -4,7 +4,9 @@ async function getJson(path, notFoundMessage) {
   })
 
   if (response.status === 404) {
-    throw new Error(notFoundMessage)
+    const error = new Error(notFoundMessage)
+    error.status = response.status
+    throw error
   }
   if (!response.ok) {
     throw new Error("Не удалось загрузить данные")

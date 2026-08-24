@@ -7,6 +7,7 @@ import PageStatus from "../components/common/PageStatus.vue"
 import PageSubheader from "../components/common/PageSubheader.vue"
 import PaginationNav from "../components/common/PaginationNav.vue"
 import MainLayout from "../components/layout/MainLayout.vue"
+import NotFoundPage from "./NotFoundPage.vue"
 import ProjectHeaderAction from "../components/projects/ProjectHeaderAction.vue"
 import {
   DEFAULT_POST_LIST_COMPONENT,
@@ -19,6 +20,7 @@ const project = ref(null)
 const pagination = ref(null)
 const isLoading = ref(false)
 const errorMessage = ref("")
+const isNotFound = ref(false)
 
 const postListComponent = computed(
   () =>
@@ -34,6 +36,7 @@ function routePage() {
 async function loadProject(link, page) {
   isLoading.value = true
   errorMessage.value = ""
+  isNotFound.value = false
   project.value = null
   pagination.value = null
 
@@ -42,6 +45,7 @@ async function loadProject(link, page) {
     project.value = response
     pagination.value = response.pagination
   } catch (error) {
+    isNotFound.value = error.status === 404
     errorMessage.value = error.message || "Не удалось загрузить проект"
   } finally {
     isLoading.value = false
@@ -68,7 +72,8 @@ watch(
 </script>
 
 <template>
-  <MainLayout active-page="projects">
+  <NotFoundPage v-if="isNotFound" />
+  <MainLayout v-else active-page="projects">
     <template #header-action>
       <ProjectHeaderAction
         v-if="project"

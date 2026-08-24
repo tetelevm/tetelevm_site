@@ -9,6 +9,7 @@ import MainLayout from "../components/layout/MainLayout.vue"
 import PostConnections from "../components/posts/blocks/PostConnections.vue"
 import PostNavigation from "../components/posts/blocks/PostNavigation.vue"
 import ProjectHeaderAction from "../components/projects/ProjectHeaderAction.vue"
+import NotFoundPage from "./NotFoundPage.vue"
 import {
   DEFAULT_POST_COMPONENT,
   POST_COMPONENTS,
@@ -18,6 +19,7 @@ const route = useRoute()
 const post = ref(null)
 const isLoading = ref(false)
 const errorMessage = ref("")
+const isNotFound = ref(false)
 
 const postComponent = computed(
   () => POST_COMPONENTS[post.value?.postType] ?? DEFAULT_POST_COMPONENT,
@@ -26,11 +28,13 @@ const postComponent = computed(
 async function loadPost(projectCode, postNumber) {
   isLoading.value = true
   errorMessage.value = ""
+  isNotFound.value = false
   post.value = null
 
   try {
     post.value = await getPost(projectCode, postNumber)
   } catch (error) {
+    isNotFound.value = error.status === 404
     errorMessage.value = error.message || "Не удалось загрузить пост"
   } finally {
     isLoading.value = false
@@ -45,7 +49,8 @@ watch(
 </script>
 
 <template>
-  <MainLayout active-page="projects">
+  <NotFoundPage v-if="isNotFound" />
+  <MainLayout v-else active-page="projects">
     <template #header-action>
       <ProjectHeaderAction
         v-if="post"

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router"
 import HomePage from "../pages/HomePage.vue"
 import LoginPage from "../pages/LoginPage.vue"
+import NotFoundPage from "../pages/NotFoundPage.vue"
 import PostPage from "../pages/PostPage.vue"
 import ProjectPostsPage from "../pages/ProjectPostsPage.vue"
 import ProjectsPage from "../pages/ProjectsPage.vue"
@@ -59,7 +60,8 @@ const router = createRouter({
     },
     {
       path: "/:pathMatch(.*)*",
-      redirect: "/",
+      name: "not-found",
+      component: NotFoundPage,
     },
   ],
 })
