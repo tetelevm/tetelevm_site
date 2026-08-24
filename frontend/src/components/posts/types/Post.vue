@@ -51,7 +51,6 @@ const otherFiles = computed(() =>
     <PostFileList :files="otherFiles" />
 
     <PostConnections
-      :related-posts="post.relatedPosts"
       :tags="post.tags"
     />
   </PostLayout>

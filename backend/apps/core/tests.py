@@ -223,6 +223,66 @@ class FileAdminTests(TestCase):
             ["ph-01.jpg", "ph-02.jpg"],
         )
 
+    def test_bulk_upload_can_preserve_image_original(self) -> None:
+        source = BytesIO()
+        Image.new("RGB", (1800, 1200), "red").save(source, format="PNG")
+        original_content = source.getvalue()
+        self.client.force_login(self.admin)
+
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root, MEDIA_URL="/files/"):
+                response = self.client.post(
+                    reverse("admin:core_file_bulk_upload"),
+                    {
+                        "files": SimpleUploadedFile(
+                            "photo.png",
+                            original_content,
+                        ),
+                    },
+                )
+                uploaded = File.objects.get()
+
+                self.assertEqual(
+                    uploaded.content.name,
+                    f"content/{uploaded.id}.png",
+                )
+                self.assertEqual(uploaded.content.read(), original_content)
+                with Image.open(uploaded.preview.path) as preview:
+                    self.assertEqual(preview.size, (600, 400))
+                with Image.open(uploaded.thumbnail.path) as thumbnail:
+                    self.assertEqual(thumbnail.size, (150, 150))
+
+        self.assertRedirects(response, reverse("admin:core_file_changelist"))
+
+    def test_bulk_upload_can_compress_image_original(self) -> None:
+        source = BytesIO()
+        Image.new("RGB", (1800, 1200), "red").save(source, format="PNG")
+        self.client.force_login(self.admin)
+
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root, MEDIA_URL="/files/"):
+                response = self.client.post(
+                    reverse("admin:core_file_bulk_upload"),
+                    {
+                        "compress_images": "on",
+                        "files": SimpleUploadedFile(
+                            "photo.png",
+                            source.getvalue(),
+                        ),
+                    },
+                )
+                uploaded = File.objects.get()
+
+                self.assertEqual(
+                    uploaded.content.name,
+                    f"content/{uploaded.id}.jpg",
+                )
+                with Image.open(uploaded.content.path) as original:
+                    self.assertEqual(original.size, (1500, 1000))
+                    self.assertEqual(original.format, "JPEG")
+
+        self.assertRedirects(response, reverse("admin:core_file_changelist"))
+
     def test_bulk_upload_requires_add_permission(self) -> None:
         user_model = get_user_model()
         staff = user_model.objects.create_user("staff", password="staff-pass")
