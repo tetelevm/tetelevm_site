@@ -4,6 +4,7 @@ import LoginPage from "../pages/LoginPage.vue"
 import PostPage from "../pages/PostPage.vue"
 import ProjectPostsPage from "../pages/ProjectPostsPage.vue"
 import ProjectsPage from "../pages/ProjectsPage.vue"
+import RandomPostPage from "../pages/RandomPostPage.vue"
 
 const router = createRouter({
   history: createWebHistory(),
@@ -17,6 +18,11 @@ const router = createRouter({
       path: "/archive/",
       name: "projects",
       component: ProjectsPage,
+    },
+    {
+      path: "/archive/random/",
+      name: "random-post",
+      component: RandomPostPage,
     },
     {
       path: "/archive/:project/",
