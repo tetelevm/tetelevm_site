@@ -6,8 +6,7 @@ import { getPost } from "../api/projects.js"
 import PageStatus from "../components/common/PageStatus.vue"
 import PageSubheader from "../components/common/PageSubheader.vue"
 import MainLayout from "../components/layout/MainLayout.vue"
-import PostConnections from "../components/posts/blocks/PostConnections.vue"
-import PostNavigation from "../components/posts/blocks/PostNavigation.vue"
+import PostFooter from "../components/posts/blocks/PostFooter.vue"
 import ProjectHeaderAction from "../components/projects/ProjectHeaderAction.vue"
 import NotFoundPage from "./NotFoundPage.vue"
 import {
@@ -73,9 +72,10 @@ watch(
     />
     <div v-else-if="post" class="post-page__content">
       <component :is="postComponent" :post="post" />
-      <PostConnections :related-posts="post.relatedPosts" />
-      <PostNavigation
+      <PostFooter
         :project-name="post.projectName"
+        :related-posts="post.relatedPosts"
+        :tags="post.tags"
         :previous-post="post.previousPost"
         :next-post="post.nextPost"
       />
