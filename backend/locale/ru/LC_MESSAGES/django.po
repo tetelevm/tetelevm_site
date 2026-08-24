@@ -105,6 +105,22 @@ msgstr "Сжимать изображения"
 msgid "Resize image originals to 1500 pixels and save them as JPEG."
 msgstr "Уменьшать оригиналы изображений до 1500 пикселей и сохранять в JPEG."
 
+#: apps/core/templates/admin/core/file/change_form.html
+msgid "Paste image"
+msgstr "Вставка изображения"
+
+#: apps/core/templates/admin/core/file/change_form.html
+msgid "Focus here and paste an image with Ctrl+V or Command+V."
+msgstr "Установите сюда фокус и вставьте изображение через Ctrl+V или Command+V."
+
+#: apps/core/templates/admin/core/file/change_form.html
+msgid "Image added from clipboard:"
+msgstr "Добавлено изображение из буфера:"
+
+#: apps/core/templates/admin/core/file/change_form.html
+msgid "The clipboard does not contain an image."
+msgstr "В буфере обмена нет изображения."
+
 #: apps/projects/admin.py:74
 msgid "Markdown"
 msgstr "Markdown"
@@ -243,6 +259,10 @@ msgstr "Тип поста"
 #: apps/projects/models.py:104
 msgid "Post list type"
 msgstr "Тип списка постов"
+
+#: apps/projects/admin.py
+msgid "Supports Markdown and ::: spoiler Title blocks."
+msgstr "Поддерживает Markdown и блоки ::: spoiler Заголовок."
 
 #: apps/projects/models.py:109
 msgid "Public"

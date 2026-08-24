@@ -76,6 +76,10 @@ Vue is responsible for:
 - responsive desktop and mobile layouts;
 - rendering projects and items according to their presentation type.
 
+The shared public header loads the session state once. When `isStaff` is true,
+it shows a localized icon link to `/_admin/`; Django continues to enforce staff
+authorization at the destination.
+
 Frontend filtering is presentation logic, not a security boundary.
 
 ## Backend
@@ -132,7 +136,10 @@ thumbnails inline at 64 by 64 pixels and leaves the preview cell empty for
 non-image files. An image file's change page shows its aspect-ratio-preserving
 600-pixel preview. A saved file's `original_name` can be edited as display
 metadata without renaming or moving stored content; during initial upload it is
-still derived from the browser-provided filename. The file changelist also links to an admin-only bulk upload
+still derived from the browser-provided filename. The standard file-add form
+has a focusable clipboard area whose browser-side paste handler converts one
+clipboard image into a named `File` object and assigns it to the native content
+input before normal multipart submission. The file changelist also links to an admin-only bulk upload
 form that accepts multiple browser-selected files and creates one `File` record
 per upload using the model's media-processing path. A checked-by-default option
 normalizes image originals through the usual 1500-pixel JPEG conversion; when
@@ -333,7 +340,8 @@ type always uses it, while the general `post` type opts in per item through
 is styled by the dedicated `MarkdownContent` component. The
 `markdown-it-container` plugin provides safe `::: spoiler [title]` containers,
 rendered as native `details` and `summary` elements while their body continues
-to support Markdown.
+to support Markdown. Project descriptions reuse the same `MarkdownContent`
+component in `PageSubheader`, including spoiler support and raw-HTML blocking.
 
 The current router implements:
 
