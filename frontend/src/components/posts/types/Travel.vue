@@ -4,7 +4,6 @@ import { computed } from "vue"
 import MediaCarousel from "../../media/MediaCarousel.vue"
 import DatedPostHeader from "../blocks/DatedPostHeader.vue"
 import PlainPostText from "../blocks/PlainPostText.vue"
-import PostConnections from "../blocks/PostConnections.vue"
 import PostLayout from "../blocks/PostLayout.vue"
 
 const props = defineProps({
@@ -27,8 +26,5 @@ const photos = computed(() => {
 
     <PlainPostText :text="post.text" />
 
-    <PostConnections
-      :tags="post.tags"
-    />
   </PostLayout>
 </template>

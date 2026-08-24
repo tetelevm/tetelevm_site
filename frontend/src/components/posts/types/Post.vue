@@ -5,7 +5,6 @@ import MediaCarousel from "../../media/MediaCarousel.vue"
 import DatedPostHeader from "../blocks/DatedPostHeader.vue"
 import MarkdownContent from "../blocks/MarkdownContent.vue"
 import PlainPostText from "../blocks/PlainPostText.vue"
-import PostConnections from "../blocks/PostConnections.vue"
 import PostFileList from "../blocks/PostFileList.vue"
 import PostImage from "../blocks/PostImage.vue"
 import PostLayout from "../blocks/PostLayout.vue"
@@ -50,8 +49,5 @@ const otherFiles = computed(() =>
 
     <PostFileList :files="otherFiles" />
 
-    <PostConnections
-      :tags="post.tags"
-    />
   </PostLayout>
 </template>

@@ -61,7 +61,6 @@ const relatedItems = computed(() =>
   flex-direction: column;
   gap: 0.75rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--color-line);
 }
 
 .post-connections__related h2 {
