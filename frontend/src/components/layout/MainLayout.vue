@@ -21,7 +21,7 @@ defineProps({
       <template #action>
         <div class="main-layout__header-action">
           <slot name="header-action" />
-          <HeaderAccessAction />
+          <HeaderAccessAction :language="language" />
         </div>
       </template>
     </AppHeader>
