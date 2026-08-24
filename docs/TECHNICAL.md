@@ -134,7 +134,10 @@ non-image files. An image file's change page shows its aspect-ratio-preserving
 metadata without renaming or moving stored content; during initial upload it is
 still derived from the browser-provided filename. The file changelist also links to an admin-only bulk upload
 form that accepts multiple browser-selected files and creates one `File` record
-per upload using the model's normal media-processing path. Its optional prefix
+per upload using the model's media-processing path. A checked-by-default option
+normalizes image originals through the usual 1500-pixel JPEG conversion; when
+unchecked, the uploaded original bytes and extension are retained while preview
+and thumbnail derivatives are still generated. Its optional prefix
 is prepended to each resulting `original_name` after processing and therefore
 does not affect stored UUID paths or file-type detection. The post changelist
 places the project column before the post number and display label. Saved `PostFileInline`
@@ -293,8 +296,9 @@ files use the model UUID and are separated by role:
 non-image originals use `content/<UUID>.<extension>`, normalized image originals
 use `content/<UUID>.jpg`, image previews use
 `preview/<UUID>.jpg`, and image thumbnails use `thumbnail/<UUID>.jpg`.
-Image originals are normalized to metadata-free JPEG at 90 percent quality and
-constrained to 1500 pixels on each axis without upscaling. Previews are
+Image originals are normally normalized to metadata-free JPEG at 90 percent
+quality and constrained to 1500 pixels on each axis without upscaling. Bulk
+upload can explicitly retain the uploaded original instead. Previews are
 metadata-free JPEGs constrained to 600 pixels on each axis without upscaling.
 Thumbnails are metadata-free 150-by-150 JPEGs produced with a centered square
 crop and are upscaled when the source is smaller. Replacing an uploaded image
@@ -360,7 +364,8 @@ The shared frontend building blocks are:
 - `MarkdownContent` for styled, HTML-disabled Markdown rendering.
 - `PostTag` for non-interactive tag labels on post detail pages;
 - `PostConnections` for adapting related-post summaries to `PostRowList` and
-  composing that list with the post's tags;
+  rendering tags; `PostPage` uses it for related posts after every detail-type
+  body, while the applicable type components use it locally for tags;
 - `PostNavigation` for the previous and next post links at the bottom of every
   detail page;
 - `PostFileList` for non-image and non-video file links using original names.
@@ -395,7 +400,8 @@ thumbnail, and date. The relation prefetch applies the same project-visibility
 rules as normal post access, annotates display-label file counts, and prefetches
 thumbnail candidates so rendering multiple related cards does not cause N+1
 queries. Results use project order followed by descending post number. The
-frontend passes these summaries through the shared `PostRowList` renderer and
+`PostPage` places these summaries after every type-specific body and passes them
+through the shared `PostRowList` renderer before adjacent-post navigation; it
 does not reconstruct backend routes.
 The detail queryset also annotates adjacent post IDs. The view loads both
 adjacent objects together with annotated display-label counts and exposes them

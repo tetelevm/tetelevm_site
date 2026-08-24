@@ -42,6 +42,8 @@ The administrator is the site owner. The administrator can:
 - upload media used by the content, including many files in one operation;
 - optionally prepend one shared string to every original-name label during a
   multi-file upload;
+- choose during a multi-file upload whether image originals are resized and
+  compressed; previews and thumbnails are generated in either mode;
 - edit the original-name label of an uploaded file without renaming its stored
   content;
 - see generated image thumbnails directly in the administrative file list and

@@ -65,8 +65,10 @@ class FileAdmin(admin.ModelAdmin):
         if request.method == "POST" and form.is_valid():
             files = form.cleaned_data["files"]
             prefix = form.cleaned_data["prefix"]
+            compress_images = form.cleaned_data["compress_images"]
             for uploaded_file in files:
-                file = File.objects.create(content=uploaded_file)
+                file = File(content=uploaded_file)
+                file.save(compress_image=compress_images)
                 if prefix:
                     file.original_name = f"{prefix}{file.original_name}"
                     file.save(update_fields=("original_name",))

@@ -115,7 +115,12 @@ class File(models.Model):
     def link_small(self) -> str:
         return self.thumbnail.url if self.thumbnail else self.link
 
-    def save(self, *args: Any, **kwargs: Any) -> None:
+    def save(
+        self,
+        *args: Any,
+        compress_image: bool = True,
+        **kwargs: Any,
+    ) -> None:
         has_new_content = bool(self.content and not self.content._committed)
         if has_new_content:
             self.original_name = Path(self.content.name).name
@@ -126,11 +131,12 @@ class File(models.Model):
                 if generated is not None:
                     original, preview, thumbnail = generated
                     self._delete_stored_files(previous_names)
-                    self.content.save(
-                        f"{self.id}.jpg",
-                        jpeg_content(original, quality=90),
-                        save=False,
-                    )
+                    if compress_image:
+                        self.content.save(
+                            f"{self.id}.jpg",
+                            jpeg_content(original, quality=90),
+                            save=False,
+                        )
                     self.preview.save(
                         f"{self.id}.jpg",
                         jpeg_content(preview),

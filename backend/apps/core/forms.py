@@ -34,6 +34,14 @@ class BulkFileUploadForm(forms.Form):
         widget=MultipleFileInput(),
         help_text=_("Select all files you want to upload."),
     )
+    compress_images = forms.BooleanField(
+        label=_("Compress images"),
+        required=False,
+        initial=True,
+        help_text=_(
+            "Resize image originals to 1500 pixels and save them as JPEG."
+        ),
+    )
 
     def clean(self) -> dict[str, Any]:
         cleaned_data = super().clean()
