@@ -44,6 +44,8 @@ The administrator is the site owner. The administrator can:
   multi-file upload;
 - choose during a multi-file upload whether image originals are resized and
   compressed; previews and thumbnails are generated in either mode;
+- paste a clipboard image into the standard administrative file-add form as an
+  alternative to selecting it through the browser;
 - edit the original-name label of an uploaded file without renaming its stored
   content;
 - see generated image thumbnails directly in the administrative file list and
@@ -51,6 +53,7 @@ The administrator is the site owner. The administrator can:
 - mark projects as public or private;
 - find related posts in the administrative selector by project name and post
   number, including combined queries such as `погулялки #10`;
+- open Django Admin from a staff-only icon in the public site header;
 - manage the site through an administrative interface.
 
 ## Main areas
@@ -113,7 +116,8 @@ Content -> Project -> Item
 A project determines:
 
 - the collection to which an item belongs;
-- a short description shown above its material;
+- a Markdown description shown above its material, including optional
+  click-to-expand spoiler blocks;
 - whether the collection is public or private;
 - the general presentation of its material.
 

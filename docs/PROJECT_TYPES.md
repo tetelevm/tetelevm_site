@@ -252,6 +252,9 @@ Post:
   and Markdown line breaks are styled for the site;
 - raw HTML embedded in Markdown is disabled and displayed as text.
 
+Project descriptions use the same safe Markdown renderer and support the same
+click-to-expand `::: spoiler [title]` blocks.
+
 ## `travel` — Travel
 
 The list is identical to `text` and `text_md` and uses `PostRowList`:
