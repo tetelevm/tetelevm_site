@@ -156,6 +156,29 @@ class FileAdminTests(TestCase):
         self.assertContains(response, "max-height:600px")
         self.assertNotContains(response, 'class="clipboard-upload"')
 
+    def test_file_change_page_starts_with_original_file_link(self) -> None:
+        uploaded = File.objects.create(
+            original_name="photo.jpg",
+            file_type=FileType.PHOTO,
+            content="content/photo.jpg",
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse("admin:core_file_change", args=(uploaded.id,))
+        )
+        content = response.content.decode()
+
+        self.assertContains(
+            response,
+            f'<a href="{uploaded.content.url}">{uploaded.content.url}</a>',
+            html=True,
+        )
+        self.assertLess(
+            content.index("field-original_file_link"),
+            content.index("field-original_name"),
+        )
+
     def test_file_change_page_allows_editing_original_name(self) -> None:
         uploaded = File.objects.create(
             original_name="photo.jpg",

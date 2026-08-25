@@ -135,9 +135,10 @@ by newest upload first. The main file changelist displays existing image
 thumbnails inline at 64 by 64 pixels and leaves the preview cell empty for
 non-image files. An image file's change page shows its aspect-ratio-preserving
 600-pixel preview. A saved file's `original_name` can be edited as display
-metadata without renaming or moving stored content; during initial upload it is
-still derived from the browser-provided filename. The standard file-add form
-has a focusable clipboard area whose browser-side paste handler converts one
+metadata without renaming or moving stored content. Its change page starts with
+a read-only, clickable `content.url` for the stored original; during initial
+upload it is still derived from the browser-provided filename. The standard
+file-add form has a focusable clipboard area whose browser-side paste handler converts one
 clipboard image into a named `File` object and assigns it to the native content
 input before normal multipart submission. The file changelist also links to an admin-only bulk upload
 form that accepts multiple browser-selected files and creates one `File` record

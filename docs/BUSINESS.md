@@ -48,6 +48,8 @@ The administrator is the site owner. The administrator can:
   alternative to selecting it through the browser;
 - edit the original-name label of an uploaded file without renaming its stored
   content;
+- open the stored original from a direct path link shown first on the file's
+  administrative change page;
 - see generated image thumbnails directly in the administrative file list and
   post-file inlines, and a larger preview on an image file's change page;
 - mark projects as public or private;
@@ -83,6 +85,8 @@ The public section is named “Archive” and is available at `/archive/`. Its
 landing page shows projects, not a single feed mixing unrelated items. Each
 project is an independent collection with its own list of material and may use
 a presentation suited to its purpose.
+The Archive landing page metadata describes it as an archive of the owner's
+projects, texts, photographs, and other material.
 
 Search engines can discover the home page, Archive landing page, and public
 project pages through a sitemap. Private projects and individual posts are not
