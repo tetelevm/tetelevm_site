@@ -28,6 +28,9 @@ class PageMetadata:
     description: str = ""
     image: str = "/favicon.ico"
     page_type: str = "website"
+    locale: str = "ru_RU"
+    noindex: bool = False
+    not_found: bool = False
 
 
 def visible_projects(request: HttpRequest) -> QuerySet[Project]:
@@ -61,6 +64,20 @@ def metadata_for_path(request: HttpRequest, path: str) -> PageMetadata:
             "Project archive",
             "tetelevm - Archive",
             "/archive/",
+        )
+    if path == "/login/":
+        return PageMetadata(
+            "Login",
+            "tetelevm - Login",
+            "/login/",
+            noindex=True,
+        )
+    if path == "/archive/random/":
+        return PageMetadata(
+            "Random post",
+            "tetelevm - Random post",
+            "/archive/random/",
+            noindex=True,
         )
 
     post_match = POST_PATH.fullmatch(path)
@@ -114,7 +131,13 @@ def metadata_for_path(request: HttpRequest, path: str) -> PageMetadata:
                 image=project.cover.link,
             )
 
-    return PageMetadata("tetelevm", "tetelevm", path)
+    return PageMetadata(
+        "Страница не найдена",
+        "tetelevm - Страница не найдена",
+        path,
+        noindex=True,
+        not_found=True,
+    )
 
 
 def caddy_template_safe(value: str) -> SafeString:
@@ -156,6 +179,10 @@ def metadata_html(request: HttpRequest, metadata: PageMetadata) -> SafeString:
             caddy_template_safe(image_url),
         ),
         format_html(
+            '<meta property="og:locale" content="{}" data-page-meta>',
+            metadata.locale,
+        ),
+        format_html(
             '<meta name="twitter:card" content="{}" data-page-meta>',
             twitter_card,
         ),
@@ -168,6 +195,12 @@ def metadata_html(request: HttpRequest, metadata: PageMetadata) -> SafeString:
             caddy_template_safe(image_url),
         ),
     ]
+    if metadata.noindex:
+        tags.append(
+            mark_safe(
+                '<meta name="robots" content="noindex" data-page-meta>'
+            )
+        )
     if metadata.description:
         description = caddy_template_safe(metadata.description)
         tags.extend(
@@ -188,6 +221,8 @@ def metadata_html(request: HttpRequest, metadata: PageMetadata) -> SafeString:
                 ),
             )
         )
+    if metadata.not_found:
+        tags.append(mark_safe("{{httpError 404}}"))
     return mark_safe("\n".join(str(tag) for tag in tags))
 
 
@@ -205,8 +240,6 @@ def robots_txt(request: HttpRequest) -> HttpResponse:
         "User-agent: *",
         "Disallow: /_admin/",
         "Disallow: /_api/",
-        "Disallow: /login/",
-        "Disallow: /archive/random/",
         f"Sitemap: {sitemap_url}",
     )
     return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")

@@ -1,7 +1,8 @@
 <script setup>
-import { ref } from "vue"
+import { ref, watch } from "vue"
 import LanguageSwitch from "../components/common/LanguageSwitch.vue"
 import MainLayout from "../components/layout/MainLayout.vue"
+import { setPageMeta } from "../utils/pageMeta.js"
 
 const language = ref("ru")
 
@@ -9,6 +10,25 @@ const constructionMessage = {
   ru: "Роботы-муравьишки строят эту страницу, но пока не закончили",
   en: "Tiny ant robots are building this page, but they haven't finished yet",
 }
+
+const pageDescription = {
+  ru: "Личный сайт и архив проектов tetelevm.",
+  en: "The personal website and project archive of tetelevm.",
+}
+
+watch(
+  language,
+  (value) => {
+    setPageMeta({
+      title: "tetelevm",
+      socialTitle: "tetelevm - Main",
+      description: pageDescription[value],
+      path: "/",
+      language: value,
+    })
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
