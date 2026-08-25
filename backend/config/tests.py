@@ -30,6 +30,7 @@ class SearchDiscoveryTests(TestCase):
         self.assertEqual(response["Content-Type"], "text/plain")
         self.assertContains(response, "Disallow: /_admin/")
         self.assertContains(response, "Disallow: /_api/")
+        self.assertContains(response, "User-agent: TelegramBot\nAllow: /")
         self.assertNotContains(response, "Disallow: /login/")
         self.assertNotContains(response, "Disallow: /archive/random/")
         self.assertContains(
@@ -57,7 +58,7 @@ class SearchDiscoveryTests(TestCase):
         )
 
         description = (
-            "Архив проектов tetelevm: тексты, фотографии и другие материалы."
+            "Архив проектов: тексты, фотографии и другое."
         )
         self.assertContains(
             response,
