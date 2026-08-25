@@ -10,6 +10,11 @@ import PostFooter from "../components/posts/blocks/PostFooter.vue"
 import ProjectHeaderAction from "../components/projects/ProjectHeaderAction.vue"
 import NotFoundPage from "./NotFoundPage.vue"
 import {
+  fileCountDescription,
+  setPageMeta,
+  textDescription,
+} from "../utils/pageMeta.js"
+import {
   DEFAULT_POST_COMPONENT,
   POST_COMPONENTS,
 } from "../config/postTypes.js"
@@ -32,6 +37,22 @@ async function loadPost(projectCode, postNumber) {
 
   try {
     post.value = await getPost(projectCode, postNumber)
+    const postName = post.value.name?.trim()
+    const shortName = postName || `#${post.value.number}`
+    setPageMeta({
+      title: postName
+        ? postName
+        : `${post.value.projectName} #${post.value.number}`,
+      socialTitle: `tetelevm - ${post.value.projectName} - ${shortName}`,
+      description:
+        textDescription(post.value.text) || fileCountDescription(post.value),
+      image:
+        post.value.mainFile?.mediaType === "photo"
+          ? post.value.mainFile.link
+          : "/favicon.ico",
+      path: post.value.link,
+      type: "article",
+    })
   } catch (error) {
     isNotFound.value = error.status === 404
     errorMessage.value = error.message || "Не удалось загрузить пост"

@@ -9,6 +9,7 @@ import PaginationNav from "../components/common/PaginationNav.vue"
 import MainLayout from "../components/layout/MainLayout.vue"
 import NotFoundPage from "./NotFoundPage.vue"
 import ProjectHeaderAction from "../components/projects/ProjectHeaderAction.vue"
+import { setPageMeta, textDescription } from "../utils/pageMeta.js"
 import {
   DEFAULT_POST_LIST_COMPONENT,
   POST_LIST_COMPONENTS,
@@ -44,6 +45,13 @@ async function loadProject(link, page) {
     const response = await getProjectPosts(link, page)
     project.value = response
     pagination.value = response.pagination
+    setPageMeta({
+      title: response.name,
+      socialTitle: `tetelevm - ${response.name}`,
+      description: textDescription(response.description),
+      image: response.cover,
+      path: `/archive/${response.link}/`,
+    })
   } catch (error) {
     isNotFound.value = error.status === 404
     errorMessage.value = error.message || "Не удалось загрузить проект"
