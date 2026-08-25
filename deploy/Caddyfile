@@ -2,19 +2,27 @@
 	encode zstd gzip
 
 	handle /robots.txt {
-		reverse_proxy backend:8000
+		reverse_proxy backend:8000 {
+			header_up X-Forwarded-Proto https
+		}
 	}
 
 	handle /sitemap.xml {
-		reverse_proxy backend:8000
+		reverse_proxy backend:8000 {
+			header_up X-Forwarded-Proto https
+		}
 	}
 
 	handle /_api/* {
-		reverse_proxy backend:8000
+		reverse_proxy backend:8000 {
+			header_up X-Forwarded-Proto https
+		}
 	}
 
 	handle /_admin/* {
-		reverse_proxy backend:8000
+		reverse_proxy backend:8000 {
+			header_up X-Forwarded-Proto https
+		}
 	}
 
 	handle_path /_static/* {

@@ -286,6 +286,10 @@ the SPA shell. This makes metadata available to clients that do not execute
 JavaScript. Vue maintains the same tags after client-side navigation. The
 metadata endpoint applies normal project visibility rules and escapes both HTML
 and Caddy template delimiters in database content.
+Caddy explicitly forwards `X-Forwarded-Proto: https` to Django. This includes
+template subrequests, whose internal transport is HTTP; without the forwarded
+public scheme, Django's production HTTPS redirect would return an unrendered
+301 response to `httpInclude` instead of metadata.
 Missing public resources make that template raise a Caddy 404; its error route
 serves the same Vue shell while preserving the status and adds an
 `X-Robots-Tag: noindex` header. Vue also maintains localized `html.lang`, title,
