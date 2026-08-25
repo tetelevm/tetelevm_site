@@ -285,6 +285,11 @@ the SPA shell. This makes metadata available to clients that do not execute
 JavaScript. Vue maintains the same tags after client-side navigation. The
 metadata endpoint applies normal project visibility rules and escapes both HTML
 and Caddy template delimiters in database content.
+Missing public resources make that template raise a Caddy 404; its error route
+serves the same Vue shell while preserving the status and adds an
+`X-Robots-Tag: noindex` header. Vue also maintains localized `html.lang`, title,
+description, Open Graph locale, and robots metadata as language and routes
+change on the client.
 
 ## Internal routes
 

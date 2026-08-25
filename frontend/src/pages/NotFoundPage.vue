@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from "vue"
+import { ref, watch } from "vue"
 
 import LanguageSwitch from "../components/common/LanguageSwitch.vue"
 import MainLayout from "../components/layout/MainLayout.vue"
+import { setPageMeta } from "../utils/pageMeta.js"
 
 const language = ref("ru")
 
@@ -20,6 +21,23 @@ const pageText = {
     randomPost: "get a random post →",
   },
 }
+
+
+watch(
+  language,
+  (value) => {
+    const text = pageText[value]
+    setPageMeta({
+      title: text.title,
+      socialTitle: `tetelevm - ${text.title}`,
+      description: text.description,
+      language: value,
+      noindex: true,
+      canonical: false,
+    })
+  },
+  { immediate: true },
+)
 </script>
 
 <template>

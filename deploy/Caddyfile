@@ -33,4 +33,12 @@
 		templates
 		file_server
 	}
+
+	handle_errors 404 {
+		root * /srv
+		header X-Robots-Tag "noindex"
+		rewrite * /index.html
+		templates
+		file_server
+	}
 }

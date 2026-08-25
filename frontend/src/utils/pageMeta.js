@@ -70,16 +70,31 @@ export function setPageMeta({
   image = "/favicon.ico",
   path = window.location.pathname,
   type = "website",
+  language = "ru",
+  noindex = false,
+  canonical = true,
 }) {
   const canonicalUrl = absoluteUrl(path)
   const imageUrl = absoluteUrl(image)
 
+  document.documentElement.lang = language
   document.title = title
-  setCanonical(canonicalUrl)
+  if (canonical) {
+    setCanonical(canonicalUrl)
+  } else {
+    document.head
+      .querySelector(`link[rel="canonical"][${META_ATTRIBUTE}]`)
+      ?.remove()
+  }
   setMetaTag("property", "og:type", type)
   setMetaTag("property", "og:title", socialTitle)
-  setMetaTag("property", "og:url", canonicalUrl)
+  if (canonical) {
+    setMetaTag("property", "og:url", canonicalUrl)
+  } else {
+    removeMetaTag("property", "og:url")
+  }
   setMetaTag("property", "og:image", imageUrl)
+  setMetaTag("property", "og:locale", language === "en" ? "en_US" : "ru_RU")
   setMetaTag(
     "name",
     "twitter:card",
@@ -87,6 +102,11 @@ export function setPageMeta({
   )
   setMetaTag("name", "twitter:title", socialTitle)
   setMetaTag("name", "twitter:image", imageUrl)
+  if (noindex) {
+    setMetaTag("name", "robots", "noindex")
+  } else {
+    removeMetaTag("name", "robots")
+  }
 
   if (description) {
     setMetaTag("name", "description", description)
@@ -109,6 +129,24 @@ export function setDefaultPageMeta(routeName) {
       title: "Project archive",
       socialTitle: "tetelevm - Archive",
       path: "/archive/",
+    })
+    return
+  }
+  if (routeName === "login") {
+    setPageMeta({
+      title: "Login",
+      socialTitle: "tetelevm - Login",
+      path: "/login/",
+      noindex: true,
+    })
+    return
+  }
+  if (routeName === "random-post") {
+    setPageMeta({
+      title: "Random post",
+      socialTitle: "tetelevm - Random post",
+      noindex: true,
+      canonical: false,
     })
     return
   }

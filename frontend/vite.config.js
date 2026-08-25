@@ -7,7 +7,12 @@ const caddyPageMeta = {
   transformIndexHtml(html) {
     return html.replace(
       "<!-- page-meta -->",
-      '{{httpInclude (printf "/_api/page-meta/?path=%s" .OriginalReq.URL.Path)}}',
+      `{{if eq (placeholder "http.error.status_code") "404"}}
+      <title data-page-meta>Страница не найдена</title>
+      <meta name="robots" content="noindex" data-page-meta>
+      {{else}}
+      {{httpInclude (printf "/_api/page-meta/?path=%s" .OriginalReq.URL.Path)}}
+      {{end}}`,
     )
   },
 }

@@ -30,6 +30,8 @@ class SearchDiscoveryTests(TestCase):
         self.assertEqual(response["Content-Type"], "text/plain")
         self.assertContains(response, "Disallow: /_admin/")
         self.assertContains(response, "Disallow: /_api/")
+        self.assertNotContains(response, "Disallow: /login/")
+        self.assertNotContains(response, "Disallow: /archive/random/")
         self.assertContains(
             response,
             "Sitemap: http://testserver/sitemap.xml",
@@ -107,3 +109,21 @@ class SearchDiscoveryTests(TestCase):
         )
 
         self.assertNotContains(response, "Private")
+
+    def test_missing_page_meta_triggers_caddy_404_and_noindex(self) -> None:
+        response = self.client.get(
+            reverse("page-meta"),
+            {"path": "/does-not-exist/"},
+        )
+
+        self.assertContains(response, 'name="robots" content="noindex"')
+        self.assertContains(response, "{{httpError 404}}")
+
+    def test_login_meta_is_noindex_without_triggering_404(self) -> None:
+        response = self.client.get(
+            reverse("page-meta"),
+            {"path": "/login/"},
+        )
+
+        self.assertContains(response, 'name="robots" content="noindex"')
+        self.assertNotContains(response, "{{httpError 404}}")

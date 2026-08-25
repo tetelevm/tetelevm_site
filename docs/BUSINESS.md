@@ -102,7 +102,10 @@ public or private posts.
 
 Unknown public URLs and missing projects or posts show a localized not-found
 page instead of redirecting to the home page. It offers a `ru/en` switch and a
-link that opens a random post visible to the current visitor.
+link that opens a random post visible to the current visitor. The response uses
+the real HTTP 404 status and is excluded from search indexing. Switching the
+language also updates the document language, page title, description, and
+social metadata for the current visit.
 
 ### Login
 
