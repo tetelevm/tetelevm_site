@@ -14,9 +14,7 @@ from apps.core.models import FileType
 from apps.projects.models import DISPLAY_FILE_TYPES, Post, Project
 
 DESCRIPTION_LIMIT = 160
-ARCHIVE_DESCRIPTION = (
-    "Архив проектов tetelevm: тексты, фотографии и другие материалы."
-)
+ARCHIVE_DESCRIPTION = "Архив проектов: тексты, фотографии и другое."
 PROJECT_PATH = re.compile(r"^/archive/(?P<project>[^/]+)/$")
 POST_PATH = re.compile(
     r"^/archive/(?P<project>[^/]+)/(?P<number>[0-9]+)/$"
@@ -244,6 +242,10 @@ def robots_txt(request: HttpRequest) -> HttpResponse:
         "User-agent: *",
         "Disallow: /_admin/",
         "Disallow: /_api/",
+        "",
+        "User-agent: TelegramBot",
+        "Allow: /",
+        "",
         f"Sitemap: {sitemap_url}",
     )
     return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")
