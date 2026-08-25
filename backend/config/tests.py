@@ -50,6 +50,28 @@ class SearchDiscoveryTests(TestCase):
         )
         self.assertNotIn("private-project", content)
 
+    def test_archive_page_meta_describes_the_project_archive(self) -> None:
+        response = self.client.get(
+            reverse("page-meta"),
+            {"path": "/archive/"},
+        )
+
+        description = (
+            "Архив проектов tetelevm: тексты, фотографии и другие материалы."
+        )
+        self.assertContains(
+            response,
+            f'<meta property="og:description" content="{description}" '
+            "data-page-meta>",
+            html=True,
+        )
+        self.assertContains(
+            response,
+            f'<meta name="description" content="{description}" '
+            "data-page-meta>",
+            html=True,
+        )
+
     def test_page_meta_uses_project_name_description_and_cover(self) -> None:
         self.public_project.description = "  Project\n description  "
         self.public_project.cover.preview = "preview/cover.jpg"

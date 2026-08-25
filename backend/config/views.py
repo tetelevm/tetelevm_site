@@ -14,6 +14,9 @@ from apps.core.models import FileType
 from apps.projects.models import DISPLAY_FILE_TYPES, Post, Project
 
 DESCRIPTION_LIMIT = 160
+ARCHIVE_DESCRIPTION = (
+    "Архив проектов tetelevm: тексты, фотографии и другие материалы."
+)
 PROJECT_PATH = re.compile(r"^/archive/(?P<project>[^/]+)/$")
 POST_PATH = re.compile(
     r"^/archive/(?P<project>[^/]+)/(?P<number>[0-9]+)/$"
@@ -64,6 +67,7 @@ def metadata_for_path(request: HttpRequest, path: str) -> PageMetadata:
             "Project archive",
             "tetelevm - Archive",
             "/archive/",
+            description=ARCHIVE_DESCRIPTION,
         )
     if path == "/login/":
         return PageMetadata(
