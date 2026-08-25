@@ -19,6 +19,7 @@ from .models import File
 class FileAdmin(admin.ModelAdmin):
     change_list_template = "admin/core/file/change_list.html"
     readonly_fields = (
+        "original_file_link",
         "image_preview",
         "id",
         "file_type",
@@ -46,6 +47,21 @@ class FileAdmin(admin.ModelAdmin):
         if obj is None:
             return (*fields, "original_name")
         return fields
+
+    def get_fields(
+        self,
+        request: HttpRequest,
+        obj: File | None = None,
+    ) -> tuple[str, ...]:
+        fields = tuple(super().get_fields(request, obj))
+        if obj is None:
+            return tuple(
+                field for field in fields if field != "original_file_link"
+            )
+        return (
+            "original_file_link",
+            *(field for field in fields if field != "original_file_link"),
+        )
 
     def get_urls(self) -> list[Any]:
         custom_urls = [
@@ -99,6 +115,16 @@ class FileAdmin(admin.ModelAdmin):
             '<img src="{}" alt="" width="64" height="64" loading="lazy" '
             'style="display:block;object-fit:cover;border-radius:4px">',
             obj.thumbnail.url,
+        )
+
+    @admin.display(description=_("Original file"), empty_value="—")
+    def original_file_link(self, obj: File) -> str | None:
+        if not obj.content:
+            return None
+        return format_html(
+            '<a href="{}">{}</a>',
+            obj.content.url,
+            obj.content.url,
         )
 
     @admin.display(description=_("Preview"), empty_value="—")
