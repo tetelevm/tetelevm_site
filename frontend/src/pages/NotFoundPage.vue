@@ -10,14 +10,14 @@ const pageText = {
   ru: {
     eyebrow: "ошибка 404",
     title: "Здесь ничего не нашлось",
-    description: "Но всегда можно почитать случайный пост из архива.",
-    randomPost: "почитать случайный пост →",
+    description: "Но всегда можно посмотреть случайный пост из архива.",
+    randomPost: "случайный пост →",
   },
   en: {
     eyebrow: "error 404",
     title: "Nothing was found here",
-    description: "But you can always read a random post from the archive.",
-    randomPost: "read a random post →",
+    description: "But you can always watch a random post from the archive.",
+    randomPost: "get a random post →",
   },
 }
 </script>

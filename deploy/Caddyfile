@@ -1,6 +1,14 @@
 {$DOMAIN:?DOMAIN environment variable is required} {
 	encode zstd gzip
 
+	handle /robots.txt {
+		reverse_proxy backend:8000
+	}
+
+	handle /sitemap.xml {
+		reverse_proxy backend:8000
+	}
+
 	handle /_api/* {
 		reverse_proxy backend:8000
 	}
@@ -22,6 +30,7 @@
 	handle {
 		root * /srv
 		try_files {path} /index.html
+		templates
 		file_server
 	}
 }

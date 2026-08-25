@@ -265,11 +265,26 @@ The intended routes are:
 /archive/random/                Open a random visible post
 /archive/<project>/             Items in a project
 /archive/<project>/<item>/      Item detail when the project needs one
+/robots.txt                    Crawler rules and sitemap location
+/sitemap.xml                   Home, Archive, and public project URLs
 /<unknown path>                 Localized not-found page
 ```
 
 Exact identifiers and slug behavior remain deferred. The Content landing page
 must remain project-oriented rather than becoming a global mixed feed.
+
+Django generates `robots.txt` and `sitemap.xml`; Caddy proxies both exact
+paths to Django before its Vue history fallback. The sitemap queryset always
+filters on `Project.is_public` and does not vary with the requesting session,
+so authenticated sitemap requests cannot expose private project URLs.
+
+The built Vue index contains a Caddy `httpInclude` template action. For public
+page requests, Caddy asks Django's `/_api/page-meta/` endpoint for the title,
+canonical URL, description, and Open Graph and Twitter tags before returning
+the SPA shell. This makes metadata available to clients that do not execute
+JavaScript. Vue maintains the same tags after client-side navigation. The
+metadata endpoint applies normal project visibility rules and escapes both HTML
+and Caddy template delimiters in database content.
 
 ## Internal routes
 
@@ -282,6 +297,7 @@ them from the public site structure. Current routes are:
 /_api/auth/session/            Current authentication state
 /_api/auth/login/              Session login
 /_api/auth/logout/             Session logout
+/_api/page-meta/               Server-rendered metadata for a public path
 /_api/random-post/             Link to a random post visible to the visitor
 /_api/projects/                Projects visible to the current visitor
 /_api/projects/<project>/      Project metadata and paginated posts (`?page=N`)
@@ -380,8 +396,9 @@ The shared frontend building blocks are:
 - `MarkdownContent` for styled, HTML-disabled Markdown rendering.
 - `PostTag` for non-interactive tag labels on post detail pages;
 - `PostConnections` for adapting related-post summaries to `PostRowList` and
-  rendering tags; `PostPage` uses it for related posts after every detail-type
-  body, while the applicable type components use it locally for tags;
+  rendering tags;
+- `PostFooter` for composing related posts, tags, and adjacent navigation after
+  every detail-type body;
 - `PostNavigation` for the previous and next post links at the bottom of every
   detail page;
 - `PostFileList` for non-image and non-video file links using original names.
@@ -416,9 +433,10 @@ thumbnail, and date. The relation prefetch applies the same project-visibility
 rules as normal post access, annotates display-label file counts, and prefetches
 thumbnail candidates so rendering multiple related cards does not cause N+1
 queries. Results use project order followed by descending post number. The
-`PostPage` places these summaries after every type-specific body and passes them
-through the shared `PostRowList` renderer before adjacent-post navigation; it
-does not reconstruct backend routes.
+`PostPage` passes these summaries through the shared `PostRowList` renderer.
+`PostFooter` composes that result with the post's tags and adjacent-post
+navigation after every type-specific body; it does not reconstruct backend
+routes.
 The detail queryset also annotates adjacent post IDs. The view loads both
 adjacent objects together with annotated display-label counts and exposes them
 as nullable `previousPost` and `nextPost` summaries containing `number`, `link`,

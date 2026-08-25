@@ -84,6 +84,17 @@ landing page shows projects, not a single feed mixing unrelated items. Each
 project is an independent collection with its own list of material and may use
 a presentation suited to its purpose.
 
+Search engines can discover the home page, Archive landing page, and public
+project pages through a sitemap. Private projects and individual posts are not
+listed. Crawler instructions point to that sitemap and discourage crawling of
+the administrative, API, login, and random-post routes.
+
+Public pages expose page-specific browser titles and social-link metadata.
+Project metadata uses the project's localized name, description, and cover.
+Post metadata uses its name when present or its project and number otherwise;
+its description uses a text excerpt or attached-file counts, and its image uses
+the main photo preview with the site favicon as a fallback.
+
 Opening `/archive/random/` selects a random post from the material visible to
 the current visitor and opens that post. Anonymous visitors are never sent to
 private projects; authenticated guests and administrators may receive either

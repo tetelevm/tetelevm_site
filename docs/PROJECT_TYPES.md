@@ -57,9 +57,10 @@ combined independently with detail post types. The supported list codes are
   lower-numbered back link, including in the single-column mobile layout.
   The whole link is framed, and uninterrupted text wraps within its half of the
   navigation row instead of overlapping the other link.
-- When a post has visible related posts, every detail type shows them in the
-  shared row-card presentation after its type-specific body and immediately
-  before the neighboring-post navigation.
+- Every detail type ends with one shared post-footer block between its
+  type-specific body and the site footer. It contains visible related posts in
+  the row-card presentation, all tag labels, and neighboring-post navigation,
+  omitting whichever sections have no data.
 
 ## `door` — Doors
 
@@ -271,7 +272,6 @@ Post:
   `PostFile.order`; `mainFile` is not duplicated in the post carousel;
 - selecting a photograph opens its original in the shared lightbox;
 - the plain `text` appears below the carousel with line breaks preserved;
-- related tags appear at the bottom as non-interactive rectangular labels.
 
 ## `post` — General Posts
 
@@ -297,7 +297,6 @@ Post:
   `video`;
 - remaining additional files appear as a vertical list of links using their
   original upload names;
-- non-interactive tag labels appear at the bottom.
 
 Expected `extra` structure:
 
