@@ -1,10 +1,16 @@
 <script setup>
+import { formatDate } from "../../../utils/date.js"
+
 import PostTitle from "./PostTitle.vue"
 
 defineProps({
   title: {
     type: String,
-    required: true,
+    default: "",
+  },
+  date: {
+    type: String,
+    default: "",
   },
   subtitle: {
     type: String,
@@ -23,36 +29,62 @@ defineProps({
     default: "normal",
     validator: (value) => ["compact", "normal"].includes(value),
   },
+  divided: {
+    type: Boolean,
+    default: false,
+  },
 })
 </script>
 
 <template>
-  <header class="rated-post-header">
+  <header
+    v-if="title || date || subtitle || titleSuffix || rating != null"
+    class="post-header"
+    :class="{ 'post-header--divided': divided }"
+  >
     <PostTitle
+      v-if="title || subtitle || titleSuffix"
       :title="title"
       :subtitle="subtitle"
       :suffix="titleSuffix"
       :size="titleSize"
-    />
-    <div
-      v-if="rating !== null && rating !== undefined"
-      class="rated-post-header__rating"
-      aria-label="Оценка"
     >
+      <time v-if="date" class="post-header__date" :datetime="date">
+        {{ formatDate(date) }}
+      </time>
+    </PostTitle>
+    <time v-else-if="date" class="post-header__date" :datetime="date">
+      {{ formatDate(date) }}
+    </time>
+    <div v-if="rating != null" class="post-header__rating" aria-label="Оценка">
       {{ rating }}
     </div>
   </header>
 </template>
 
 <style scoped>
-.rated-post-header {
+.post-header {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
 }
 
-.rated-post-header__rating {
+.post-header--divided {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.post-header__date {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--color-muted);
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.post-header__rating {
   min-width: 3.8rem;
   min-height: 3.8rem;
   flex: 0 0 auto;
@@ -69,11 +101,11 @@ defineProps({
 }
 
 @media (max-width: 480px) {
-  .rated-post-header {
+  .post-header {
     align-items: flex-start;
   }
 
-  .rated-post-header__rating {
+  .post-header__rating {
     min-width: 3.2rem;
     min-height: 3.2rem;
     font-size: 1.25rem;

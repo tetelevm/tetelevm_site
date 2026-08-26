@@ -4,7 +4,6 @@ import { computed } from "vue"
 import LightboxImage from "../../media/LightboxImage.vue"
 import PlainPostText from "../blocks/PlainPostText.vue"
 import PostLayout from "../blocks/PostLayout.vue"
-import RatedPostHeader from "../blocks/RatedPostHeader.vue"
 
 const props = defineProps({
   post: {
@@ -19,16 +18,7 @@ const screenshots = computed(() =>
 </script>
 
 <template>
-  <PostLayout spacing="loose">
-    <RatedPostHeader
-      class="anime-post__header"
-      :title="post.name"
-      :title-suffix="post.extra?.season"
-      :subtitle="post.extra?.original_title"
-      :rating="post.extra?.rating"
-      title-size="compact"
-    />
-
+  <PostLayout :post="post" spacing="loose">
     <div class="anime-post__screenshots" aria-label="Скриншоты">
       <div
         v-for="(file, index) in screenshots"
@@ -55,11 +45,6 @@ const screenshots = computed(() =>
 </template>
 
 <style scoped>
-.anime-post__header {
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-line);
-}
-
 .anime-post__screenshots {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

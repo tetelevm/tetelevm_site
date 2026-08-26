@@ -12,7 +12,7 @@ defineProps({
 </script>
 
 <template>
-  <PostLayout spacing="compact" align="center">
+  <PostLayout :post="post" spacing="compact" align="center">
     <PostImage
       :src="post.mainFile?.link"
       :alt="post.text"
