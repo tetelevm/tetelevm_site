@@ -2,7 +2,6 @@
 import { computed } from "vue"
 
 import MediaCarousel from "../../media/MediaCarousel.vue"
-import DatedPostHeader from "../blocks/DatedPostHeader.vue"
 import PlainPostText from "../blocks/PlainPostText.vue"
 import PostLayout from "../blocks/PostLayout.vue"
 
@@ -23,9 +22,7 @@ const mediaItems = computed(() => {
 </script>
 
 <template>
-  <PostLayout>
-    <DatedPostHeader :title="post.name" :date="post.date" />
-
+  <PostLayout :post="post">
     <PlainPostText :text="post.text" />
 
     <MediaCarousel :items="mediaItems" :label="`Медиа: ${post.name}`" />

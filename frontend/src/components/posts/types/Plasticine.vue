@@ -2,7 +2,6 @@
 import { computed } from "vue"
 
 import MediaCarousel from "../../media/MediaCarousel.vue"
-import DatedPostHeader from "../blocks/DatedPostHeader.vue"
 import PostImage from "../blocks/PostImage.vue"
 import PostLayout from "../blocks/PostLayout.vue"
 
@@ -19,9 +18,7 @@ const additionalPhotos = computed(() =>
 </script>
 
 <template>
-  <PostLayout spacing="compact" align="center">
-    <DatedPostHeader v-if="post.date" :date="post.date" />
-
+  <PostLayout :post="post" spacing="compact" align="center">
     <figure
       v-if="post.mainFile?.link"
       class="plasticine-post__main"

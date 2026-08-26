@@ -27,6 +27,7 @@ defineProps({
       <wbr v-if="suffix" />
       <em v-if="suffix" class="post-title__suffix">{{ suffix }}</em>
     </h1>
+    <slot />
     <p v-if="subtitle">{{ subtitle }}</p>
   </div>
 </template>

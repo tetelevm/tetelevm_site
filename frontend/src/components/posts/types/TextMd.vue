@@ -1,5 +1,4 @@
 <script setup>
-import DatedPostHeader from "../blocks/DatedPostHeader.vue"
 import MarkdownContent from "../blocks/MarkdownContent.vue"
 import PostLayout from "../blocks/PostLayout.vue"
 
@@ -12,8 +11,7 @@ defineProps({
 </script>
 
 <template>
-  <PostLayout>
-    <DatedPostHeader :title="post.name" :date="post.date" />
+  <PostLayout :post="post">
     <MarkdownContent :source="post.text" />
   </PostLayout>
 </template>

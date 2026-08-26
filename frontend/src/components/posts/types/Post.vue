@@ -2,7 +2,6 @@
 import { computed } from "vue"
 
 import MediaCarousel from "../../media/MediaCarousel.vue"
-import DatedPostHeader from "../blocks/DatedPostHeader.vue"
 import MarkdownContent from "../blocks/MarkdownContent.vue"
 import PlainPostText from "../blocks/PlainPostText.vue"
 import PostFileList from "../blocks/PostFileList.vue"
@@ -30,9 +29,7 @@ const otherFiles = computed(() =>
 </script>
 
 <template>
-  <PostLayout>
-    <DatedPostHeader :title="post.name" :date="post.date" />
-
+  <PostLayout :post="post">
     <MarkdownContent v-if="post.extra?.md === true" :source="post.text" />
     <PlainPostText v-else :text="post.text" />
 

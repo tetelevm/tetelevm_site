@@ -4,7 +4,6 @@ import { computed } from "vue"
 import MediaCarousel from "../../media/MediaCarousel.vue"
 import PlainPostText from "../blocks/PlainPostText.vue"
 import PostLayout from "../blocks/PostLayout.vue"
-import RatedPostHeader from "../blocks/RatedPostHeader.vue"
 
 const props = defineProps({
   post: {
@@ -63,9 +62,8 @@ function ratingHouses(value) {
 </script>
 
 <template>
-  <PostLayout>
-    <div class="abandoned-post__heading">
-      <RatedPostHeader :title="post.name" :rating="post.extra?.rating" />
+  <PostLayout :post="post">
+    <template #header-extra>
       <a
         v-if="locationLabel && locationHref"
         class="abandoned-post__location"
@@ -75,7 +73,7 @@ function ratingHouses(value) {
       >
         {{ locationLabel }}
       </a>
-    </div>
+    </template>
 
     <PlainPostText :text="post.text" />
 
@@ -97,12 +95,6 @@ function ratingHouses(value) {
 </template>
 
 <style scoped>
-.abandoned-post__heading {
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-}
-
 .abandoned-post__location {
   width: fit-content;
   color: var(--color-accent);

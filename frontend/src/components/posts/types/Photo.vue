@@ -11,7 +11,7 @@ defineProps({
 </script>
 
 <template>
-  <PostLayout align="center">
+  <PostLayout :post="post" align="center">
     <PostImage
       :src="post.mainFile?.linkFull || post.mainFile?.link"
       :alt="post.name || post.text"
