@@ -19,7 +19,7 @@ POST_TYPE_EXTRA_FIELDS: dict[str, tuple[str, ...]] = {
     PostType.POST: ("extra_md",),
     PostType.ANIME: (
         "extra_original_title",
-        "extra_season",
+        "extra_subtitle",
         "extra_anime_rating",
         "extra_result",
     ),
@@ -55,7 +55,7 @@ MANAGED_EXTRA_KEYS: frozenset[str] = frozenset(
     {
         "md",
         "original_title",
-        "season",
+        "subtitle",
         "rating",
         "result",
         "uniqueness",
@@ -78,8 +78,8 @@ class PostAdminForm(forms.ModelForm):
         label=_("Original title"),
         required=False,
     )
-    extra_season = forms.CharField(
-        label=_("Season"),
+    extra_subtitle = forms.CharField(
+        label=_("Subtitle"),
         required=False,
     )
     extra_anime_rating = forms.IntegerField(
@@ -204,7 +204,7 @@ class PostAdminForm(forms.ModelForm):
             self.initial.update(
                 {
                     "extra_original_title": extra.get("original_title", ""),
-                    "extra_season": extra.get("season", ""),
+                    "extra_subtitle": extra.get("subtitle", ""),
                     "extra_anime_rating": extra.get("rating"),
                     "extra_result": extra.get("result", ""),
                 }
@@ -264,9 +264,9 @@ class PostAdminForm(forms.ModelForm):
                     "result": self.cleaned_data["extra_result"],
                 }
             )
-            season = self.cleaned_data["extra_season"]
-            if season:
-                extra["season"] = season
+            subtitle = self.cleaned_data["extra_subtitle"]
+            if subtitle:
+                extra["subtitle"] = subtitle
         elif post_type == PostType.ABANDONED:
             location = extra.get("location", {})
             location.update(
@@ -383,7 +383,7 @@ class PostAdmin(admin.ModelAdmin):
                 "fields": (
                     "extra_md",
                     "extra_original_title",
-                    "extra_season",
+                    "extra_subtitle",
                     "extra_anime_rating",
                     "extra_result",
                     "extra_abandoned_rating",

@@ -28,6 +28,10 @@ const props = defineProps({
     default: "lazy",
     validator: (value) => ["eager", "lazy"].includes(value),
   },
+  triggerless: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(["previewLoad"])
@@ -69,10 +73,13 @@ function reportPreviewSize(event) {
 onBeforeUnmount(() => {
   document.body.style.overflow = previousBodyOverflow
 })
+
+defineExpose({ openImage })
 </script>
 
 <template>
   <button
+    v-if="!triggerless"
     class="lightbox-image__trigger"
     :class="{
       'lightbox-image__trigger--natural': preserveAspectRatio,

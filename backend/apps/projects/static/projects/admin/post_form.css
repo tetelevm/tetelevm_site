@@ -6,7 +6,7 @@
   max-width: 45vw;
 }
 
-#id_extra_season {
+#id_extra_subtitle {
   width: 20em;
 }
 
@@ -69,4 +69,3 @@
 .fieldset-extra .form-row:has(input:disabled) {
   opacity: 0.5;
 }
-
