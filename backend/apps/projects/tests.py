@@ -205,7 +205,7 @@ class PostAdminTests(TestCase):
         self.project.save(update_fields=("post_type",))
         self.post.extra = {
             "original_title": "Sousou no Frieren",
-            "season": "Сезон 2",
+            "subtitle": "Сезон 2",
             "rating": 9,
             "result": "да",
         }
@@ -272,7 +272,7 @@ class PostAdminTests(TestCase):
         self.project.save(update_fields=("post_type",))
         self.post.extra = {
             "original_title": "Sousou no Frieren",
-            "season": "Сезон 2",
+            "subtitle": "Сезон 2",
             "rating": 9,
             "result": "да",
         }
@@ -284,10 +284,10 @@ class PostAdminTests(TestCase):
             form.initial["extra_original_title"],
             "Sousou no Frieren",
         )
-        self.assertEqual(form.initial["extra_season"], "Сезон 2")
+        self.assertEqual(form.initial["extra_subtitle"], "Сезон 2")
         self.assertEqual(form.initial["extra_anime_rating"], 9)
         self.assertTrue(form.fields["extra_original_title"].required)
-        self.assertFalse(form.fields["extra_season"].required)
+        self.assertFalse(form.fields["extra_subtitle"].required)
         self.assertFalse(form.fields["extra_anime_rating"].disabled)
         self.assertEqual(form.fields["extra_anime_rating"].min_value, 1)
         self.assertEqual(form.fields["extra_anime_rating"].max_value, 10)
@@ -311,6 +311,29 @@ class PostAdminTests(TestCase):
 
         self.assertFalse(form.is_valid())
         self.assertIn("extra_anime_rating", form.errors)
+
+    def test_anime_subtitle_is_serialized(self) -> None:
+        self.project.post_type = PostType.ANIME
+        self.project.save(update_fields=("post_type",))
+        form = PostAdminForm(
+            data={
+                "project": self.project.id,
+                "number": self.post.number,
+                "name": "",
+                "text": "",
+                "extra_original_title": "Title",
+                "extra_subtitle": "Сезон 2",
+                "extra_anime_rating": 9,
+                "extra_result": "да",
+            },
+            instance=self.post,
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+        post = form.save()
+
+        self.assertEqual(post.extra["subtitle"], "Сезон 2")
+        self.assertNotIn("season", post.extra)
 
     def test_abandoned_extra_fields_are_serialized_and_preserve_unknowns(
         self,
@@ -401,7 +424,7 @@ class PostAdminTests(TestCase):
             (
                 "extra_md",
                 "extra_original_title",
-                "extra_season",
+                "extra_subtitle",
                 "extra_anime_rating",
                 "extra_result",
                 "extra_abandoned_rating",

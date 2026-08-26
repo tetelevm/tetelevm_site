@@ -1,7 +1,9 @@
 <script setup>
-import { computed } from "vue"
+import { computed, ref } from "vue"
 import MarkdownIt from "markdown-it"
 import markdownItContainer from "markdown-it-container"
+
+import LightboxImage from "../../media/LightboxImage.vue"
 
 const props = defineProps({
   source: {
@@ -9,6 +11,9 @@ const props = defineProps({
     default: "",
   },
 })
+
+const lightbox = ref(null)
+const selectedImage = ref({ src: "", alt: "" })
 
 const markdown = new MarkdownIt({
   breaks: true,
@@ -29,11 +34,64 @@ markdown.use(markdownItContainer, "spoiler", {
   },
 })
 
+markdown.renderer.rules.image = (tokens, index, options, env, renderer) => {
+  const token = tokens[index]
+  const alt = renderer.renderInlineAsText(token.children, options, env)
+  token.attrSet("alt", alt)
+  token.attrSet("tabindex", "0")
+  token.attrSet("role", "button")
+  token.attrSet("aria-label", `Открыть изображение: ${alt || "без описания"}`)
+  return renderer.renderToken(tokens, index, options)
+}
+
 const rendered = computed(() => markdown.render(props.source))
+
+function markdownImage(target) {
+  return target instanceof Element ? target.closest(".markdown-content img") : null
+}
+
+function openMarkdownImage(image) {
+  selectedImage.value = {
+    src: image.currentSrc || image.src,
+    alt: image.alt,
+  }
+  lightbox.value?.openImage()
+}
+
+function handleImageClick(event) {
+  const image = markdownImage(event.target)
+  if (image) {
+    event.preventDefault()
+    openMarkdownImage(image)
+  }
+}
+
+function handleImageKeydown(event) {
+  if (!["Enter", " "].includes(event.key)) {
+    return
+  }
+  const image = markdownImage(event.target)
+  if (image) {
+    event.preventDefault()
+    openMarkdownImage(image)
+  }
+}
 </script>
 
 <template>
-  <div class="markdown-content" v-html="rendered" />
+  <div
+    class="markdown-content"
+    @click="handleImageClick"
+    @keydown="handleImageKeydown"
+    v-html="rendered"
+  />
+  <LightboxImage
+    ref="lightbox"
+    :preview-src="selectedImage.src || '/favicon.ico'"
+    :full-src="selectedImage.src"
+    :alt="selectedImage.alt"
+    triggerless
+  />
 </template>
 
 <style scoped>
@@ -121,6 +179,12 @@ const rendered = computed(() => markdown.render(props.source))
   max-width: 100%;
   height: auto;
   border-radius: var(--radius-small);
+  cursor: zoom-in;
+}
+
+.markdown-content :deep(img:focus-visible) {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 0.2rem;
 }
 
 .markdown-content :deep(table) {
