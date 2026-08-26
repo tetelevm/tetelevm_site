@@ -35,6 +35,14 @@ markdown.use(markdownItContainer, "spoiler", {
   },
 })
 
+function captionedMedia(content, label) {
+  if (!label) {
+    return content
+  }
+  const caption = markdown.utils.escapeHtml(label)
+  return `<span class="markdown-content__media">${content}<span class="markdown-content__caption">${caption}</span></span>`
+}
+
 markdown.renderer.rules.image = (tokens, index, options, env, renderer) => {
   const token = tokens[index]
   const alt = renderer.renderInlineAsText(token.children, options, env)
@@ -49,7 +57,8 @@ markdown.renderer.rules.image = (tokens, index, options, env, renderer) => {
     if (mediaType === "video") {
       token.attrSet("playsinline", "")
     }
-    return `<${mediaType}${renderer.renderAttrs(token)}></${mediaType}>`
+    const media = `<${mediaType}${renderer.renderAttrs(token)}></${mediaType}>`
+    return captionedMedia(media, alt)
   }
 
   if (mediaType === "other") {
@@ -63,7 +72,7 @@ markdown.renderer.rules.image = (tokens, index, options, env, renderer) => {
   token.attrSet("tabindex", "0")
   token.attrSet("role", "button")
   token.attrSet("aria-label", `Открыть изображение: ${alt || "без описания"}`)
-  return renderer.renderToken(tokens, index, options)
+  return captionedMedia(renderer.renderToken(tokens, index, options), alt)
 }
 
 const rendered = computed(() => markdown.render(props.source))
@@ -207,6 +216,22 @@ function handleImageKeydown(event) {
 .markdown-content :deep(img:focus-visible) {
   outline: 2px solid var(--color-accent);
   outline-offset: 0.2rem;
+}
+
+.markdown-content :deep(.markdown-content__media) {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 0.45rem;
+}
+
+.markdown-content :deep(.markdown-content__caption) {
+  max-width: 100%;
+  color: var(--color-muted);
+  font-size: 1.2rem;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .markdown-content :deep(.markdown-content__video) {
