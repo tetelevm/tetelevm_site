@@ -106,6 +106,7 @@ defineProps({
   font-size: 0.82rem;
   font-weight: 750;
   line-height: 1.35;
+  font-family: var(--font-caption);
 }
 
 .post-card__date {
@@ -113,6 +114,7 @@ defineProps({
   color: var(--color-text-muted);
   font-size: clamp(0.82rem, 2vw, 0.95rem);
   line-height: 1.3;
+  font-family: var(--font-caption);
 }
 
 .post-card:hover,

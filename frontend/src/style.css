@@ -1,7 +1,7 @@
 :root {
   color: #eeeade;
   background: #151612;
-  font-family: Inter, "Helvetica Neue", Arial, system-ui, sans-serif;
+  font-family: var(--font-text);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   --color-bg: #151612;
@@ -12,9 +12,17 @@
   --color-line: rgba(238, 234, 222, 0.16);
   --color-accent: #d7f06f;
   --color-danger: #e28c7c;
+  --font-text: Inter, "Helvetica Neue", Arial, system-ui, sans-serif;
+  --font-caption: "IBM Plex Mono", "Courier New", monospace;
+  --font-heading: "Sofia Sans Variable", "Arial Narrow", Arial, sans-serif;
   --radius-small: 0.45rem;
   --radius-medium: 0.9rem;
   --shadow-card: 0 1.25rem 3rem rgba(0, 0, 0, 0.22);
+}
+
+time,
+figcaption {
+  font-family: var(--font-caption);
 }
 
 * {

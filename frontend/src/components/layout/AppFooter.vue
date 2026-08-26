@@ -30,6 +30,7 @@ const footerText = {
   color: rgba(216, 217, 207, 0.42);
   text-align: center;
   font-size: 0.95rem;
+  font-family: var(--font-caption);
 }
 
 .app-footer p {

@@ -151,7 +151,6 @@ const statusBadges = {
 
 .project-card__placeholder {
   color: rgba(20, 20, 20, 0.72);
-  font-family: ui-sans-serif, system-ui, sans-serif;
   font-size: clamp(4rem, 10vw, 8rem);
   font-weight: 800;
   line-height: 1;
@@ -173,6 +172,7 @@ const statusBadges = {
   font-size: 0.7rem;
   font-variant-numeric: tabular-nums;
   font-weight: 750;
+  font-family: var(--font-caption);
   line-height: 1;
   place-items: center;
   backdrop-filter: blur(0.4rem);
@@ -222,6 +222,7 @@ const statusBadges = {
   background: rgba(21, 22, 18, 0.78);
   font-size: 0.65rem;
   font-weight: 700;
+  font-family: var(--font-caption);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   backdrop-filter: blur(0.4rem);

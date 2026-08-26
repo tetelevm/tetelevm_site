@@ -41,7 +41,7 @@ defineProps({
   margin: 0;
   overflow-wrap: anywhere;
   color: var(--color-text);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-heading);
   font-size: clamp(1.8rem, 5vw, 3rem);
   font-weight: 500;
   line-height: 1.08;

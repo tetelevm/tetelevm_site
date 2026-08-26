@@ -87,6 +87,7 @@ const screenshots = computed(() =>
   font-weight: 750;
   letter-spacing: 0.09em;
   text-transform: uppercase;
+  font-family: var(--font-caption);
 }
 
 .anime-post__result em {
