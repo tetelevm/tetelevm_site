@@ -130,8 +130,8 @@ msgid "Original title"
 msgstr "Оригинальное название"
 
 #: apps/projects/admin.py:82
-msgid "Season"
-msgstr "Сезон"
+msgid "Subtitle"
+msgstr "Подзаголовок"
 
 #: apps/projects/admin.py:86 apps/projects/admin.py:96
 msgid "Rating"

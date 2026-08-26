@@ -30,8 +30,9 @@ combined independently with detail post types. The supported list codes are
   follows the image instead of imposing a fixed shape.
 - Plain post body text uses the shared sans-serif face at `1.2rem`; long
   uninterrupted strings wrap instead of extending beyond the post width.
-- Headers that contain both a name and date place the name on the left and the
-  date on the right.
+- Every detail type uses one shared header. It shows the post name and date only
+  when those values exist; the date occupies a separate, left-aligned line
+  directly below the name.
 - All dates in the public frontend are displayed as `YYYY.MM.DD`.
 - Card lists use the shared `PostCardList`: one outer frame encloses the
   square-cropped image and an optional caption containing a label and rating,
@@ -46,8 +47,10 @@ combined independently with detail post types. The supported list codes are
   post uses `🌀`. Type-specific lists may omit the visible caption when their
   presentation is intentionally image-only, while still using the label for
   accessible image text.
-- Detail types that show a name and overall rating share `RatedPostHeader`.
-- Detail pages compose the shared `PostLayout`, `PostTitle`, `PlainPostText`,
+- Anime and abandoned-building headers additionally show their type-specific
+  overall rating when present. Anime also shows its optional original title and
+  subtitle in the shared header.
+- Detail pages compose the shared `PostLayout`, `PostHeader`, `PostTitle`, `PlainPostText`,
   `PostImage`, media, and connection blocks where applicable. Type components
   retain only their data selection and genuinely type-specific markup.
 - Every detail page ends with text links to the nearest lower-numbered and
@@ -76,9 +79,9 @@ List:
 
 Post:
 
+- the shared header displays an optional post name and date;
 - the photograph appears without square cropping;
 - the `text` caption is centered below the photograph;
-- the post name is not displayed.
 
 ## `photo` — Photos
 
@@ -91,9 +94,10 @@ List:
 
 Post:
 
+- the shared header displays an optional post name and date;
 - the uncropped `mainFile.linkFull` original is displayed;
 - the regular preview is used when the original link is unavailable;
-- text, name, and additional files are not displayed.
+- text and additional files are not displayed.
 
 ## `plasticine` — Plasticine
 
@@ -106,13 +110,13 @@ List:
 
 Post:
 
-- the optional post date appears on the right in the shared dated header;
+- the shared header displays an optional post name and date;
 - the full main photograph appears first;
 - a simple horizontal divider separates it from the additional photographs;
 - additional photographs appear in the shared adaptive carousel in
   `PostFile.order`;
 - photographs open their originals in the shared full-screen lightbox;
-- name and text are not displayed.
+- text is not displayed.
 
 ## `anime` — Anime
 
@@ -131,10 +135,11 @@ Post:
 
 - a moderately sized `name` appears at the top, followed by a divider with
   spacing between the title block and the line;
-- optional `extra.season` appears in italics immediately after `name` on the
-  same title line; when both no longer fit, the season moves separately rather
+- optional `extra.subtitle` appears in italics immediately after `name` on the
+  same title line; when both no longer fit, the subtitle moves separately rather
   than taking the title's final word with it;
 - `extra.original_title` appears directly below it in italics;
+- an optional post date appears directly below the name;
 - a circular overall `extra.rating` sits to the right of the title block;
 - three square screenshots from the first three additional files appear below;
 - selecting a screenshot opens its original in a full-screen lightbox;
@@ -148,13 +153,13 @@ Expected `extra` structure:
 ```json
 {
   "original_title": "Sousou no Frieren",
-  "season": "Сезон 2",
+  "subtitle": "Сезон 2",
   "rating": 9,
   "result": "точно да"
 }
 ```
 
-`original_title` and the one-line `result` are required strings, `season` is an
+`original_title` and the one-line `result` are required strings, `subtitle` is an
 optional string, and `rating` is an integer from 1 through 10 inclusive.
 
 The model and admin currently do not enforce exactly three screenshots. Missing
@@ -174,6 +179,7 @@ Post:
 
 - a large `name` appears at the top, with a circular overall `extra.rating` on
   the right;
+- an optional post date appears directly below the name;
 - when `extra.location.latitude`, `longitude`, and `link` are all present, the
   coordinates appear directly below the title as a working external link such
   as `12.345, 34.567`;
@@ -223,15 +229,15 @@ List:
 - the slot remains empty for a missing or non-image `mainFile`, keeping all
   names aligned; there is no media-slot divider when no image is present;
 - the shared label appears after the media slot;
-- the optional model field `date` appears on the right.
+- the optional model field `date` appears below the name.
 
 Post:
 
 - `name` appears in a larger type size at the top on the left;
-- the optional `date` appears on the right;
+- the optional `date` appears below the name;
 - the plain `text` follows with its line breaks preserved;
 - when `mainFile` or additional files exist, they appear after the text in the
-  shared image-and-video media carousel.
+  shared media carousel, which supports images, video, audio, and file links.
 
 ## `text_md` — Markdown Texts
 
@@ -244,17 +250,21 @@ The list is identical to `text` and uses the shared `PostRowList` component:
 
 Post:
 
-- the header matches `text`, with `name` on the left and optional `date` on the
-  right;
+- the header matches `text`, with optional `date` below `name` on the left;
 - `text` is rendered as Markdown;
 - blocks written as `::: spoiler Optional title` through a closing `:::` are
   collapsed by default and expand when their summary is activated;
 - headings, paragraphs, lists, links, blockquotes, code blocks, tables, images,
   and Markdown line breaks are styled for the site;
+- selecting a Markdown image opens it in the shared full-screen lightbox;
+- Markdown image syntax renders recognized video and audio extensions as native
+  players and other non-image extensions as file links;
+- a non-empty Markdown image label appears as a visible caption below embedded
+  images, videos, and audio players;
 - raw HTML embedded in Markdown is disabled and displayed as text.
 
 Project descriptions use the same safe Markdown renderer and support the same
-click-to-expand `::: spoiler [title]` blocks.
+click-to-expand `::: spoiler [title]` blocks and image lightbox.
 
 ## `travel` — Travel
 
@@ -267,7 +277,7 @@ The list is identical to `text` and `text_md` and uses `PostRowList`:
 
 Post:
 
-- a large `name` appears on the top left and optional `date` on the right;
+- a large `name` appears on the top left and optional `date` directly below it;
 - an image carousel follows, containing only image additional files in
   `PostFile.order`; `mainFile` is not duplicated in the post carousel;
 - selecting a photograph opens its original in the shared lightbox;
@@ -281,20 +291,20 @@ List:
 - an image `mainFile` appears in the fixed 100-pixel thumbnail slot; the slot is
   empty when `mainFile` is absent or is not an image;
 - the row uses the shared post label;
-- optional `date` appears on the right.
+- optional `date` appears below the name.
 
 Post:
 
-- the shared dated header shows `name` on the left and optional `date` on the
-  right;
+- the shared dated header shows `name` with optional `date` directly below it
+  on the left;
 - `text` appears below the header as plain text with line breaks preserved by
   default;
 - when `extra.md` is exactly `true`, `text` uses the shared Markdown renderer
   instead, with raw embedded HTML disabled;
 - an image `mainFile`, when present, appears below the text in an
   aspect-ratio-preserving frame and opens its original in the shared lightbox;
-- a carousel follows with additional files whose `mediaType` is `photo` or
-  `video`;
+- a carousel follows with additional files whose `mediaType` is `photo`,
+  `video`, or `audio`;
 - remaining additional files appear as a vertical list of links using their
   original upload names;
 
@@ -313,7 +323,7 @@ fields together in one block, enabling the subset selected by the project's
 `post_type`:
 
 - `post` shows the optional `md` checkbox;
-- `anime` shows `original_title`, optional `season`, integer `rating` from 1 to
+- `anime` shows `original_title`, optional `subtitle`, integer `rating` from 1 to
   10, and the one-line `result`;
 - `abandoned` shows float `rating` from 1 to 5, float location coordinates, a
   string location link, and four integer ratings from 1 to 5;

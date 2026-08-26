@@ -91,7 +91,8 @@ projects, texts, photographs, and other material.
 Search engines can discover the home page, Archive landing page, and public
 project pages through a sitemap. Private projects and individual posts are not
 listed. Crawler instructions point to that sitemap and discourage crawling of
-the administrative, API, login, and random-post routes.
+the administrative and API routes. They explicitly allow Telegram's link
+preview bot to access public pages.
 
 Public pages expose page-specific browser titles and social-link metadata.
 Project metadata uses the project's localized name, description, and cover.
@@ -156,7 +157,7 @@ behavior are specified in `docs/PROJECT_TYPES.md`.
 An abandoned-building post may include linked latitude and longitude. When all
 location values are present, the coordinates appear as an external map link
 directly below the post title and above its text.
-An anime post may include a season string. When present, it appears in italics
+An anime post may include a subtitle string. When present, it appears in italics
 immediately after the post name on the same title line.
 General posts display their body as plain text by default. An optional boolean
 flag enables Markdown rendering for an individual general post.
@@ -214,6 +215,9 @@ types will be defined separately as the corresponding content is designed.
 Standalone media frames and carousels show images without cropping and follow
 their natural aspect ratio. Carousels resize when one gallery mixes portrait
 and landscape media.
+Structured post files use their stored media type to select an image, video,
+audio, or download-link presentation. Embedded Markdown media infers the same
+presentation from the URL extension used in image syntax.
 Carousel navigation stops at the first and last item and does not capture the
 keyboard arrow keys used by browser shortcuts. While the next image loads, the
 carousel retains the current frame's size and then resizes directly to the new

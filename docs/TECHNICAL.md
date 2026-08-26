@@ -121,7 +121,7 @@ mobile.
 
 For general posts the Markdown checkbox writes a JSON boolean; the detail
 component uses `MarkdownContent` only when it is `true` and otherwise keeps the
-plain-text renderer. Anime's optional `season` is rendered inline in italics
+plain-text renderer. Anime's optional `subtitle` is rendered inline in italics
 after the post name; `PostTitle` places an explicit line-break opportunity
 before it so the suffix wraps independently. Abandoned posts store `latitude`,
 `longitude`, and `link` below a nested `location` key. Their Vue detail
@@ -360,6 +360,12 @@ The frontend uses Vue, Vue Router, and Vite. Public pages, including login,
 belong to Vue. Different project types may use different components, but the
 application should not become a runtime page-builder.
 
+Every detail component passes its post to `PostLayout`, which renders the
+shared conditional `PostHeader` once. Name and date appear when present; anime
+adds its original title, subtitle, and rating, while abandoned-building posts add
+their rating. Type components retain only body presentation and optional
+header-adjacent content such as abandoned-building coordinates.
+
 Markdown post text is rendered client-side with `markdown-it`. The `text_md`
 type always uses it, while the general `post` type opts in per item through
 `extra.md === true`. Embedded raw HTML is disabled; Markdown-generated markup
@@ -368,6 +374,15 @@ is styled by the dedicated `MarkdownContent` component. The
 rendered as native `details` and `summary` elements while their body continues
 to support Markdown. Project descriptions reuse the same `MarkdownContent`
 component in `PageSubheader`, including spoiler support and raw-HTML blocking.
+Markdown images use delegated click and keyboard handlers to open the shared
+lightbox, including images nested inside collapsed spoiler containers.
+The shared URL classifier mirrors backend file-extension groups. Markdown image
+syntax uses it to emit an image, native video or audio player, or file link;
+query strings and fragments do not affect classification. Because Markdown is
+inserted through `v-html`, it emits trusted renderer-owned native elements
+rather than Vue component tags, which Vue would not mount there.
+Non-empty image-token labels remain accessible text and also render in an
+escaped, visible caption below embedded images, videos, and audio players.
 
 The current router implements:
 
@@ -393,16 +408,18 @@ The shared frontend building blocks are:
   private states.
 - `PostCardList` for rendering framed square-image cards with an optional
   caption and rating section inside `list-types`;
-- `RatedPostHeader` for detail types whose title sits beside an overall rating.
 - `PostRowList` for rendering rows with a media slot, label, and date inside
   `list-types`;
-- `PostLayout` for the shared vertical composition and spacing of detail posts;
+- `PostLayout` for the shared conditional header, vertical composition, and
+  spacing of detail posts;
+- `PostHeader` for optional title, date, type-specific title metadata, and
+  overall rating;
 - `PostTitle` for shared detail-title and optional subtitle typography;
-- `DatedPostHeader` and `RatedPostHeader` for compositions of `PostTitle` with
-  right-side metadata;
 - `PlainPostText` for consistently styled plain-text post bodies;
 - `PostImage` for aspect-ratio-preserving natural-size or framed standalone
   images, optionally using the shared lightbox;
+- `MediaFile` for selecting image, video, audio, or file-link presentation from
+  API media metadata with URL-extension fallback;
 - `MarkdownContent` for styled, HTML-disabled Markdown rendering.
 - `PostTag` for non-interactive tag labels on post detail pages;
 - `PostConnections` for adapting related-post summaries to `PostRowList` and
