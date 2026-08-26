@@ -29,6 +29,7 @@ const additionalPhotos = computed(() =>
       <PostImage
         :src="post.mainFile.linkFull || post.mainFile.link"
         :full-src="post.mainFile.linkFull"
+        :media-type="post.mainFile.mediaType"
         :alt="post.name || post.text"
         lightbox
       />

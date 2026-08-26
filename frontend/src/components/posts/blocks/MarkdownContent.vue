@@ -4,6 +4,7 @@ import MarkdownIt from "markdown-it"
 import markdownItContainer from "markdown-it-container"
 
 import LightboxImage from "../../media/LightboxImage.vue"
+import { mediaTypeFromUrl } from "../../../utils/media.js"
 
 const props = defineProps({
   source: {
@@ -37,6 +38,27 @@ markdown.use(markdownItContainer, "spoiler", {
 markdown.renderer.rules.image = (tokens, index, options, env, renderer) => {
   const token = tokens[index]
   const alt = renderer.renderInlineAsText(token.children, options, env)
+  const source = token.attrGet("src") ?? ""
+  const mediaType = mediaTypeFromUrl(source)
+
+  if (["video", "audio"].includes(mediaType)) {
+    token.attrSet("class", `markdown-content__${mediaType}`)
+    token.attrSet("aria-label", alt || (mediaType === "video" ? "Видео" : "Аудио"))
+    token.attrSet("controls", "")
+    token.attrSet("preload", "metadata")
+    if (mediaType === "video") {
+      token.attrSet("playsinline", "")
+    }
+    return `<${mediaType}${renderer.renderAttrs(token)}></${mediaType}>`
+  }
+
+  if (mediaType === "other") {
+    token.attrs = (token.attrs ?? []).filter(([name]) => name !== "src")
+    token.attrSet("href", source)
+    token.attrSet("class", "markdown-content__file")
+    return `<a${renderer.renderAttrs(token)}>${markdown.utils.escapeHtml(alt || "Открыть файл")}</a>`
+  }
+
   token.attrSet("alt", alt)
   token.attrSet("tabindex", "0")
   token.attrSet("role", "button")
@@ -185,6 +207,24 @@ function handleImageKeydown(event) {
 .markdown-content :deep(img:focus-visible) {
   outline: 2px solid var(--color-accent);
   outline-offset: 0.2rem;
+}
+
+.markdown-content :deep(.markdown-content__video) {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-small);
+  background: #0d0e0c;
+}
+
+.markdown-content :deep(.markdown-content__audio) {
+  width: min(100%, 36rem);
+  display: block;
+}
+
+.markdown-content :deep(.markdown-content__file) {
+  display: inline-block;
 }
 
 .markdown-content :deep(table) {

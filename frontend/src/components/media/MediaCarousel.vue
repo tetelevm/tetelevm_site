@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from "vue"
 
-import LightboxImage from "./LightboxImage.vue"
+import MediaFile from "./MediaFile.vue"
 
 const props = defineProps({
   items: {
@@ -54,15 +54,8 @@ function setStageAspectRatio(width, height) {
   }
 }
 
-function handlePreviewLoad({ width, height }) {
+function handleDimensions({ width, height }) {
   setStageAspectRatio(width, height)
-}
-
-function handleVideoMetadata(event) {
-  setStageAspectRatio(
-    event.currentTarget.videoWidth,
-    event.currentTarget.videoHeight,
-  )
 }
 
 watch(
@@ -89,32 +82,17 @@ watch(
           && !['photo', 'video'].includes(currentItem.mediaType),
       }"
     >
-      <LightboxImage
-        v-if="currentItem?.mediaType === 'photo'"
+      <MediaFile
+        v-if="currentItem"
         :key="currentItem.id"
-        :preview-src="currentItem.link"
-        :full-src="currentItem.linkFull"
+        :file="currentItem"
         :alt="`${label}: изображение ${activeIndex + 1}`"
+        :lightbox="currentItem.mediaType === 'photo'"
         preview-fit="contain"
         :preserve-aspect-ratio="!hasReservedStage"
         loading="eager"
-        @preview-load="handlePreviewLoad"
+        @dimensions="handleDimensions"
       />
-      <video
-        v-else-if="currentItem?.mediaType === 'video'"
-        :key="currentItem.id"
-        :src="currentItem.linkFull || currentItem.link"
-        controls
-        preload="metadata"
-        @loadedmetadata="handleVideoMetadata"
-      />
-      <a
-        v-else-if="currentItem"
-        class="media-carousel__file"
-        :href="currentItem.linkFull || currentItem.link"
-      >
-        открыть файл
-      </a>
     </div>
 
     <div v-if="items.length > 1" class="media-carousel__controls">
@@ -172,19 +150,14 @@ watch(
   min-height: 12rem;
 }
 
-.media-carousel__stage video {
+.media-carousel__stage :deep(.media-file),
+.media-carousel__stage :deep(video) {
   width: 100%;
-  height: auto;
-  display: block;
-  object-fit: contain;
 }
 
-.media-carousel__stage--reserved video {
+.media-carousel__stage--reserved :deep(.media-file),
+.media-carousel__stage--reserved :deep(video) {
   height: 100%;
-}
-
-.media-carousel__file {
-  color: var(--color-accent);
 }
 
 .media-carousel__controls {

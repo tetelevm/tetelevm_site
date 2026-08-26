@@ -14,6 +14,7 @@ defineProps({
   <PostLayout :post="post" align="center">
     <PostImage
       :src="post.mainFile?.linkFull || post.mainFile?.link"
+      :media-type="post.mainFile?.mediaType"
       :alt="post.name || post.text"
     />
   </PostLayout>

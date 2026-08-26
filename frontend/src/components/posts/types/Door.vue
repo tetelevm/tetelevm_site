@@ -15,6 +15,8 @@ defineProps({
   <PostLayout :post="post" spacing="compact" align="center">
     <PostImage
       :src="post.mainFile?.link"
+      :full-src="post.mainFile?.linkFull"
+      :media-type="post.mainFile?.mediaType"
       :alt="post.text"
       max-height="75vh"
     />

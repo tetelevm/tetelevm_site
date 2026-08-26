@@ -1,5 +1,5 @@
 <script setup>
-import LightboxImage from "../../media/LightboxImage.vue"
+import MediaFile from "../../media/MediaFile.vue"
 
 defineProps({
   src: {
@@ -11,6 +11,10 @@ defineProps({
     default: "",
   },
   alt: {
+    type: String,
+    default: "",
+  },
+  mediaType: {
     type: String,
     default: "",
   },
@@ -37,15 +41,15 @@ defineProps({
     :class="`post-image--${variant}`"
     :style="{ '--post-image-max-height': maxHeight }"
   >
-    <LightboxImage
-      v-if="lightbox"
-      :preview-src="src"
+    <MediaFile
+      :src="src"
       :full-src="fullSrc"
+      :media-type="mediaType"
       :alt="alt"
+      :lightbox="lightbox"
       preview-fit="contain"
       :preserve-aspect-ratio="variant === 'stage'"
     />
-    <img v-else :src="src" :alt="alt" />
   </div>
 </template>
 
@@ -59,7 +63,9 @@ defineProps({
   justify-content: center;
 }
 
-.post-image--natural > img,
+.post-image--natural :deep(.media-file),
+.post-image--natural :deep(.media-file > img),
+.post-image--natural :deep(.media-file > video),
 .post-image--natural :deep(.lightbox-image__trigger img) {
   width: auto;
   max-width: 100%;
@@ -79,6 +85,11 @@ defineProps({
   margin-inline: auto;
 }
 
+.post-image--natural :deep(.media-file--audio),
+.post-image--natural :deep(.media-file--other) {
+  width: 100%;
+}
+
 .post-image--stage {
   overflow: hidden;
   border: 1px solid var(--color-line);
@@ -87,7 +98,9 @@ defineProps({
   box-shadow: var(--shadow-card);
 }
 
-.post-image--stage > img {
+.post-image--stage :deep(.media-file),
+.post-image--stage :deep(.media-file > img),
+.post-image--stage :deep(.media-file > video) {
   width: 100%;
   height: auto;
   display: block;

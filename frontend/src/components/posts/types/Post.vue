@@ -17,13 +17,13 @@ const props = defineProps({
 
 const mediaFiles = computed(() =>
   (props.post.files ?? []).filter((file) =>
-    ["photo", "video"].includes(file.mediaType),
+    ["photo", "video", "audio"].includes(file.mediaType),
   ),
 )
 
 const otherFiles = computed(() =>
   (props.post.files ?? []).filter(
-    (file) => !["photo", "video"].includes(file.mediaType),
+    (file) => !["photo", "video", "audio"].includes(file.mediaType),
   ),
 )
 </script>
@@ -34,9 +34,10 @@ const otherFiles = computed(() =>
     <PlainPostText v-else :text="post.text" />
 
     <PostImage
-      v-if="post.mainFile?.mediaType === 'photo'"
+      v-if="post.mainFile"
       :src="post.mainFile.link"
       :full-src="post.mainFile.linkFull"
+      :media-type="post.mainFile.mediaType"
       :alt="post.name"
       variant="stage"
       lightbox

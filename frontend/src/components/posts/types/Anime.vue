@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue"
 
-import LightboxImage from "../../media/LightboxImage.vue"
+import MediaFile from "../../media/MediaFile.vue"
 import PlainPostText from "../blocks/PlainPostText.vue"
 import PostLayout from "../blocks/PostLayout.vue"
 
@@ -25,11 +25,11 @@ const screenshots = computed(() =>
         :key="file?.id ?? `empty-${index}`"
         class="anime-post__screenshot"
       >
-        <LightboxImage
+        <MediaFile
           v-if="file?.link"
-          :preview-src="file.link"
-          :full-src="file.linkFull"
+          :file="file"
           :alt="`${post.name} — скриншот ${index + 1}`"
+          lightbox
         />
         <span v-else>нет скриншота</span>
       </div>
@@ -62,6 +62,12 @@ const screenshots = computed(() =>
   font-size: 0.7rem;
   place-items: center;
   text-align: center;
+}
+
+.anime-post__screenshot :deep(.media-file),
+.anime-post__screenshot :deep(.media-file > video) {
+  width: 100%;
+  height: 100%;
 }
 
 .anime-post__result {

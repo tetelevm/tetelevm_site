@@ -1,4 +1,6 @@
 <script setup>
+import MediaFile from "../../media/MediaFile.vue"
+
 defineProps({
   files: {
     type: Array,
@@ -10,10 +12,7 @@ defineProps({
 <template>
   <ul v-if="files.length" class="post-file-list" aria-label="Файлы">
     <li v-for="file in files" :key="file.id">
-      <a :href="file.linkFull || file.link">
-        <span>{{ file.name || "файл" }}</span>
-        <span aria-hidden="true">↗</span>
-      </a>
+      <MediaFile :file="file" />
     </li>
   </ul>
 </template>
@@ -28,7 +27,11 @@ defineProps({
   list-style: none;
 }
 
-.post-file-list a {
+.post-file-list :deep(.media-file) {
+  width: 100%;
+}
+
+.post-file-list :deep(a) {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -43,8 +46,8 @@ defineProps({
   text-decoration: none;
 }
 
-.post-file-list a:hover,
-.post-file-list a:focus-visible {
+.post-file-list :deep(a:hover),
+.post-file-list :deep(a:focus-visible) {
   border-color: rgba(215, 240, 111, 0.55);
   color: var(--color-accent);
   outline: none;
