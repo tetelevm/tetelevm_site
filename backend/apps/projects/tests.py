@@ -10,7 +10,7 @@ from rest_framework.test import APITestCase
 from apps.core.models import File, FileType
 
 from .admin import PostAdmin, PostAdminForm
-from .models import Post, PostFile, PostListType, PostType, Project
+from .models import Post, PostFile, PostListType, PostType, Project, Tag
 
 
 class ProjectModelTests(TestCase):
@@ -478,6 +478,7 @@ class ProjectApiTests(APITestCase):
             number=1,
             name="Private post",
         )
+        self.star_tag = Tag.objects.create(code="star", name="Featured")
         user_model = get_user_model()
         self.guest = user_model.objects.create_user("guest", password="guest")
         self.admin = user_model.objects.create_superuser(
@@ -562,12 +563,21 @@ class ProjectApiTests(APITestCase):
     def test_random_post_only_uses_projects_visible_to_anonymous_user(
         self,
     ) -> None:
+        self.public_post.tags.add(self.star_tag)
+        self.private_post.tags.add(self.star_tag)
+        Post.objects.create(
+            project=self.public_project,
+            number=2,
+            name="Visible but not featured",
+        )
+
         response = self.client.get(reverse("projects:random-post"))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, {"link": self.public_post.link})
 
     def test_random_post_includes_private_projects_for_guest(self) -> None:
+        self.private_post.tags.add(self.star_tag)
         self.public_post.delete()
         self.client.force_login(self.guest)
 
@@ -576,8 +586,10 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, {"link": self.private_post.link})
 
-    def test_random_post_returns_not_found_without_visible_posts(self) -> None:
-        self.public_post.delete()
+    def test_random_post_returns_not_found_without_visible_starred_posts(
+        self,
+    ) -> None:
+        self.private_post.tags.add(self.star_tag)
 
         response = self.client.get(reverse("projects:random-post"))
 

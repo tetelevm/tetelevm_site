@@ -15,6 +15,8 @@ from .serializers import (
     ProjectListSerializer,
 )
 
+RANDOM_POST_TAG_CODE = "star"
+
 
 def visible_projects(user_is_authenticated: bool) -> QuerySet[Project]:
     projects = Project.objects.select_related("cover")
@@ -42,14 +44,18 @@ class RandomPostView(APIView):
     def get(self, request: Request) -> Response:
         post = (
             Post.objects.filter(
-                project__in=visible_projects(request.user.is_authenticated)
+                project__in=visible_projects(request.user.is_authenticated),
+                tags__code=RANDOM_POST_TAG_CODE,
             )
             .select_related("project")
             .order_by("?")
             .first()
         )
         if post is None:
-            return Response({"detail": "No visible posts"}, status=404)
+            return Response(
+                {"detail": "No visible featured posts"},
+                status=404,
+            )
         return Response({"link": post.link})
 
 
