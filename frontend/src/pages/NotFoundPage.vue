@@ -83,7 +83,7 @@ watch(
 .not-found__title {
   max-width: 14ch;
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-heading);
   font-size: clamp(2.6rem, 9vw, 5.5rem);
   font-weight: 500;
   line-height: 0.98;

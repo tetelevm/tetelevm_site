@@ -102,6 +102,7 @@ function ratingHouses(value) {
   font-variant-numeric: tabular-nums;
   text-decoration-color: rgba(215, 240, 111, 0.48);
   text-underline-offset: 0.22em;
+  font-family: var(--font-caption);
 }
 
 .abandoned-post__location:hover,
@@ -134,6 +135,7 @@ function ratingHouses(value) {
   font-weight: 750;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  font-family: var(--font-caption);
 }
 
 .abandoned-post__criteria dd {

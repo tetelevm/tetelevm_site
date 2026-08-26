@@ -82,6 +82,7 @@ defineProps({
   color: var(--color-muted);
   font-size: 1.25rem;
   font-variant-numeric: tabular-nums;
+  font-family: var(--font-caption);
 }
 
 .post-header__rating {
@@ -94,7 +95,7 @@ defineProps({
   border-radius: 50%;
   color: var(--color-accent);
   background: var(--color-surface);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-caption);
   font-size: 1.55rem;
   line-height: 1;
   place-items: center;

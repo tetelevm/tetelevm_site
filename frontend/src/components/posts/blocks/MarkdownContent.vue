@@ -149,7 +149,7 @@ function handleImageKeydown(event) {
 .markdown-content :deep(h4) {
   margin: 1.8em 0 0.65em;
   color: var(--color-text);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-heading);
   font-weight: 500;
   line-height: 1.2;
 }
@@ -222,13 +222,14 @@ function handleImageKeydown(event) {
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: start;
+  align-items: end;
   gap: 0.45rem;
 }
 
 .markdown-content :deep(.markdown-content__caption) {
   max-width: 100%;
   color: var(--color-muted);
+  font-family: var(--font-caption);
   font-size: 1.2rem;
   line-height: 1.5;
   text-align: center;

@@ -66,7 +66,7 @@ watch(
 .home-placeholder__title {
   max-width: 18ch;
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-heading);
   font-size: clamp(2rem, 7vw, 4.25rem);
   font-weight: 500;
   line-height: 1.03;

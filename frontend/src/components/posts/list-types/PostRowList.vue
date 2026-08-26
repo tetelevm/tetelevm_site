@@ -81,7 +81,6 @@ defineProps({
   min-width: 0;
   padding-block: 1rem;
   overflow-wrap: anywhere;
-  font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(1rem, 2.5vw, 1.2rem);
 }
 
@@ -92,6 +91,7 @@ defineProps({
   color: var(--color-muted);
   font-size: 0.78rem;
   font-variant-numeric: tabular-nums;
+  font-family: var(--font-caption);
 }
 
 .post-row:hover,

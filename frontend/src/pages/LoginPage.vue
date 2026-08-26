@@ -113,7 +113,7 @@ onMounted(async () => {
 .login-form__title {
   margin: 0 0 0.8rem;
   color: var(--color-text);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-heading);
   font-size: clamp(2rem, 7vw, 3rem);
   font-weight: 400;
   line-height: 1;

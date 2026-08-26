@@ -80,7 +80,7 @@ function shortenedPostLabel(post) {
   border-radius: var(--radius-small);
   color: var(--color-muted);
   background: var(--color-surface);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-text);
   font-size: clamp(0.9rem, 2.5vw, 1.05rem);
   line-height: 1.4;
   text-decoration: none;
@@ -103,7 +103,6 @@ function shortenedPostLabel(post) {
   flex: 0 0 auto;
   padding-top: 0.08rem;
   color: var(--color-accent);
-  font-family: ui-sans-serif, system-ui, sans-serif;
   font-weight: 750;
   line-height: 1.4;
 }
