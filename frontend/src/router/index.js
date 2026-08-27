@@ -17,7 +17,7 @@ const router = createRouter({
     },
     {
       path: "/archive/",
-      name: "projects",
+      name: "formats",
       component: ProjectsPage,
     },
     {
@@ -41,18 +41,18 @@ const router = createRouter({
       component: LoginPage,
     },
     {
-      path: "/projects/",
+      path: "/:legacy(formats|projects)/",
       redirect: "/archive/",
     },
     {
-      path: "/projects/:project/",
+      path: "/:legacy(formats|projects)/:project/",
       redirect: (to) => ({
         path: `/archive/${to.params.project}/`,
         query: to.query,
       }),
     },
     {
-      path: "/projects/:project/:postNumber/",
+      path: "/:legacy(formats|projects)/:project/:postNumber/",
       redirect: (to) => ({
         path: `/archive/${to.params.project}/${to.params.postNumber}/`,
         query: to.query,

@@ -22,7 +22,7 @@ onMounted(openRandomPost)
 </script>
 
 <template>
-  <MainLayout active-page="projects">
+  <MainLayout active-page="formats">
     <PageStatus
       :loading="!errorMessage"
       :error="errorMessage"

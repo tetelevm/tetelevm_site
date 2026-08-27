@@ -14,12 +14,12 @@ const navigationText = {
   ru: {
     label: "Основная навигация",
     home: "главная",
-    projects: "архив",
+    formats: "архив",
   },
   en: {
     label: "Main navigation",
     home: "home",
-    projects: "archive",
+    formats: "archive",
   },
 }
 </script>
@@ -39,10 +39,10 @@ const navigationText = {
       </RouterLink>
       <RouterLink
         class="site-header__link"
-        :class="{ 'site-header__link--active': activePage === 'projects' }"
+        :class="{ 'site-header__link--active': activePage === 'formats' }"
         to="/archive/"
       >
-        {{ navigationText[props.language].projects }}
+        {{ navigationText[props.language].formats }}
       </RouterLink>
     </nav>
 

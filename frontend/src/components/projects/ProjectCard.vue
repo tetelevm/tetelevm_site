@@ -55,15 +55,15 @@ const statusBadges = {
         class="project-card__cover"
         :style="{ '--project-accent': accent }"
       >
-        <img v-if="image" :src="image" :alt="`Обложка проекта «${title}»`" />
+        <img v-if="image" :src="image" :alt="`Обложка формата «${title}»`" />
         <span v-else class="project-card__placeholder" aria-hidden="true">
           {{ title.slice(0, 1) }}
         </span>
         <span
           v-if="isPrivate"
           class="project-card__private-lock"
-          aria-label="Приватный проект"
-          title="Приватный проект"
+          aria-label="Приватный формат"
+          title="Приватный формат"
         >🔒</span>
         <span class="project-card__post-count" aria-hidden="true">
           {{ postCount }}

@@ -51,14 +51,14 @@ class SearchDiscoveryTests(TestCase):
         )
         self.assertNotIn("private-project", content)
 
-    def test_archive_page_meta_describes_the_project_archive(self) -> None:
+    def test_formats_page_meta_describes_the_formats_archive(self) -> None:
         response = self.client.get(
             reverse("page-meta"),
             {"path": "/archive/"},
         )
 
         description = (
-            "Архив проектов: тексты, фотографии и другое."
+            "Архив форматов: тексты, фотографии и другое."
         )
         self.assertContains(
             response,
@@ -71,6 +71,17 @@ class SearchDiscoveryTests(TestCase):
             f'<meta name="description" content="{description}" '
             "data-page-meta>",
             html=True,
+        )
+
+    def test_legacy_formats_meta_uses_archive_canonical_url(self) -> None:
+        response = self.client.get(
+            reverse("page-meta"),
+            {"path": "/formats/public-project/"},
+        )
+
+        self.assertContains(
+            response,
+            'rel="canonical" href="http://testserver/archive/public-project/"',
         )
 
     def test_page_meta_uses_project_name_description_and_cover(self) -> None:

@@ -492,6 +492,16 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual([project["link"] for project in response.data], ["public"])
 
+    def test_format_api_is_canonical_and_project_api_remains_compatible(
+        self,
+    ) -> None:
+        self.assertEqual(reverse("projects:project-list"), "/_api/formats/")
+
+        response = self.client.get("/_api/projects/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([item["link"] for item in response.data], ["public"])
+
     def test_project_list_includes_post_count(self) -> None:
         Post.objects.create(
             project=self.public_project,

@@ -54,7 +54,7 @@ async function loadProject(link, page) {
     })
   } catch (error) {
     isNotFound.value = error.status === 404
-    errorMessage.value = error.message || "Не удалось загрузить проект"
+    errorMessage.value = error.message || "Не удалось загрузить формат"
   } finally {
     isLoading.value = false
   }
@@ -81,7 +81,7 @@ watch(
 
 <template>
   <NotFoundPage v-if="isNotFound" />
-  <MainLayout v-else active-page="projects">
+  <MainLayout v-else active-page="formats">
     <template #header-action>
       <ProjectHeaderAction
         v-if="project"
@@ -92,7 +92,7 @@ watch(
     <template #subheader>
       <PageSubheader
         back-to="/archive/"
-        back-label="← архив"
+        back-label="← форматы"
         :meta="pagination ? `материалов: ${pagination.totalItems}` : ''"
         :status="project?.status"
         :description="project?.description"

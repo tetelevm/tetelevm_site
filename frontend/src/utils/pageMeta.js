@@ -1,5 +1,5 @@
 const META_ATTRIBUTE = "data-page-meta"
-const ARCHIVE_DESCRIPTION = "Projects archive: texts, photos and other"
+const ARCHIVE_DESCRIPTION = "Formats archive: texts, photos and other"
 
 function setMetaTag(attribute, key, content) {
   let element = document.head.querySelector(
@@ -125,9 +125,9 @@ export function setDefaultPageMeta(routeName) {
     setPageMeta({title: "tetelevm", socialTitle: "tetelevm - Main", path: "/"})
     return
   }
-  if (routeName === "projects") {
+  if (routeName === "formats") {
     setPageMeta({
-      title: "Project archive",
+      title: "Archive",
       socialTitle: "tetelevm - Archive",
       description: ARCHIVE_DESCRIPTION,
       path: "/archive/",

@@ -16,7 +16,7 @@ async function getJson(path, notFoundMessage) {
 }
 
 export function getProjects() {
-  return getJson("/_api/projects/", "Архив не найден")
+  return getJson("/_api/formats/", "Форматы не найдены")
 }
 
 export function getRandomPost() {
@@ -25,14 +25,14 @@ export function getRandomPost() {
 
 export function getProjectPosts(projectCode, page = 1) {
   return getJson(
-    `/_api/projects/${encodeURIComponent(projectCode)}/?page=${encodeURIComponent(page)}`,
-    "Проект не найден",
+    `/_api/formats/${encodeURIComponent(projectCode)}/?page=${encodeURIComponent(page)}`,
+    "Формат не найден",
   )
 }
 
 export function getPost(projectCode, postNumber) {
   return getJson(
-    `/_api/projects/${encodeURIComponent(projectCode)}/${encodeURIComponent(postNumber)}/`,
+    `/_api/formats/${encodeURIComponent(projectCode)}/${encodeURIComponent(postNumber)}/`,
     "Пост не найден",
   )
 }
