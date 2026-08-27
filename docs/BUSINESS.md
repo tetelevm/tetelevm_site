@@ -15,8 +15,8 @@ network, a public publishing platform, or a general-purpose CMS.
 An anonymous visitor can:
 
 - view the About page;
-- browse public projects;
-- view all items in public projects;
+- browse public formats;
+- view all items in public formats;
 - open the guest login page.
 
 Anonymous access is read-only.
@@ -25,7 +25,7 @@ Anonymous access is read-only.
 
 A guest is a trusted visitor using shared access provided by the site owner.
 A guest can do everything available to an anonymous visitor and can also view
-private projects and their items. An authenticated guest can sign out and
+private formats and their items. An authenticated guest can sign out and
 return to anonymous access.
 
 Guest access is read-only. Guests cannot create, edit, upload, or delete
@@ -35,8 +35,8 @@ content. Separate guest profiles are not required.
 
 The administrator is the site owner. The administrator can:
 
-- create and manage projects;
-- create and edit project items;
+- create and manage formats;
+- create and edit format items;
 - edit type-specific item metadata through individual validated fields instead
   of raw JSON;
 - upload media used by the content, including many files in one operation;
@@ -52,8 +52,8 @@ The administrator is the site owner. The administrator can:
   administrative change page;
 - see generated image thumbnails directly in the administrative file list and
   post-file inlines, and a larger preview on an image file's change page;
-- mark projects as public or private;
-- find related posts in the administrative selector by project name and post
+- mark formats as public or private;
+- find related posts in the administrative selector by format name and post
   number, including combined queries such as `погулялки #10`;
 - open Django Admin from a staff-only icon in the public site header;
 - manage the site through an administrative interface.
@@ -82,32 +82,32 @@ articles, notes, photographs, anime write-ups, long-form text, and media
 publications.
 
 The public section is named “Archive” and is available at `/archive/`. Its
-landing page shows projects, not a single feed mixing unrelated items. Each
-project is an independent collection with its own list of material and may use
+landing page shows formats, not a single feed mixing unrelated items. Each
+format is an independent collection with its own list of material and may use
 a presentation suited to its purpose.
 The Archive landing page metadata describes it as an archive of the owner's
-projects, texts, photographs, and other material.
+formats, texts, photographs, and other material.
 
 Search engines can discover the home page, Archive landing page, and public
-project pages through a sitemap. Private projects and individual posts are not
+format pages through a sitemap. Private formats and individual posts are not
 listed. Crawler instructions point to that sitemap and discourage crawling of
 the administrative and API routes. They explicitly allow Telegram's link
 preview bot to access public pages.
 
 Public pages expose page-specific browser titles and social-link metadata.
-Project metadata uses the project's localized name, description, and cover.
-Post metadata uses its name when present or its project and number otherwise;
+Format metadata uses the format's localized name, description, and cover.
+Post metadata uses its name when present or its format and number otherwise;
 its description uses a text excerpt or attached-file counts, and its image uses
 the main photo preview with the site favicon as a fallback.
 
-Opening `/archive/random/` selects a random post from the material visible to
-the current visitor and opens that post. Anonymous visitors are never sent to
-private projects; authenticated guests and administrators may receive either
-public or private posts.
+Opening `/archive/random/` selects a random post tagged with the special
+`star` code from the material visible to the current visitor and opens that
+post. Anonymous visitors are never sent to private formats; authenticated
+guests and administrators may receive either public or private starred posts.
 
-Unknown public URLs and missing projects or posts show a localized not-found
+Unknown public URLs and missing formats or posts show a localized not-found
 page instead of redirecting to the home page. It offers a `ru/en` switch and a
-link that opens a random post visible to the current visitor. The response uses
+link that opens a random starred post visible to the current visitor. The response uses
 the real HTTP 404 status and is excluded from search indexing. Switching the
 language also updates the document language, page title, description, and
 social metadata for the current visit.
@@ -115,7 +115,7 @@ social metadata for the current visit.
 ### Login
 
 The site provides a login page matching its own interface. Its main purpose is
-to give trusted visitors access to private projects. Ordinary visitors should
+to give trusted visitors access to private formats. Ordinary visitors should
 not be directed to an administrative login screen. Valid guest and administrator
 credentials create a normal site session; authenticated visitors can sign out
 from the public interface.
@@ -129,10 +129,10 @@ directly accessible.
 Content follows this hierarchy:
 
 ```text
-Content -> Project -> Item
+Content -> Format -> Item
 ```
 
-A project determines:
+A format determines:
 
 - the collection to which an item belongs;
 - a Markdown description shown above its material, including optional
@@ -140,18 +140,18 @@ A project determines:
 - whether the collection is public or private;
 - the general presentation of its material.
 
-Project cards communicate lifecycle status separately from visibility. Open
-projects have no status label, paused projects show “на паузе” in a warm
-yellow-orange color, and closed projects show “завершён” in red. Private
-projects are not dimmed; a small gray lock in the top-left corner of the cover
+Format cards communicate lifecycle status separately from visibility. Open
+formats have no status label, paused formats show “на паузе” in a warm
+yellow-orange color, and closed formats show “завершён” in red. Private
+formats are not dimmed; a small gray lock in the top-left corner of the cover
 communicates their visibility without a written status label.
-The project page repeats a paused or closed status beside its material count,
-using the same warm or red status color; open projects show only the count.
-Each project card shows its total number of posts in a small circle at the
+The format page repeats a paused or closed status beside its material count,
+using the same warm or red status color; open formats show only the count.
+Each format card shows its total number of posts in a small circle at the
 bottom-left of its cover.
 
 An item contains the actual material, such as text, images, video, or a
-combination of media. The supported project presentation types and their visual
+combination of media. The supported format presentation types and their visual
 behavior are specified in `docs/PROJECT_TYPES.md`.
 
 An abandoned-building post may include linked latitude and longitude. When all
@@ -165,9 +165,15 @@ Posts may be connected to any number of other posts through symmetric
 relationships. Detail pages show every related post visible to the current
 visitor as a row card; links to private content remain hidden from anonymous
 visitors.
+Post tags are links to the current format with a `tag=<code>` query parameter.
+Opening one shows only posts in that format carrying the selected tag; list
+pagination retains the filter. The active filter appears between the format
+description and its posts using the same tag-chip presentation as post tags. It
+shows the tag's configured name when the code exists and the requested code as
+a fallback.
 At the bottom of every post detail page, navigation links point to the nearest
-lower-numbered and higher-numbered posts in the same project. Missing numbers
-are skipped, and a link is omitted at the corresponding project boundary. The
+lower-numbered and higher-numbered posts in the same format. Missing numbers
+are skipped, and a link is omitted at the corresponding format boundary. The
 forward link to the higher-numbered post appears first on the left, while the
 back link to the lower-numbered post appears second on the right; on mobile they
 keep that top-to-bottom order. The
@@ -179,16 +185,16 @@ contains a long uninterrupted string.
 Every post has a shared label available to list and administrative displays. It
 uses the post name when available, otherwise the beginning of its text,
 otherwise a summary of attached file types. A completely empty post uses a
-neutral fallback symbol. Image-only project presentations may omit the visible
+neutral fallback symbol. Image-only format presentations may omit the visible
 label while retaining it as the image's accessible description.
 
 ## Visibility
 
-Visibility is defined at project level:
+Visibility is defined at format level:
 
-- public projects and all their items are available without authentication;
-- private projects and all their items are hidden from anonymous visitors;
-- authenticated guests can view both public and private projects.
+- public formats and all their items are available without authentication;
+- private formats and all their items are hidden from anonymous visitors;
+- authenticated guests can view both public and private formats.
 
 Items do not have independent visibility settings. Per-item visibility should
 only be introduced if a future product requirement needs it.
@@ -210,7 +216,7 @@ publishing platforms.
 ## User experience
 
 The public interface must be usable and visually coherent on desktop and mobile
-devices. Detailed visual design and the presentation of individual project
+devices. Detailed visual design and the presentation of individual format
 types will be defined separately as the corresponding content is designed.
 Standalone media frames and carousels show images without cropping and follow
 their natural aspect ratio. Carousels resize when one gallery mixes portrait

@@ -191,7 +191,14 @@ HTTPS origin when the frontend and backend are not seen as the same origin.
 
 ## Content domain
 
-The project domain currently uses these models:
+The public product term is “format”. The existing Django model, database table,
+relations, and internal Python names remain `Project`/`project` to avoid a
+data migration that would not change behavior. API URLs and administrative
+translations use “format”. The visitor-facing section is named Archive and
+uses `/archive/`; `/formats/`, `/projects/`, and `/_api/projects/` remain
+compatibility aliases.
+
+The content domain currently uses these models:
 
 ```text
 Project
@@ -213,7 +220,7 @@ Post
     project -> Project
     number: unique within project
     optional date
-    link: /archive/<project link>/<number>/
+    link: /archive/<format link>/<number>/
     optional name and text
     optional main_file -> File
     extra: JSON
@@ -262,17 +269,17 @@ The intended routes are:
 ```text
 /                               About
 /login/                         Guest login
-/archive/                       Projects visible to the visitor
-/archive/random/                Open a random visible post
-/archive/<project>/             Items in a project
-/archive/<project>/<item>/      Item detail when the project needs one
+/archive/                       Formats visible to the visitor
+/archive/random/                Open a random visible post tagged `star`
+/archive/<format>/              Items in a format
+/archive/<format>/<item>/       Item detail when the format needs one
 /robots.txt                    Crawler rules and sitemap location
-/sitemap.xml                   Home, Archive, and public project URLs
+/sitemap.xml                   Home, Formats, and public format URLs
 /<unknown path>                 Localized not-found page
 ```
 
 Exact identifiers and slug behavior remain deferred. The Content landing page
-must remain project-oriented rather than becoming a global mixed feed.
+must remain format-oriented rather than becoming a global mixed feed.
 
 Django generates `robots.txt` and `sitemap.xml`; Caddy proxies both exact
 paths to Django before its Vue history fallback. The sitemap queryset always
@@ -283,7 +290,10 @@ The built Vue index contains a Caddy `httpInclude` template action. For public
 page requests, Caddy asks Django's `/_api/page-meta/` endpoint for the title,
 canonical URL, description, and Open Graph and Twitter tags before returning
 the SPA shell. This makes metadata available to clients that do not execute
-JavaScript. Vue maintains the same tags after client-side navigation. The
+JavaScript. The same shell renders the Google site-verification token at
+request time from the web container's `GOOGLE_SITE_VERIFICATION` environment
+variable, keeping the token out of the image. Vue maintains the same tags after
+client-side navigation. The
 metadata endpoint applies normal project visibility rules and escapes both HTML
 and Caddy template delimiters in database content.
 Caddy explicitly forwards `X-Forwarded-Proto: https` to Django. This includes
@@ -308,20 +318,28 @@ them from the public site structure. Current routes are:
 /_api/auth/login/              Session login
 /_api/auth/logout/             Session logout
 /_api/page-meta/               Server-rendered metadata for a public path
-/_api/random-post/             Link to a random post visible to the visitor
-/_api/projects/                Projects visible to the current visitor
-/_api/projects/<project>/      Project metadata and paginated posts (`?page=N`)
-/_api/projects/<project>/<n>/  Individual post
+/_api/random-post/             Link to a random visible post tagged `star`
+/_api/formats/                 Formats visible to the current visitor
+/_api/formats/<format>/        Format metadata and paginated posts (`?page=N`)
+/_api/formats/<format>/<n>/    Individual post
 /_static/                      Django-managed static assets
 ```
+
+The format-post endpoint accepts an optional `tag=<code>` query parameter and
+applies it to the backend queryset before pagination. Tag links use the public
+`/archive/<format>/?tag=<code>` URL, and frontend pagination preserves the
+active query parameter. The response exposes `activeTag` as `null` without a
+filter or as `{code, name}` with one; an unknown code is used as its own display
+name. The format page renders it between the description and post list.
 
 Future internal endpoints should follow the same `/_name/` convention. Public
 pages such as `/`, `/login/`, and `/archive/` do not use this prefix.
 
-The random-post endpoint applies the same project-visibility queryset as the
-other read APIs before selecting a post. The Vue random route replaces its own
-history entry with the returned canonical post link, so refresh and sharing use
-the selected post URL rather than drawing another random result.
+The random-post endpoint filters for `Tag.code == "star"` and applies the same
+project-visibility queryset as the other read APIs before selecting a post. The
+Vue random route replaces its own history entry with the returned canonical
+post link, so refresh and sharing use the selected post URL rather than drawing
+another random result.
 
 ## Media
 
@@ -360,6 +378,12 @@ The frontend uses Vue, Vue Router, and Vite. Public pages, including login,
 belong to Vue. Different project types may use different components, but the
 application should not become a runtime page-builder.
 
+The production bundle self-hosts the Sofia Sans variable font for page and post
+headings and IBM Plex Mono for captions and compact metadata. Body copy,
+controls, project cards, and post-list rows retain the regular interface
+sans-serif stack. Global CSS font tokens keep those semantic roles consistent
+and avoid runtime requests to third-party font services.
+
 Every detail component passes its post to `PostLayout`, which renders the
 shared conditional `PostHeader` once. Name and date appear when present; anime
 adds its original title, subtitle, and rating, while abandoned-building posts add
@@ -388,9 +412,9 @@ The current router implements:
 
 ```text
 /                About-page construction notice
-/archive/                       Projects loaded from the REST API
-/archive/:project/              Project posts loaded from the REST API
-/archive/:project/:postNumber/  Individual post loaded from the REST API
+/archive/                       Formats loaded from the REST API
+/archive/:format/               Format posts loaded from the REST API
+/archive/:format/:postNumber/   Individual post loaded from the REST API
 /login/          Session login
 ```
 

@@ -46,7 +46,9 @@ openssl rand -base64 36
 Edit `.env.production` and replace every example value. `DOMAIN` and
 `DJANGO_ALLOWED_HOSTS` contain a hostname such as `example.com`, while
 `DJANGO_CSRF_TRUSTED_ORIGINS` contains the complete HTTPS origin such as
-`https://example.com`. Do not add URL paths or trailing slashes.
+`https://example.com`. Do not add URL paths or trailing slashes. Set
+`GOOGLE_SITE_VERIFICATION` to the verification token supplied by Google Search
+Console; use only the `content` value, not the complete `<meta>` element.
 
 Ensure the persistent media directory exists, then build and start the stack:
 
@@ -85,7 +87,7 @@ fixed.
 docker compose -f compose.prod.yaml exec backend python manage.py createsuperuser
 ```
 
-Verify the public page, `/projects/`, `/_admin/`, login/logout, and media loading.
+Verify the public page, `/archive/`, `/_admin/`, login/logout, and media loading.
 Also verify anonymous, guest, and administrator visibility.
 
 ## Deploying an update

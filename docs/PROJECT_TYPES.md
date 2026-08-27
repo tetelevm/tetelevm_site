@@ -1,16 +1,20 @@
-# Project Types
+# Format Types
 
-This document describes how project item lists and individual post pages look
-for each project type. Component selection architecture and API structure are
+This document describes how format item lists and individual post pages look
+for each format type. Component selection architecture and API structure are
 documented in `TECHNICAL.md`.
 
-A project defines `post_list_type` for its item list and `post_type` for an
+A format defines `post_list_type` for its item list and `post_type` for an
 individual post. List types describe reusable card presentations and can be
 combined independently with detail post types. The supported list codes are
 `row_card`, `photo_card`, `label_photo_card`, and `rated_photo_card`.
 
 ## General rules
 
+- Public body copy, controls, format cards, and post-list rows use the regular
+  interface sans-serif stack. Page and post headings use Sofia Sans, while
+  captions, dates, ratings, badges, and compact metadata use IBM Plex Mono.
+  The two custom font families are bundled locally with Cyrillic support.
 - List APIs expose only the data required by their cards.
 - Square cards use the small 150-by-150 thumbnail.
 - A regular image preview is limited to 600 pixels on its longest side.
@@ -54,8 +58,8 @@ combined independently with detail post types. The supported list codes are
   `PostImage`, media, and connection blocks where applicable. Type components
   retain only their data selection and genuinely type-specific markup.
 - Every detail page ends with text links to the nearest lower-numbered and
-  higher-numbered posts in the same project. Each link contains an arrow, the
-  project name, post number, and up to 80 characters of the shared post label.
+  higher-numbered posts in the same format. Each link contains an arrow, the
+  format name, post number, and up to 80 characters of the shared post label.
   The higher-numbered forward link is on the left and precedes the
   lower-numbered back link, including in the single-column mobile layout.
   The whole link is framed, and uninterrupted text wraps within its half of the
@@ -67,7 +71,7 @@ combined independently with detail post types. The supported list codes are
 
 ## `door` — Doors
 
-The project contains photographs of doors.
+The format contains photographs of doors.
 
 List:
 
@@ -120,7 +124,7 @@ Post:
 
 ## `anime` — Anime
 
-The project contains write-ups about watched anime.
+The format contains write-ups about watched anime.
 
 List:
 
@@ -168,7 +172,7 @@ not displayed.
 
 ## `abandoned` — Abandoned Buildings
 
-The project contains descriptions and ratings of abandoned buildings.
+The format contains descriptions and ratings of abandoned buildings.
 
 List:
 
@@ -263,7 +267,7 @@ Post:
   images, videos, and audio players;
 - raw HTML embedded in Markdown is disabled and displayed as text.
 
-Project descriptions use the same safe Markdown renderer and support the same
+Format descriptions use the same safe Markdown renderer and support the same
 click-to-expand `::: spoiler [title]` blocks and image lightbox.
 
 ## `travel` — Travel
@@ -319,7 +323,7 @@ Expected `extra` structure:
 ## Type-specific fields in Django Admin
 
 `Post.extra` is not shown as raw JSON. The admin displays all individual typed
-fields together in one block, enabling the subset selected by the project's
+fields together in one block, enabling the subset selected by the format's
 `post_type`:
 
 - `post` shows the optional `md` checkbox;
@@ -329,6 +333,6 @@ fields together in one block, enabling the subset selected by the project's
   string location link, and four integer ratings from 1 to 5;
 - all other types leave every `extra` control disabled.
 
-Changing the selected project switches which fields are enabled and required;
+Changing the selected format switches which fields are enabled and required;
 the complete field set remains visible. Saving removes known metadata belonging
 to other post types while retaining unknown JSON keys.
