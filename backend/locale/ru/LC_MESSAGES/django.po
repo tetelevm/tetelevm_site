@@ -176,7 +176,7 @@ msgstr "Название"
 
 #: apps/projects/apps.py:8 apps/projects/models.py:121
 msgid "Projects"
-msgstr "Проекты"
+msgstr "Форматы"
 
 #: apps/projects/models.py:10 apps/projects/models.py:22
 #: apps/projects/models.py:190 apps/projects/models.py:250
@@ -278,7 +278,7 @@ msgstr "Порядковый номер"
 
 #: apps/projects/models.py:120 apps/projects/models.py:147
 msgid "Project"
-msgstr "Проект"
+msgstr "Формат"
 
 #: apps/projects/models.py:128
 msgid "Code"
