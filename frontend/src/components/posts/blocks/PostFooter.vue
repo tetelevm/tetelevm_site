@@ -3,6 +3,10 @@ import PostConnections from "./PostConnections.vue"
 import PostNavigation from "./PostNavigation.vue"
 
 defineProps({
+  projectCode: {
+    type: String,
+    required: true,
+  },
   projectName: {
     type: String,
     required: true,
@@ -33,6 +37,7 @@ defineProps({
     aria-label="Дополнительная навигация поста"
   >
     <PostConnections
+      :project-code="projectCode"
       :related-posts="relatedPosts"
       :tags="tags"
     />

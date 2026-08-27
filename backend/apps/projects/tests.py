@@ -570,6 +570,62 @@ class ProjectApiTests(APITestCase):
             },
         )
 
+    def test_project_posts_can_be_filtered_by_tag_code(self) -> None:
+        other_tag = Tag.objects.create(code="other", name="Other")
+        matching_post = Post.objects.create(
+            project=self.public_project,
+            number=2,
+            name="Matching post",
+        )
+        matching_post.tags.add(self.star_tag)
+        self.public_post.tags.add(other_tag)
+
+        response = self.client.get(
+            reverse(
+                "projects:project-posts",
+                kwargs={"project_code": "public"},
+            ),
+            {"tag": "star"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [post["number"] for post in response.data["posts"]],
+            [matching_post.number],
+        )
+        self.assertEqual(
+            response.data["activeTag"],
+            {"code": "star", "name": "Featured"},
+        )
+        self.assertEqual(response.data["pagination"]["totalItems"], 1)
+
+    def test_unknown_tag_returns_an_empty_project_post_list(self) -> None:
+        response = self.client.get(
+            reverse(
+                "projects:project-posts",
+                kwargs={"project_code": "public"},
+            ),
+            {"tag": "missing"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["posts"], [])
+        self.assertEqual(
+            response.data["activeTag"],
+            {"code": "missing", "name": "missing"},
+        )
+        self.assertEqual(response.data["pagination"]["totalItems"], 0)
+
+    def test_unfiltered_project_posts_have_no_active_tag(self) -> None:
+        response = self.client.get(
+            reverse(
+                "projects:project-posts",
+                kwargs={"project_code": "public"},
+            )
+        )
+
+        self.assertIsNone(response.data["activeTag"])
+
     def test_random_post_only_uses_projects_visible_to_anonymous_user(
         self,
     ) -> None:

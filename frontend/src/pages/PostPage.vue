@@ -94,6 +94,7 @@ watch(
     <div v-else-if="post" class="post-page__content">
       <component :is="postComponent" :post="post" />
       <PostFooter
+        :project-code="post.projectCode"
         :project-name="post.projectName"
         :related-posts="post.relatedPosts"
         :tags="post.tags"
