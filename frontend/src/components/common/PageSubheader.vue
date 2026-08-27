@@ -57,6 +57,7 @@ defineProps({
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .page-subheader__toolbar a,
