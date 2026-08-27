@@ -14,7 +14,7 @@ const items = computed(() =>
   props.posts.map((post) => ({
     key: post.id ?? post.number,
     link: post.link,
-    image: post.mainFile?.link,
+    image: post.cardFile?.mediaType === "photo" ? post.cardFile.link : "",
     label: post.label,
     rating: post.rating,
     alt: post.label,

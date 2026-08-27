@@ -16,6 +16,10 @@ combined independently with detail post types. The supported list codes are
   captions, dates, ratings, badges, and compact metadata use IBM Plex Mono.
   The two custom font families are bundled locally with Cyrillic support.
 - List APIs expose only the data required by their cards.
+- Card lists use the annotated `cardFile`, which selects `main_file` first and
+  otherwise falls back to the first
+  additional file in `PostFile.order`; only photo sources render in image
+  preview slots.
 - Square cards use the small 150-by-150 thumbnail.
 - A regular image preview is limited to 600 pixels on its longest side.
 - The original is loaded only when a type explicitly displays the full image or

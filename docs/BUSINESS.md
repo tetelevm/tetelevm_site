@@ -231,4 +231,8 @@ aspect ratio, avoiding an intermediate collapse that disrupts page scrolling.
 Post card lists use a single framed surface for the image and, when present,
 its caption and rating. Image-only cards keep the same frame without an empty
 caption area.
+Every post-card presentation uses the main file as its preview source. When it
+is missing, the first ordered additional file used by the post carousel becomes
+the shared card preview source; non-image files still leave image preview slots
+empty.
 Every public page ends with a small footer showing the current year.

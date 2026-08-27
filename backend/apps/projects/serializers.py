@@ -148,8 +148,16 @@ class PostSerializer(serializers.ModelSerializer):
 class PostListSerializer(serializers.ModelSerializer):
     link = serializers.CharField(read_only=True)
     label = serializers.CharField(source="display_label", read_only=True)
-    mainFile = FileListSerializer(source="main_file", read_only=True)
+    cardFile = serializers.SerializerMethodField()
     rating = serializers.JSONField(read_only=True, allow_null=True)
+
+    def get_cardFile(self, obj: Post) -> dict[str, str] | None:
+        if obj.card_file_link is None or obj.card_file_type is None:
+            return None
+        return {
+            "link": obj.card_file_link,
+            "mediaType": obj.card_file_type,
+        }
 
     class Meta:
         model = Post
@@ -158,7 +166,7 @@ class PostListSerializer(serializers.ModelSerializer):
             "number",
             "link",
             "label",
-            "mainFile",
+            "cardFile",
             "rating",
             "date",
         )

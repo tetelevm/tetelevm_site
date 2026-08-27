@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from django.conf import settings
 from django.db import models
+from django.db.models.functions import Coalesce, Concat
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import File, FileType
@@ -50,6 +52,61 @@ def display_file_count(file_type: str) -> models.Expression:
 
 
 class PostQuerySet(models.QuerySet["Post"]):
+    def with_card_file(self) -> PostQuerySet:
+        post_file_model = self.model._meta.get_field(
+            "post_files"
+        ).related_model
+        first_file_id = (
+            post_file_model.objects.filter(post_id=models.OuterRef("pk"))
+            .order_by("order", "id")
+            .values("file_id")[:1]
+        )
+        queryset = self.annotate(
+            card_file_id=Coalesce(
+                "main_file_id",
+                models.Subquery(
+                    first_file_id,
+                    output_field=models.UUIDField(),
+                ),
+                output_field=models.UUIDField(),
+            )
+        )
+        selected_file = File.objects.filter(
+            pk=models.OuterRef("card_file_id")
+        ).annotate(
+            card_link=models.Case(
+                models.When(
+                    ~models.Q(thumbnail=""),
+                    thumbnail__isnull=False,
+                    then=Concat(
+                        models.Value(settings.MEDIA_URL),
+                        "thumbnail",
+                    ),
+                ),
+                models.When(
+                    ~models.Q(preview=""),
+                    preview__isnull=False,
+                    then=Concat(
+                        models.Value(settings.MEDIA_URL),
+                        "preview",
+                    ),
+                ),
+                default=Concat(
+                    models.Value(settings.MEDIA_URL),
+                    "content",
+                ),
+                output_field=models.CharField(),
+            )
+        )
+        return queryset.annotate(
+            card_file_link=models.Subquery(
+                selected_file.values("card_link")[:1]
+            ),
+            card_file_type=models.Subquery(
+                selected_file.values("file_type")[:1]
+            ),
+        )
+
     def with_display_file_counts(self) -> PostQuerySet:
         return self.annotate(
             **{
