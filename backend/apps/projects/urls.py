@@ -11,15 +11,24 @@ app_name = "projects"
 
 urlpatterns = [
     path("random-post/", RandomPostView.as_view(), name="random-post"),
-    path("projects/", ProjectListView.as_view(), name="project-list"),
+    path("formats/", ProjectListView.as_view(), name="project-list"),
     path(
-        "projects/<str:project_code>/",
+        "formats/<str:project_code>/",
         ProjectPostsView.as_view(),
         name="project-posts",
     ),
     path(
-        "projects/<str:project_code>/<int:post_num>/",
+        "formats/<str:project_code>/<int:post_num>/",
         PostDetailView.as_view(),
         name="post-detail",
+    ),
+    path("projects/", ProjectListView.as_view()),
+    path(
+        "projects/<str:project_code>/",
+        ProjectPostsView.as_view(),
+    ),
+    path(
+        "projects/<str:project_code>/<int:post_num>/",
+        PostDetailView.as_view(),
     ),
 ]

@@ -14,7 +14,7 @@ from apps.core.models import FileType
 from apps.projects.models import DISPLAY_FILE_TYPES, Post, Project
 
 DESCRIPTION_LIMIT = 160
-ARCHIVE_DESCRIPTION = "Архив проектов: тексты, фотографии и другое."
+ARCHIVE_DESCRIPTION = "Архив форматов: тексты, фотографии и другое."
 PROJECT_PATH = re.compile(r"^/archive/(?P<project>[^/]+)/$")
 POST_PATH = re.compile(
     r"^/archive/(?P<project>[^/]+)/(?P<number>[0-9]+)/$"
@@ -58,11 +58,18 @@ def post_file_description(post: Post) -> str:
 
 
 def metadata_for_path(request: HttpRequest, path: str) -> PageMetadata:
+    if path == "/formats/" or path == "/projects/":
+        path = "/archive/"
+    elif path.startswith("/formats/"):
+        path = f"/archive/{path.removeprefix('/formats/')}"
+    elif path.startswith("/projects/"):
+        path = f"/archive/{path.removeprefix('/projects/')}"
+
     if path == "/":
         return PageMetadata("tetelevm", "tetelevm - Main", "/")
     if path == "/archive/":
         return PageMetadata(
-            "Project archive",
+            "Archive",
             "tetelevm - Archive",
             "/archive/",
             description=ARCHIVE_DESCRIPTION,

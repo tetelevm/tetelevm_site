@@ -12,8 +12,8 @@ const constructionMessage = {
 }
 
 const pageDescription = {
-  ru: "Личный сайт и архив проектов tetelevm.",
-  en: "The personal website and project archive of tetelevm.",
+  ru: "Личный сайт и архив форматов tetelevm.",
+  en: "The personal website and format archive of tetelevm.",
 }
 
 watch(

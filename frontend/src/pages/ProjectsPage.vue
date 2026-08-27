@@ -36,8 +36,8 @@ onMounted(loadProjects)
 </script>
 
 <template>
-  <MainLayout active-page="projects">
-    <h1 class="visually-hidden">Архив</h1>
+  <MainLayout active-page="formats">
+    <h1 class="visually-hidden">Форматы</h1>
     <PageStatus
       v-if="isLoading || errorMessage"
       :loading="isLoading"

@@ -70,7 +70,7 @@ watch(
 
 <template>
   <NotFoundPage v-if="isNotFound" />
-  <MainLayout v-else active-page="projects">
+  <MainLayout v-else active-page="formats">
     <template #header-action>
       <ProjectHeaderAction
         v-if="post"
@@ -82,7 +82,7 @@ watch(
       <PageSubheader
         v-if="post"
         :back-to="`/archive/${post.projectCode}/`"
-        back-label="← к проекту"
+        back-label="← к формату"
       />
     </template>
 
