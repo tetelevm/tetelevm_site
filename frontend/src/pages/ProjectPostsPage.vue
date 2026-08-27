@@ -9,6 +9,7 @@ import PaginationNav from "../components/common/PaginationNav.vue"
 import MainLayout from "../components/layout/MainLayout.vue"
 import NotFoundPage from "./NotFoundPage.vue"
 import ProjectHeaderAction from "../components/projects/ProjectHeaderAction.vue"
+import PostTag from "../components/posts/blocks/PostTag.vue"
 import { setPageMeta, textDescription } from "../utils/pageMeta.js"
 import {
   DEFAULT_POST_LIST_COMPONENT,
@@ -34,7 +35,11 @@ function routePage() {
   return Number.isInteger(page) && page > 0 ? page : 1
 }
 
-async function loadProject(link, page) {
+function routeTag() {
+  return typeof route.query.tag === "string" ? route.query.tag.trim() : ""
+}
+
+async function loadProject(link, page, tagCode) {
   isLoading.value = true
   errorMessage.value = ""
   isNotFound.value = false
@@ -42,7 +47,7 @@ async function loadProject(link, page) {
   pagination.value = null
 
   try {
-    const response = await getProjectPosts(link, page)
+    const response = await getProjectPosts(link, page, tagCode)
     project.value = response
     pagination.value = response.pagination
     setPageMeta({
@@ -73,8 +78,8 @@ function switchPage(page) {
 }
 
 watch(
-  () => [route.params.project, route.query.page],
-  ([link]) => loadProject(link, routePage()),
+  () => [route.params.project, route.query.page, route.query.tag],
+  ([link]) => loadProject(link, routePage(), routeTag()),
   { immediate: true },
 )
 </script>
@@ -106,6 +111,18 @@ watch(
     />
     <template v-else-if="project">
       <h1 class="visually-hidden">{{ project.name }}</h1>
+      <ul
+        v-if="project.activeTag"
+        class="project-posts__active-tag"
+        aria-label="Выбранный тег"
+      >
+        <PostTag
+          :code="project.activeTag.code"
+          :name="project.activeTag.name"
+          :project-code="project.link"
+          :linked="false"
+        />
+      </ul>
       <component
         :is="postListComponent"
         :posts="project.posts"
@@ -119,3 +136,13 @@ watch(
     </template>
   </MainLayout>
 </template>
+
+<style scoped>
+.project-posts__active-tag {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0 0 1.25rem;
+  list-style: none;
+}
+</style>

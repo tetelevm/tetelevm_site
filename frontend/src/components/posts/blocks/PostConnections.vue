@@ -5,6 +5,10 @@ import PostTag from "./PostTag.vue"
 import PostRowList from "../list-types/PostRowList.vue"
 
 const props = defineProps({
+  projectCode: {
+    type: String,
+    required: true,
+  },
   relatedPosts: {
     type: Array,
     default: () => [],
@@ -45,7 +49,9 @@ const relatedItems = computed(() =>
       <PostTag
         v-for="tag in tags"
         :key="tag.code"
+        :code="tag.code"
         :name="tag.name"
+        :project-code="projectCode"
       />
     </ul>
   </div>

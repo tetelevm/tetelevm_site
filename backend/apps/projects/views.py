@@ -8,7 +8,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Post, Project
+from .models import Post, Project, Tag
 from .serializers import (
     PostListSerializer,
     PostSerializer,
@@ -89,11 +89,25 @@ class ProjectPostsView(RetrieveAPIView):
             .defer("extra")
             .order_by("-number", "-id")
         )
+        tag_code = request.query_params.get("tag", "").strip()
+        if tag_code:
+            posts = posts.filter(tags__code=tag_code)
         page = self.paginate_queryset(posts)
         assert page is not None
         assert self.paginator is not None
 
         data = dict(self.get_serializer(project).data)
+        data["activeTag"] = None
+        if tag_code:
+            tag_name = (
+                Tag.objects.filter(code=tag_code)
+                .values_list("name", flat=True)
+                .first()
+            )
+            data["activeTag"] = {
+                "code": tag_code,
+                "name": tag_name or tag_code,
+            }
         data["posts"] = PostListSerializer(
             page,
             many=True,

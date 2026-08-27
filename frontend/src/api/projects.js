@@ -23,9 +23,13 @@ export function getRandomPost() {
   return getJson("/_api/random-post/", "В архиве пока нет доступных постов")
 }
 
-export function getProjectPosts(projectCode, page = 1) {
+export function getProjectPosts(projectCode, page = 1, tagCode = "") {
+  const query = new URLSearchParams({ page: String(page) })
+  if (tagCode) {
+    query.set("tag", tagCode)
+  }
   return getJson(
-    `/_api/formats/${encodeURIComponent(projectCode)}/?page=${encodeURIComponent(page)}`,
+    `/_api/formats/${encodeURIComponent(projectCode)}/?${query}`,
     "Формат не найден",
   )
 }
