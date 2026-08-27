@@ -552,6 +552,7 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.data["posts"][0]["rating"], 8)
         self.assertEqual(response.data["posts"][0]["label"], "Public post")
         self.assertEqual(response.data["posts"][0]["date"], "2026-08-17")
+        self.assertIsNone(response.data["posts"][0]["cardFile"])
         self.assertNotIn("extra", response.data["posts"][0])
         self.assertNotIn("files", response.data["posts"][0])
         self.assertNotIn("tags", response.data["posts"][0])
@@ -759,32 +760,53 @@ class ProjectApiTests(APITestCase):
 
                 summary = response.data["posts"][0]
                 self.assertEqual(
-                    summary["mainFile"]["link"],
+                    summary["cardFile"]["link"],
                     "/files/thumbnail/photo.jpg",
                 )
                 self.assertNotIn("thumbnail", summary)
 
-    def test_general_post_list_does_not_select_an_additional_photo(self) -> None:
-        self.public_project.post_list_type = PostListType.ROW_CARD
-        self.public_project.save(update_fields=("post_list_type",))
-        photo = File.objects.create(
-            original_name="photo.jpg",
+    def test_card_lists_fall_back_to_first_ordered_additional_file(self) -> None:
+        later_photo = File.objects.create(
+            original_name="later.jpg",
             file_type=FileType.PHOTO,
-            content="content/photo.jpg",
-            thumbnail="thumbnail/photo.jpg",
+            content="content/later.jpg",
+            thumbnail="thumbnail/later.jpg",
         )
-        PostFile.objects.create(post=self.public_post, file=photo, order=0)
-
-        response = self.client.get(
-            reverse(
-                "projects:project-posts",
-                kwargs={"project_code": "public"},
-            )
+        first_photo = File.objects.create(
+            original_name="first.jpg",
+            file_type=FileType.PHOTO,
+            content="content/first.jpg",
+            thumbnail="thumbnail/first.jpg",
+        )
+        PostFile.objects.create(
+            post=self.public_post,
+            file=later_photo,
+            order=2,
+        )
+        PostFile.objects.create(
+            post=self.public_post,
+            file=first_photo,
+            order=1,
         )
 
-        summary = response.data["posts"][0]
-        self.assertIsNone(summary["mainFile"])
-        self.assertNotIn("thumbnail", summary)
+        for post_list_type in PostListType:
+            with self.subTest(post_list_type=post_list_type):
+                self.public_project.post_list_type = post_list_type
+                self.public_project.save(update_fields=("post_list_type",))
+                response = self.client.get(
+                    reverse(
+                        "projects:project-posts",
+                        kwargs={"project_code": "public"},
+                    )
+                )
+
+                summary = response.data["posts"][0]
+                self.assertEqual(
+                    summary["cardFile"]["link"],
+                    "/files/thumbnail/first.jpg",
+                )
+                self.assertEqual(summary["cardFile"]["mediaType"], "photo")
+                self.assertNotIn("thumbnail", summary)
 
     def test_anonymous_user_cannot_retrieve_private_project_posts(self) -> None:
         response = self.client.get(

@@ -514,7 +514,7 @@ array and maps the relevant fields into display data for `PostCardList` or
 inspect API post shapes. List entries contain only the fields required by the
 adapters;
 they do not expose `extra`, additional files, tags, or detail-page metadata.
-Every list response includes the model-derived `label`. List `mainFile` data
+Every list response includes the model-derived `label`. List `cardFile` data
 includes the stored `mediaType` so presentation types can distinguish photos,
 videos, audio, and other files without filename parsing.
 The image-only `photo_card` adapter uses the label for accessible image text but
@@ -522,9 +522,15 @@ passes no visible caption to `PostCardList`. `plasticine` now shares the visible
 label presentation used by `door`.
 Post dates come from the optional model field rather than `extra`. PostgreSQL
 extracts only `rating` from `extra` for its dedicated list field. General post
-lists use the same `mainFile` summary as every other list type and do not search
-additional files for a thumbnail. All list types use one list serializer and
-standard square thumbnails. Project posts use
+lists use the same display-file summary as every other list type. The post
+queryset annotates a selected file ID with the database-side priority
+`main_file`, first ordered `PostFile.file`, then null. Further subquery
+annotations resolve its thumbnail-or-file link and media type, and the shared
+list serializer exposes those scalar values as `cardFile` without loading or
+choosing related files in Python. Image slots render the result only when its
+media type is `photo`. All list types use one list serializer and standard
+square thumbnails.
+Project posts use
 page-number pagination with 48 posts per page;
 the response includes the current page, page size, total pages, and total posts.
 The frontend keeps the selected page in the URL query string and renders numeric
