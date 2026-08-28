@@ -44,9 +44,12 @@ combined independently with detail post types. The supported list codes are
 - All dates in the public frontend are displayed as `YYYY.MM.DD`.
 - Card lists use the shared `PostCardList`: one outer frame encloses the
   square-cropped image and an optional caption containing a label and rating,
-  so they read as a single card. Image-only cards omit the caption section.
-- Row lists use the shared `PostRowList` with a 100-pixel media slot, label, and
-  optional date positioned near the bottom edge of the row.
+  so they read as a single card. Ratings use a compact circular treatment based
+  on the larger detail-header rating. Image-only cards omit the caption section.
+- Row lists use the shared `PostRowList` with a 100-pixel media slot. Their
+  content has a top row containing the label and optional rating, followed by
+  the optional date on a separate row so the date does not reduce the width
+  available to a long label. Ratings use the same compact circle as card lists.
 - Shared list-type adapters decide which post data becomes the image, label,
   rating, and date; `PostCardList` and `PostRowList` only render those values.
 - Every list item receives the shared post label. It prefers a trimmed `name`,
@@ -134,7 +137,9 @@ List:
 
 - three square cards per row;
 - the shared label appears below the main image on the left, with the overall
-  rating on the right;
+  rating on the right; labels longer than three lines are truncated with an
+  ellipsis while the complete label remains available as accessible text and
+  a hover title;
 - the overall rating is provided by the dedicated list field `rating`, extracted
   from `extra.rating`;
 - the grid decreases to two columns and then one on mobile devices.
@@ -252,8 +257,7 @@ Post:
 The list is identical to `text` and uses the shared `PostRowList` component:
 
 - each item is a full-width row with a fixed 100-pixel thumbnail slot;
-- the shared label follows the slot and the optional `date` appears on the
-  right;
+- the shared label follows the slot and the optional `date` appears below it;
 - the thumbnail slot remains empty when there is no image `mainFile`.
 
 Post:
@@ -280,8 +284,7 @@ The list is identical to `text` and `text_md` and uses `PostRowList`:
 
 - each item is a full-width row with a fixed 100-pixel thumbnail slot;
 - an image `mainFile` appears in that slot;
-- the shared label follows the thumbnail and optional `date` appears on the
-  right.
+- the shared label follows the thumbnail and optional `date` appears below it.
 
 Post:
 

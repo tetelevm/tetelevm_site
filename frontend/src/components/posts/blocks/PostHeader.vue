@@ -91,7 +91,7 @@ defineProps({
   flex: 0 0 auto;
   display: grid;
   padding: 0.6rem;
-  border: 1px solid rgba(215, 240, 111, 0.55);
+  border: 2px solid rgba(215, 240, 111, 0.55);
   border-radius: 50%;
   color: var(--color-accent);
   background: var(--color-surface);

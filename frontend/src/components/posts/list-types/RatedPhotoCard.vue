@@ -16,6 +16,7 @@ const items = computed(() =>
     link: post.link,
     image: post.cardFile?.mediaType === "photo" ? post.cardFile.link : "",
     label: post.label,
+    clampLabel: true,
     rating: post.rating,
     alt: post.label,
   })),

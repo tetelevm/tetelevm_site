@@ -27,7 +27,12 @@ defineProps({
         />
       </span>
       <span v-if="item.label || item.date" class="post-card__caption">
-        <span v-if="item.label" class="post-card__label">{{ item.label }}</span>
+        <span
+          v-if="item.label"
+          class="post-card__label"
+          :class="{ 'post-card__label--clamped': item.clampLabel }"
+          :title="item.clampLabel ? item.label : undefined"
+        >{{ item.label }}</span>
         <time
           v-if="item.date"
           class="post-card__date"
@@ -90,7 +95,7 @@ defineProps({
   align-items: center;
   justify-content: space-between;
   gap: 0.6rem;
-  padding: 0.8rem 1rem;
+  padding: 0.8rem;
 }
 
 .post-card__label {
@@ -100,13 +105,29 @@ defineProps({
   line-height: 1.3;
 }
 
+.post-card__label--clamped {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
 .post-card__rating {
+  width: 2.15rem;
+  height: 2.15rem;
   flex: 0 0 auto;
+  display: grid;
+  padding: 0.25rem;
+  border: 1px solid rgba(215, 240, 111, 0.55);
+  border-radius: 50%;
   color: var(--color-accent);
+  background: var(--color-surface);
   font-size: 0.82rem;
   font-weight: 750;
-  line-height: 1.35;
+  line-height: 1;
   font-family: var(--font-caption);
+  place-items: center;
 }
 
 .post-card__date {
