@@ -413,9 +413,9 @@ class PostAdmin(admin.ModelAdmin):
     list_display = (
         "project",
         "number",
-        "is_draft",
         "date",
         "display_label",
+        "is_draft",
     )
     list_editable = ("is_draft",)
     list_filter = ("is_draft", "project")
