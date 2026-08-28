@@ -300,6 +300,10 @@ msgstr "Номер"
 msgid "Date"
 msgstr "Дата"
 
+#: apps/projects/models.py
+msgid "Draft"
+msgstr "Черновик"
+
 #: apps/projects/models.py:157
 msgid "Main file"
 msgstr "Основной файл"

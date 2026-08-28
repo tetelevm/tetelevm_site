@@ -165,6 +165,10 @@ Posts may be connected to any number of other posts through symmetric
 relationships. Detail pages show every related post visible to the current
 visitor as a row card; links to private content remain hidden from anonymous
 visitors.
+Posts can be marked as drafts in Django Admin. Drafts are administrative-only:
+they are excluded from format lists and counts, tag filters, random selection,
+related and adjacent navigation, direct post URLs, and page metadata for every
+public-site visitor, including authenticated guests and administrators.
 Post tags are links to the current format with a `tag=<code>` query parameter.
 Opening one shows only posts in that format carrying the selected tag; list
 pagination retains the filter. The active filter appears between the format
@@ -196,8 +200,10 @@ Visibility is defined at format level:
 - private formats and all their items are hidden from anonymous visitors;
 - authenticated guests can view both public and private formats.
 
-Items do not have independent visibility settings. Per-item visibility should
-only be introduced if a future product requirement needs it.
+Items do not have independent audience visibility settings. The draft flag is
+an authoring-state exception that hides an item from every public-site role.
+Per-item audience permissions should only be introduced if a future product
+requirement needs them.
 
 ## Interaction model
 

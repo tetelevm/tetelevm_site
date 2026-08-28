@@ -219,6 +219,7 @@ Tag
 Post
     project -> Project
     number: unique within project
+    is_draft: administrative authoring state
     optional date
     link: /archive/<format link>/<number>/
     optional name and text
@@ -236,6 +237,10 @@ explicit `post`, `photo`, `travel`, `text`, `text_md`, `door`, `anime`,
 uses reusable card choices: `row_card`, `photo_card`, `label_photo_card`, and
 `rated_photo_card`. A post belongs to exactly one project; its number determines
 its position and is unique within that project.
+`PostQuerySet.published()` is the shared backend boundary for excluding drafts.
+Every visitor-facing post queryset uses it, regardless of authentication; post
+counts use an equivalent filtered aggregate. Django Admin retains the unfiltered
+default manager and is the only place where drafts are visible.
 Additional post files are connected through `PostFile`, which stores their
 order. Post relationships use Django's implicit self-referential many-to-many
 table and are symmetric: adding either side makes the other side related too.

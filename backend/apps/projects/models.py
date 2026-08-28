@@ -52,6 +52,9 @@ def display_file_count(file_type: str) -> models.Expression:
 
 
 class PostQuerySet(models.QuerySet["Post"]):
+    def published(self) -> PostQuerySet:
+        return self.filter(is_draft=False)
+
     def with_card_file(self) -> PostQuerySet:
         post_file_model = self.model._meta.get_field(
             "post_files"
@@ -116,11 +119,11 @@ class PostQuerySet(models.QuerySet["Post"]):
         )
 
     def with_adjacent_post_ids(self) -> PostQuerySet:
-        previous_posts = self.model.objects.filter(
+        previous_posts = self.model.objects.published().filter(
             project_id=models.OuterRef("project_id"),
             number__lt=models.OuterRef("number"),
         ).order_by("-number", "-id")
-        next_posts = self.model.objects.filter(
+        next_posts = self.model.objects.published().filter(
             project_id=models.OuterRef("project_id"),
             number__gt=models.OuterRef("number"),
         ).order_by("number", "id")
@@ -199,6 +202,7 @@ class Post(models.Model):
         verbose_name=_("Project"),
     )
     number = models.PositiveIntegerField(_("Number"))
+    is_draft = models.BooleanField(_("Draft"), default=False)
     date = models.DateField(_("Date"), blank=True, null=True)
     name = models.CharField(_("Name"), max_length=255, blank=True)
     text = models.TextField(_("Text"), blank=True)

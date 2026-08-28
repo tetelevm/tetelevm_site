@@ -369,6 +369,7 @@ class PostAdmin(admin.ModelAdmin):
                 "fields": (
                     "project",
                     "number",
+                    "is_draft",
                     "name",
                     "date",
                     "main_file",
@@ -409,8 +410,9 @@ class PostAdmin(admin.ModelAdmin):
             },
         ),
     )
-    list_display = ("project", "number", "display_label")
-    list_filter = ("project",)
+    list_display = ("project", "number", "is_draft", "display_label")
+    list_editable = ("is_draft",)
+    list_filter = ("is_draft", "project")
     search_fields = ("name", "text", "project__name", "number")
     ordering = ("-id",)
     autocomplete_fields = ("main_file", "related_posts", "tags")
