@@ -402,13 +402,14 @@ class PostAdminTests(TestCase):
     def test_post_admin_field_layout(self) -> None:
         self.assertEqual(
             PostAdmin.list_display,
-            ("project", "number", "display_label"),
+            ("project", "number", "is_draft", "display_label"),
         )
         self.assertEqual(
             PostAdmin.fieldsets[0][1]["fields"],
             (
                 "project",
                 "number",
+                "is_draft",
                 "name",
                 "date",
                 "main_file",
@@ -513,6 +514,30 @@ class ProjectApiTests(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data[0]["postCount"], 2)
+
+    def test_drafts_are_excluded_from_format_lists_and_counts(self) -> None:
+        Post.objects.create(
+            project=self.public_project,
+            number=2,
+            name="Draft post",
+            is_draft=True,
+        )
+
+        formats_response = self.client.get(
+            reverse("projects:project-list")
+        )
+        posts_response = self.client.get(
+            reverse(
+                "projects:project-posts",
+                kwargs={"project_code": "public"},
+            )
+        )
+
+        self.assertEqual(formats_response.data[0]["postCount"], 1)
+        self.assertEqual(
+            [post["number"] for post in posts_response.data["posts"]],
+            [self.public_post.number],
+        )
 
     def test_project_list_uses_explicit_order_then_id(self) -> None:
         self.public_project.order = 2
@@ -657,6 +682,15 @@ class ProjectApiTests(APITestCase):
         self,
     ) -> None:
         self.private_post.tags.add(self.star_tag)
+
+        response = self.client.get(reverse("projects:random-post"))
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_random_post_excludes_starred_drafts(self) -> None:
+        self.public_post.is_draft = True
+        self.public_post.save(update_fields=("is_draft",))
+        self.public_post.tags.add(self.star_tag)
 
         response = self.client.get(reverse("projects:random-post"))
 
@@ -850,6 +884,48 @@ class ProjectApiTests(APITestCase):
         self.assertNotIn("relatedPost", response.data)
         self.assertIsNone(response.data["previousPost"])
         self.assertIsNone(response.data["nextPost"])
+
+    def test_draft_detail_is_hidden_from_authenticated_admin(self) -> None:
+        self.public_post.is_draft = True
+        self.public_post.save(update_fields=("is_draft",))
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse(
+                "projects:post-detail",
+                kwargs={"project_code": "public", "post_num": 1},
+            )
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_adjacent_and_related_navigation_exclude_drafts(self) -> None:
+        draft = Post.objects.create(
+            project=self.public_project,
+            number=2,
+            name="Draft neighbor",
+            is_draft=True,
+        )
+        published = Post.objects.create(
+            project=self.public_project,
+            number=3,
+            name="Published neighbor",
+        )
+        self.public_post.related_posts.add(draft, published)
+
+        response = self.client.get(
+            reverse(
+                "projects:post-detail",
+                kwargs={"project_code": "public", "post_num": 1},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["nextPost"]["number"], 3)
+        self.assertEqual(
+            [post["number"] for post in response.data["relatedPosts"]],
+            [3],
+        )
 
     def test_post_detail_includes_nearest_adjacent_posts(self) -> None:
         previous_post = Post.objects.create(

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from django.db.models import Count, Prefetch, QuerySet
+from django.db.models import Count, Prefetch, Q, QuerySet
 from django.db.models.fields.json import KeyTransform
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
@@ -27,7 +27,11 @@ def visible_projects(user_is_authenticated: bool) -> QuerySet[Project]:
 
 def with_post_count(projects: QuerySet[Project]) -> QuerySet[Project]:
     return projects.annotate(
-        post_count=Count("posts", distinct=True)
+        post_count=Count(
+            "posts",
+            filter=Q(posts__is_draft=False),
+            distinct=True,
+        )
     ).order_by("order", "id")
 
 
@@ -43,7 +47,7 @@ class ProjectListView(ListAPIView):
 class RandomPostView(APIView):
     def get(self, request: Request) -> Response:
         post = (
-            Post.objects.filter(
+            Post.objects.published().filter(
                 project__in=visible_projects(request.user.is_authenticated),
                 tags__code=RANDOM_POST_TAG_CODE,
             )
@@ -83,7 +87,7 @@ class ProjectPostsView(RetrieveAPIView):
     ) -> Response:
         project = self.get_object()
         posts = (
-            project.posts.with_display_file_counts()
+            project.posts.published().with_display_file_counts()
             .with_card_file()
             .select_related("project")
             .annotate(rating=KeyTransform("rating", "extra"))
@@ -131,7 +135,7 @@ class PostDetailView(RetrieveAPIView):
     def get_queryset(self) -> QuerySet[Post]:
         user_is_authenticated = self.request.user.is_authenticated
         related_posts = (
-            Post.objects.filter(
+            Post.objects.published().filter(
                 project__in=visible_projects(user_is_authenticated)
             )
             .with_display_file_counts()
@@ -140,7 +144,7 @@ class PostDetailView(RetrieveAPIView):
             .defer("extra")
             .order_by("project__order", "project_id", "-number", "-id")
         )
-        posts = Post.objects.filter(
+        posts = Post.objects.published().filter(
             project__in=visible_projects(user_is_authenticated),
             project__link=self.kwargs["project_code"],
         ).with_adjacent_post_ids()
@@ -165,7 +169,7 @@ class PostDetailView(RetrieveAPIView):
         adjacent_posts = {
             adjacent_post.id: adjacent_post
             for adjacent_post in (
-                Post.objects.filter(id__in=adjacent_ids)
+                Post.objects.published().filter(id__in=adjacent_ids)
                 .with_display_file_counts()
                 .select_related("project", "main_file")
             )

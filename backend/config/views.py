@@ -92,7 +92,7 @@ def metadata_for_path(request: HttpRequest, path: str) -> PageMetadata:
     post_match = POST_PATH.fullmatch(path)
     if post_match:
         post = (
-            Post.objects.with_display_file_counts()
+            Post.objects.published().with_display_file_counts()
             .select_related("project", "main_file")
             .filter(
                 project__in=visible_projects(request),
