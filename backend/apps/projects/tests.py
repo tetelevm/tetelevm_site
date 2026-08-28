@@ -402,7 +402,7 @@ class PostAdminTests(TestCase):
     def test_post_admin_field_layout(self) -> None:
         self.assertEqual(
             PostAdmin.list_display,
-            ("project", "number", "is_draft", "display_label"),
+            ("project", "number", "is_draft", "date", "display_label"),
         )
         self.assertEqual(
             PostAdmin.fieldsets[0][1]["fields"],
