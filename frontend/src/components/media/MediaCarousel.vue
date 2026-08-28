@@ -73,28 +73,6 @@ watch(
     class="media-carousel"
     :aria-label="label"
   >
-    <div
-      class="media-carousel__stage"
-      :style="stageStyle"
-      :class="{
-        'media-carousel__stage--reserved': hasReservedStage,
-        'media-carousel__stage--file': currentItem
-          && !['photo', 'video'].includes(currentItem.mediaType),
-      }"
-    >
-      <MediaFile
-        v-if="currentItem"
-        :key="currentItem.id"
-        :file="currentItem"
-        :alt="`${label}: изображение ${activeIndex + 1}`"
-        :lightbox="currentItem.mediaType === 'photo'"
-        preview-fit="contain"
-        :preserve-aspect-ratio="!hasReservedStage"
-        loading="eager"
-        @dimensions="handleDimensions"
-      />
-    </div>
-
     <div v-if="items.length > 1" class="media-carousel__controls">
       <button
         type="button"
@@ -124,6 +102,28 @@ watch(
       >
         →
       </button>
+    </div>
+
+    <div
+      class="media-carousel__stage"
+      :style="stageStyle"
+      :class="{
+        'media-carousel__stage--reserved': hasReservedStage,
+        'media-carousel__stage--file': currentItem
+          && !['photo', 'video'].includes(currentItem.mediaType),
+      }"
+    >
+      <MediaFile
+        v-if="currentItem"
+        :key="currentItem.id"
+        :file="currentItem"
+        :alt="`${label}: изображение ${activeIndex + 1}`"
+        :lightbox="currentItem.mediaType === 'photo'"
+        preview-fit="contain"
+        :preserve-aspect-ratio="!hasReservedStage"
+        loading="eager"
+        @dimensions="handleDimensions"
+      />
     </div>
   </section>
 </template>
