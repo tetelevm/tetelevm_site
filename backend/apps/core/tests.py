@@ -23,8 +23,6 @@ class FileModelTests(TestCase):
                     content=SimpleUploadedFile("photo.jpg", source.getvalue())
                 )
 
-                with Image.open(uploaded.preview.path) as preview:
-                    self.assertEqual(preview.size, (600, 400))
                 with Image.open(uploaded.thumbnail.path) as thumbnail:
                     self.assertEqual(thumbnail.size, (150, 150))
                 with Image.open(uploaded.content.path) as original:
@@ -36,10 +34,6 @@ class FileModelTests(TestCase):
                 self.assertEqual(
                     uploaded.content.name,
                     f"content/{uploaded.id}.jpg",
-                )
-                self.assertEqual(
-                    uploaded.preview.name,
-                    f"preview/{uploaded.id}.jpg",
                 )
                 self.assertEqual(
                     uploaded.thumbnail.name,
@@ -70,8 +64,6 @@ class FileModelTests(TestCase):
                     self.assertEqual(original.size, (800, 1200))
                     red, green, blue = original.getpixel((0, 0))
                     self.assertGreater(blue, red + green)
-                with Image.open(uploaded.preview.path) as preview:
-                    self.assertEqual(preview.size, (400, 600))
                 with Image.open(uploaded.thumbnail.path) as thumbnail:
                     self.assertEqual(thumbnail.size, (150, 150))
 
@@ -85,8 +77,6 @@ class FileModelTests(TestCase):
                     content=SimpleUploadedFile("small.png", source.getvalue())
                 )
 
-                with Image.open(uploaded.preview.path) as preview:
-                    self.assertEqual(preview.size, (60, 40))
                 with Image.open(uploaded.thumbnail.path) as thumbnail:
                     self.assertEqual(thumbnail.size, (150, 150))
 
@@ -104,7 +94,6 @@ class FileModelTests(TestCase):
                     f"content/{uploaded.id}.mov",
                 )
                 self.assertEqual(uploaded.link, f"/files/content/{uploaded.id}.mov")
-                self.assertFalse(uploaded.preview)
                 self.assertFalse(uploaded.thumbnail)
                 self.assertTrue(uploaded.content.storage.exists(uploaded.content.name))
 
@@ -142,7 +131,6 @@ class FileAdminTests(TestCase):
             original_name="photo.jpg",
             file_type=FileType.PHOTO,
             content="content/photo.jpg",
-            preview="preview/photo.jpg",
             thumbnail="thumbnail/photo.jpg",
         )
         self.client.force_login(self.admin)
@@ -152,7 +140,7 @@ class FileAdminTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, uploaded.preview.url)
+        self.assertContains(response, uploaded.content.url)
         self.assertContains(response, "max-height:600px")
         self.assertNotContains(response, 'class="clipboard-upload"')
 
@@ -289,8 +277,6 @@ class FileAdminTests(TestCase):
                     f"content/{uploaded.id}.png",
                 )
                 self.assertEqual(uploaded.content.read(), original_content)
-                with Image.open(uploaded.preview.path) as preview:
-                    self.assertEqual(preview.size, (600, 400))
                 with Image.open(uploaded.thumbnail.path) as thumbnail:
                     self.assertEqual(thumbnail.size, (150, 150))
 

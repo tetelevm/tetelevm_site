@@ -12,7 +12,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from .forms import BulkFileUploadForm
-from .models import File
+from .models import File, FileType
 
 
 @admin.register(File)
@@ -23,7 +23,6 @@ class FileAdmin(admin.ModelAdmin):
         "image_preview",
         "id",
         "file_type",
-        "preview",
         "thumbnail",
         "uploaded_at",
     )
@@ -129,11 +128,11 @@ class FileAdmin(admin.ModelAdmin):
 
     @admin.display(description=_("Preview"), empty_value="—")
     def image_preview(self, obj: File) -> str | None:
-        if not obj.preview:
+        if not obj.content or obj.file_type != FileType.PHOTO:
             return None
         return format_html(
             '<img src="{}" alt="" '
             'style="display:block;max-width:100%;width:auto;height:auto;'
             'max-height:600px;border-radius:4px">',
-            obj.preview.url,
+            obj.content.url,
         )

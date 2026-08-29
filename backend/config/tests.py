@@ -86,8 +86,6 @@ class SearchDiscoveryTests(TestCase):
 
     def test_page_meta_uses_project_name_description_and_cover(self) -> None:
         self.public_project.description = "  Project\n description  "
-        self.public_project.cover.preview = "preview/cover.jpg"
-        self.public_project.cover.save(update_fields=("preview",))
         self.public_project.save(update_fields=("description",))
 
         response = self.client.get(
@@ -100,13 +98,12 @@ class SearchDiscoveryTests(TestCase):
         self.assertContains(response, 'content="Project description"')
         self.assertContains(
             response,
-            'content="http://testserver/files/preview/cover.jpg"',
+            'content="http://testserver/files/cover.jpg"',
         )
 
     def test_page_meta_uses_post_fallback_title_and_file_counts(self) -> None:
         photo = File.objects.create(
             content="content/photo.jpg",
-            preview="preview/photo.jpg",
             file_type=FileType.PHOTO,
         )
         post = Post.objects.create(
@@ -133,7 +130,7 @@ class SearchDiscoveryTests(TestCase):
         self.assertContains(response, 'content="1 📷 · 1 🎬"')
         self.assertContains(
             response,
-            'content="http://testserver/files/preview/photo.jpg"',
+            'content="http://testserver/files/content/photo.jpg"',
         )
 
     def test_page_meta_does_not_expose_draft_posts(self) -> None:
