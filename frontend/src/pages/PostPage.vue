@@ -109,6 +109,6 @@ watch(
 .post-page__content {
   display: flex;
   flex-direction: column;
-  gap: clamp(2.5rem, 6vw, 4.5rem);
+  gap: 2rem;
 }
 </style>

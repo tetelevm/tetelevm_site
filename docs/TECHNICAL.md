@@ -134,7 +134,8 @@ results on scroll. File choices are searchable by original upload name and order
 by newest upload first. The main file changelist displays existing image
 thumbnails inline at 64 by 64 pixels and leaves the preview cell empty for
 non-image files. An image file's change page shows its aspect-ratio-preserving
-600-pixel preview. A saved file's `original_name` can be edited as display
+stored original within a 600-pixel-high administrative frame. A saved file's
+`original_name` can be edited as display
 metadata without renaming or moving stored content. Its change page starts with
 a read-only, clickable `content.url` for the stored original; during initial
 upload it is still derived from the browser-provided filename. The standard
@@ -144,8 +145,8 @@ input before normal multipart submission. The file changelist also links to an a
 form that accepts multiple browser-selected files and creates one `File` record
 per upload using the model's media-processing path. A checked-by-default option
 normalizes image originals through the usual 1500-pixel JPEG conversion; when
-unchecked, the uploaded original bytes and extension are retained while preview
-and thumbnail derivatives are still generated. Its optional prefix
+unchecked, the uploaded original bytes and extension are retained while a
+thumbnail derivative is still generated. Its optional prefix
 is prepended to each resulting `original_name` after processing and therefore
 does not affect stored UUID paths or file-type detection. The post changelist
 places the project column before the post number and display label. Saved `PostFileInline`
@@ -242,7 +243,10 @@ Every visitor-facing post queryset uses it, regardless of authentication; post
 counts use an equivalent filtered aggregate. Django Admin retains the unfiltered
 default manager and is the only place where drafts are visible.
 Additional post files are connected through `PostFile`, which stores their
-order. Post relationships use Django's implicit self-referential many-to-many
+order. Its per-post order uniqueness constraint is deferred until transaction
+commit so Django Admin can swap existing positions without a transient
+uniqueness conflict; duplicate final positions remain invalid. Post
+relationships use Django's implicit self-referential many-to-many
 table and are symmetric: adding either side makes the other side related too.
 Avoid a generic page builder or universal CMS schema without a demonstrated
 need.
@@ -358,18 +362,16 @@ Uploaded files are represented by the `File` model, retain their upload name in
 The type is detected from the extension when a new file is uploaded. Stored
 files use the model UUID and are separated by role:
 non-image originals use `content/<UUID>.<extension>`, normalized image originals
-use `content/<UUID>.jpg`, image previews use
-`preview/<UUID>.jpg`, and image thumbnails use `thumbnail/<UUID>.jpg`.
+use `content/<UUID>.jpg`, and image thumbnails use `thumbnail/<UUID>.jpg`.
 Image originals are normally normalized to metadata-free JPEG at 90 percent
 quality and constrained to 1500 pixels on each axis without upscaling. Bulk
-upload can explicitly retain the uploaded original instead. Previews are
-metadata-free JPEGs constrained to 600 pixels on each axis without upscaling.
-Thumbnails are metadata-free 150-by-150 JPEGs produced with a centered square
+upload can explicitly retain the uploaded original instead. Thumbnails are
+metadata-free 150-by-150 JPEGs produced with a centered square
 crop and are upscaled when the source is smaller. Replacing an uploaded image
-regenerates the original, preview, and thumbnail. For images, `link`
-points to the preview, `link_small` to the thumbnail, and `link_full` to the
-original; non-images use the original for both `link` and `link_small` and have
-no `link_full`. Django serves these URLs only in debug mode; production
+regenerates the normalized original and thumbnail. `link` and `link_full`
+point to the stored original for every file, while `link_small` uses an image
+thumbnail when available and otherwise falls back to the original. Django
+serves these URLs only in debug mode; production
 must serve `MEDIA_ROOT` at `/files/` through the reverse proxy.
 The Vite development server also proxies `/files/` to Django. Project cards
 render covers in a square container and center-crop non-square images.
