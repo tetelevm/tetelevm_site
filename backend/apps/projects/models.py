@@ -323,6 +323,7 @@ class PostFile(models.Model):
             models.UniqueConstraint(
                 fields=("post", "order"),
                 name="unique_file_order_per_post",
+                deferrable=models.Deferrable.DEFERRED,
             ),
         ]
         verbose_name = _("Post file")
