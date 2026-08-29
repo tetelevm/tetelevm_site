@@ -21,9 +21,8 @@ combined independently with detail post types. The supported list codes are
   additional file in `PostFile.order`; only photo sources render in image
   preview slots.
 - Square cards use the small 150-by-150 thumbnail.
-- A regular image preview is limited to 600 pixels on its longest side.
-- The original is loaded only when a type explicitly displays the full image or
-  the visitor opens a lightbox.
+- Detail presentations load the stored image original directly; the file model
+  does not retain a separate medium-sized preview.
 - Additional files follow `PostFile.order`.
 - Media carousels preserve the active image or video's aspect ratio instead of
   cropping it into a fixed frame. Their height changes when visitors switch
@@ -106,8 +105,7 @@ List:
 Post:
 
 - the shared header displays an optional post name and date;
-- the uncropped `mainFile.linkFull` original is displayed;
-- the regular preview is used when the original link is unavailable;
+- the uncropped stored `mainFile` original is displayed;
 - text and additional files are not displayed.
 
 ## `plasticine` — Plasticine

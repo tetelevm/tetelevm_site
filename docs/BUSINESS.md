@@ -43,7 +43,7 @@ The administrator is the site owner. The administrator can:
 - optionally prepend one shared string to every original-name label during a
   multi-file upload;
 - choose during a multi-file upload whether image originals are resized and
-  compressed; previews and thumbnails are generated in either mode;
+  compressed; thumbnails are generated in either mode;
 - paste a clipboard image into the standard administrative file-add form as an
   alternative to selecting it through the browser;
 - edit the original-name label of an uploaded file without renaming its stored
@@ -98,7 +98,7 @@ Public pages expose page-specific browser titles and social-link metadata.
 Format metadata uses the format's localized name, description, and cover.
 Post metadata uses its name when present or its format and number otherwise;
 its description uses a text excerpt or attached-file counts, and its image uses
-the main photo preview with the site favicon as a fallback.
+the stored main photo with the site favicon as a fallback.
 
 Opening `/archive/random/` selects a random post tagged with the special
 `star` code from the material visible to the current visitor and opens that
@@ -227,6 +227,9 @@ types will be defined separately as the corresponding content is designed.
 Standalone media frames and carousels show images without cropping and follow
 their natural aspect ratio. Carousels resize when one gallery mixes portrait
 and landscape media.
+Post detail pages load the stored image original directly. Separate generated
+medium-sized previews are not retained; square thumbnails remain available for
+list cards and administrative lists.
 Structured post files use their stored media type to select an image, video,
 audio, or download-link presentation. Embedded Markdown media infers the same
 presentation from the URL extension used in image syntax.
