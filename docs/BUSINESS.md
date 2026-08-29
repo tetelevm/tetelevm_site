@@ -175,6 +175,9 @@ pagination retains the filter. The active filter appears between the format
 description and its posts using the same tag-chip presentation as post tags. It
 shows the tag's configured name when the code exists and the requested code as
 a fallback.
+Long pagination controls show the first three pages, the last three pages, and
+the current page with two neighboring pages on either side. Omitted ranges are
+represented by an ellipsis, while touching ranges are joined without one.
 At the bottom of every post detail page, navigation links point to the nearest
 lower-numbered and higher-numbered posts in the same format. Missing numbers
 are skipped, and a link is omitted at the corresponding format boundary. The
