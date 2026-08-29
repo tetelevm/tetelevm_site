@@ -457,7 +457,7 @@ class PostAdminTests(TestCase):
     def test_post_admin_field_layout(self) -> None:
         self.assertEqual(
             PostAdmin.list_display,
-            ("project", "number", "is_draft", "date", "display_label"),
+            ("project", "number", "date", "display_label", "is_draft"),
         )
         self.assertEqual(
             PostAdmin.fieldsets[0][1]["fields"],
@@ -826,7 +826,6 @@ class ProjectApiTests(APITestCase):
             original_name="photo.jpg",
             file_type=FileType.PHOTO,
             content="content/photo.jpg",
-            preview="preview/photo.jpg",
             thumbnail="thumbnail/photo.jpg",
         )
         self.public_post.main_file = photo

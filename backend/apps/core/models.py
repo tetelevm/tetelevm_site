@@ -10,7 +10,6 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from PIL import Image, ImageOps, UnidentifiedImageError
 
-PREVIEW_MAX_SIZE = (600, 600)
 ORIGINAL_MAX_SIZE = (1500, 1500)
 THUMBNAIL_SIZE = (150, 150)
 PHOTO_SUFFIXES = {".avif", ".gif", ".jpeg", ".jpg", ".png", ".webp"}
@@ -42,6 +41,7 @@ def file_upload_path(instance: File, filename: str) -> str:
 
 
 def preview_upload_path(instance: File, filename: str) -> str:
+    """Retained for the historical migration that created the removed field."""
     return f"preview/{instance.id}.jpg"
 
 
@@ -83,13 +83,6 @@ class File(models.Model):
         editable=False,
     )
     content = models.FileField(_("Content"), upload_to=file_upload_path)
-    preview = models.ImageField(
-        _("Preview"),
-        upload_to=preview_upload_path,
-        blank=True,
-        null=True,
-        editable=False,
-    )
     thumbnail = models.ImageField(
         _("Thumbnail"),
         upload_to=thumbnail_upload_path,
@@ -105,11 +98,11 @@ class File(models.Model):
 
     @property
     def link(self) -> str:
-        return self.preview.url if self.preview else self.content.url
+        return self.content.url
 
     @property
-    def link_full(self) -> str | None:
-        return self.content.url if self.preview else None
+    def link_full(self) -> str:
+        return self.content.url
 
     @property
     def link_small(self) -> str:
@@ -129,7 +122,7 @@ class File(models.Model):
             if self.file_type == FileType.PHOTO:
                 generated = self._generate_images()
                 if generated is not None:
-                    original, preview, thumbnail = generated
+                    original, thumbnail = generated
                     self._delete_stored_files(previous_names)
                     if compress_image:
                         self.content.save(
@@ -137,11 +130,6 @@ class File(models.Model):
                             jpeg_content(original, quality=90),
                             save=False,
                         )
-                    self.preview.save(
-                        f"{self.id}.jpg",
-                        jpeg_content(preview),
-                        save=False,
-                    )
                     self.thumbnail.save(
                         f"{self.id}.jpg",
                         jpeg_content(thumbnail),
@@ -149,11 +137,9 @@ class File(models.Model):
                     )
                 else:
                     self._delete_stored_files(previous_names)
-                    self.preview = None
                     self.thumbnail = None
             else:
                 self._delete_stored_files(previous_names)
-                self.preview = None
                 self.thumbnail = None
 
             if kwargs.get("update_fields") is not None:
@@ -161,7 +147,6 @@ class File(models.Model):
                     "content",
                     "original_name",
                     "file_type",
-                    "preview",
                     "thumbnail",
                 }
         super().save(*args, **kwargs)
@@ -171,7 +156,6 @@ class File(models.Model):
             return set()
         stored = type(self).objects.filter(pk=self.pk).values(
             "content",
-            "preview",
             "thumbnail",
         ).first()
         return {name for name in (stored or {}).values() if name}
@@ -179,7 +163,6 @@ class File(models.Model):
     def _delete_stored_files(self, names: set[str]) -> None:
         storages = {
             self.content.storage,
-            self.preview.storage,
             self.thumbnail.storage,
         }
         for storage in storages:
@@ -189,15 +172,13 @@ class File(models.Model):
 
     def _generate_images(
         self,
-    ) -> tuple[Image.Image, Image.Image, Image.Image] | None:
+    ) -> tuple[Image.Image, Image.Image] | None:
         try:
             self.content.open("rb")
             with Image.open(self.content) as source:
                 image = ImageOps.exif_transpose(source)
                 original = image.copy()
                 original.thumbnail(ORIGINAL_MAX_SIZE, Image.Resampling.LANCZOS)
-                preview = image.copy()
-                preview.thumbnail(PREVIEW_MAX_SIZE, Image.Resampling.LANCZOS)
                 thumbnail = ImageOps.fit(
                     image,
                     THUMBNAIL_SIZE,
@@ -211,7 +192,7 @@ class File(models.Model):
             if content_file is not None and not content_file.closed:
                 content_file.seek(0)
 
-        return original, preview, thumbnail
+        return original, thumbnail
 
     def __str__(self) -> str:
         return self.original_name or str(self.id)

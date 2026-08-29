@@ -87,17 +87,14 @@ class PostQuerySet(models.QuerySet["Post"]):
                     ),
                 ),
                 models.When(
-                    ~models.Q(preview=""),
-                    preview__isnull=False,
+                    ~models.Q(content=""),
+                    content__isnull=False,
                     then=Concat(
                         models.Value(settings.MEDIA_URL),
-                        "preview",
+                        "content",
                     ),
                 ),
-                default=Concat(
-                    models.Value(settings.MEDIA_URL),
-                    "content",
-                ),
+                default=models.Value(""),
                 output_field=models.CharField(),
             )
         )
