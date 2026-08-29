@@ -179,6 +179,61 @@ class PostAdminTests(TestCase):
         self.assertContains(response, "/files/thumbnail/photo.jpg")
         self.assertContains(response, 'width="64"')
 
+    def test_post_file_inline_can_reverse_existing_order(self) -> None:
+        post_files = list(self.post.post_files.all())
+        for order in (1, 2):
+            file = File.objects.create(content=f"photo-{order}.jpg")
+            post_files.append(
+                PostFile.objects.create(
+                    post=self.post,
+                    file=file,
+                    order=order,
+                )
+            )
+        self.client.force_login(self.admin)
+
+        data = {
+            "project": self.project.pk,
+            "number": self.post.number,
+            "name": "",
+            "date": "",
+            "main_file": "",
+            "text": "",
+            "post_files-TOTAL_FORMS": "3",
+            "post_files-INITIAL_FORMS": "3",
+            "post_files-MIN_NUM_FORMS": "0",
+            "post_files-MAX_NUM_FORMS": "1000",
+        }
+        for form_index, (post_file, order) in enumerate(
+            zip(post_files, (2, 1, 0), strict=True)
+        ):
+            data.update(
+                {
+                    f"post_files-{form_index}-id": post_file.pk,
+                    f"post_files-{form_index}-file": post_file.file_id,
+                    f"post_files-{form_index}-order": order,
+                }
+            )
+
+        response = self.client.post(
+            reverse("admin:projects_post_change", args=(self.post.pk,)),
+            data,
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("admin:projects_post_changelist"),
+        )
+        self.assertEqual(
+            list(
+                self.post.post_files.order_by("id").values_list(
+                    "order",
+                    flat=True,
+                )
+            ),
+            [2, 1, 0],
+        )
+
     def test_post_change_form_uses_typed_extra_fields_and_custom_layout(
         self,
     ) -> None:
