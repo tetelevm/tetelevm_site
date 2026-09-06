@@ -290,7 +290,9 @@ Post:
 - an image carousel follows, containing only image additional files in
   `PostFile.order`; `mainFile` is not duplicated in the post carousel;
 - selecting a photograph opens its original in the shared lightbox;
-- the plain `text` appears below the carousel with line breaks preserved;
+- `text` appears below the unchanged carousel as plain text with preserved line
+  breaks by default; when `extra.md` is exactly `true`, only this text field is
+  rendered with the shared safe Markdown renderer;
 
 ## `post` — General Posts
 
@@ -331,7 +333,7 @@ Expected `extra` structure:
 fields together in one block, enabling the subset selected by the format's
 `post_type`:
 
-- `post` shows the optional `md` checkbox;
+- `post` and `travel` show the optional `md` checkbox;
 - `anime` shows `original_title`, optional `subtitle`, integer `rating` from 1 to
   10, and the one-line `result`;
 - `abandoned` shows float `rating` from 1 to 5, float location coordinates, a

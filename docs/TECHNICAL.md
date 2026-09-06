@@ -119,9 +119,10 @@ Dedicated admin CSS makes the name input wider, caps the related-post
 autocomplete at 700 pixels, and keeps both autocomplete fields responsive on
 mobile.
 
-For general posts the Markdown checkbox writes a JSON boolean; the detail
-component uses `MarkdownContent` only when it is `true` and otherwise keeps the
-plain-text renderer. Anime's optional `subtitle` is rendered inline in italics
+For general and travel posts the Markdown checkbox writes a JSON boolean; each
+detail component uses `MarkdownContent` for its text only when the value is
+`true` and otherwise keeps the plain-text renderer. Travel carousel selection
+is independent of this flag. Anime's optional `subtitle` is rendered inline in italics
 after the post name; `PostTitle` places an explicit line-break opportunity
 before it so the suffix wraps independently. Abandoned posts store `latitude`,
 `longitude`, and `link` below a nested `location` key. Their Vue detail

@@ -17,6 +17,7 @@ from .models import Post, PostFile, PostType, Project, Tag
 
 POST_TYPE_EXTRA_FIELDS: dict[str, tuple[str, ...]] = {
     PostType.POST: ("extra_md",),
+    PostType.TRAVEL: ("extra_md",),
     PostType.ANIME: (
         "extra_original_title",
         "extra_subtitle",
@@ -159,20 +160,21 @@ class PostAdminForm(forms.ModelForm):
                 project_post_types_json
             )
 
-        field_post_types = {
-            field_name: post_type
-            for post_type, field_names in POST_TYPE_EXTRA_FIELDS.items()
-            for field_name in field_names
-        }
+        field_post_types: dict[str, set[str]] = {}
+        for post_type, field_names in POST_TYPE_EXTRA_FIELDS.items():
+            for field_name in field_names:
+                field_post_types.setdefault(field_name, set()).add(post_type)
         selected_post_type = post_types_by_project.get(
             self._selected_project_id()
         )
-        for field_name, post_type in field_post_types.items():
+        for field_name, post_types in field_post_types.items():
             field = self.fields[field_name]
-            is_active = post_type == selected_post_type
+            is_active = selected_post_type in post_types
             field.required = is_active and field_name in REQUIRED_EXTRA_FIELDS
             field.disabled = not is_active
-            field.widget.attrs["data-post-extra-type"] = post_type
+            field.widget.attrs["data-post-extra-types"] = json.dumps(
+                sorted(post_types)
+            )
             field.widget.attrs["data-post-extra-required"] = (
                 "true" if field_name in REQUIRED_EXTRA_FIELDS else "false"
             )
@@ -196,7 +198,7 @@ class PostAdminForm(forms.ModelForm):
 
         post_type = post_types_by_project.get(str(self.instance.project_id))
         extra = self.instance.extra
-        if post_type == PostType.POST:
+        if post_type in {PostType.POST, PostType.TRAVEL}:
             self.initial["extra_md"] = extra.get("md", False)
             return
 
@@ -252,7 +254,7 @@ class PostAdminForm(forms.ModelForm):
     def _serialized_extra(self) -> dict[str, Any]:
         extra = self._extra_without_managed_values()
         post_type = self.cleaned_data["project"].post_type
-        if post_type == PostType.POST:
+        if post_type in {PostType.POST, PostType.TRAVEL}:
             extra["md"] = self.cleaned_data["extra_md"]
         elif post_type == PostType.ANIME:
             extra.update(
