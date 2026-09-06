@@ -3,7 +3,7 @@
 function setupPostExtraFields() {
   const projectField = document.querySelector("#id_project")
   const extraFields = Array.from(
-    document.querySelectorAll("[data-post-extra-type]"),
+    document.querySelectorAll("[data-post-extra-types]"),
   )
 
   if (!projectField || extraFields.length === 0) {
@@ -23,7 +23,13 @@ function setupPostExtraFields() {
     const selectedPostType = postTypesByProject[projectField.value]
 
     for (const field of extraFields) {
-      const isActive = field.dataset.postExtraType === selectedPostType
+      let supportedPostTypes
+      try {
+        supportedPostTypes = JSON.parse(field.dataset.postExtraTypes || "[]")
+      } catch {
+        supportedPostTypes = []
+      }
+      const isActive = supportedPostTypes.includes(selectedPostType)
       field.disabled = !isActive
       field.required =
         isActive && field.dataset.postExtraRequired === "true"

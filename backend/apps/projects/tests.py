@@ -1,3 +1,4 @@
+import json
 from datetime import date
 
 from django import forms
@@ -312,6 +313,14 @@ class PostAdminTests(TestCase):
         self.assertIsInstance(form.fields["extra_md"], forms.BooleanField)
         self.assertFalse(form.fields["extra_md"].required)
         self.assertFalse(form.fields["extra_md"].disabled)
+        self.assertEqual(
+            json.loads(
+                form.fields["extra_md"].widget.attrs[
+                    "data-post-extra-types"
+                ]
+            ),
+            [PostType.POST, PostType.TRAVEL],
+        )
         self.assertIsInstance(
             form.fields["extra_anime_rating"],
             forms.IntegerField,
@@ -321,6 +330,33 @@ class PostAdminTests(TestCase):
             forms.FloatField,
         )
         self.assertTrue(form.fields["extra_anime_rating"].disabled)
+
+    def test_travel_markdown_field_is_loaded_and_serialized(self) -> None:
+        self.project.post_type = PostType.TRAVEL
+        self.project.save(update_fields=("post_type",))
+        self.post.extra = {"md": True, "custom": "kept"}
+        self.post.save(update_fields=("extra",))
+
+        initial_form = PostAdminForm(instance=self.post)
+
+        self.assertFalse(initial_form.fields["extra_md"].disabled)
+        self.assertTrue(initial_form.initial["extra_md"])
+
+        form = PostAdminForm(
+            data={
+                "project": self.project.id,
+                "number": self.post.number,
+                "name": "Travel",
+                "text": "[Link](https://example.com)",
+                "extra_md": "on",
+            },
+            instance=self.post,
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+        post = form.save()
+        self.assertIs(post.extra["md"], True)
+        self.assertEqual(post.extra["custom"], "kept")
 
     def test_anime_extra_fields_use_existing_values(self) -> None:
         self.project.post_type = PostType.ANIME

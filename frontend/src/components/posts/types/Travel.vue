@@ -2,6 +2,7 @@
 import { computed } from "vue"
 
 import MediaCarousel from "../../media/MediaCarousel.vue"
+import MarkdownContent from "../blocks/MarkdownContent.vue"
 import PlainPostText from "../blocks/PlainPostText.vue"
 import PostLayout from "../blocks/PostLayout.vue"
 
@@ -21,7 +22,8 @@ const photos = computed(() => {
   <PostLayout :post="post">
     <MediaCarousel :items="photos" :label="`Фотографии: ${post.name}`" />
 
-    <PlainPostText :text="post.text" />
+    <MarkdownContent v-if="post.extra?.md === true" :source="post.text" />
+    <PlainPostText v-else :text="post.text" />
 
   </PostLayout>
 </template>

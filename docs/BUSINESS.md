@@ -161,6 +161,8 @@ An anime post may include a subtitle string. When present, it appears in italics
 immediately after the post name on the same title line.
 General posts display their body as plain text by default. An optional boolean
 flag enables Markdown rendering for an individual general post.
+Travel posts provide the same optional Markdown flag for their text body. It
+does not change the travel image carousel or its file selection.
 Posts may be connected to any number of other posts through symmetric
 relationships. Detail pages show every related post visible to the current
 visitor as a row card; links to private content remain hidden from anonymous
