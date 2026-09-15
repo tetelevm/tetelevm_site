@@ -31,6 +31,9 @@ operational tasks, such as backups, restores, data imports, release helpers, or
 deployment automation. Application code and reusable Django or Vue logic do not
 belong there. Scripts should be added only when a real repeated operation needs
 automation.
+The backend image copies this directory to `/scripts`; it remains separate from
+the Django application in `/app` and is therefore available to production
+operators without turning one-off maintenance routines into management commands.
 
 The project is a monorepo. It is deliberately optimized for clarity and simple
 operation rather than independent service deployment or high traffic.

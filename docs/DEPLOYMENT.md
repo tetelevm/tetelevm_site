@@ -90,6 +90,14 @@ docker compose -f compose.prod.yaml exec backend python manage.py createsuperuse
 Verify the public page, `/archive/`, `/_admin/`, login/logout, and media loading.
 Also verify anonymous, guest, and administrator visibility.
 
+Repository maintenance scripts are available in the backend container under
+`/scripts`. A script intended for Django shell input can be run with:
+
+```bash
+docker compose -f compose.prod.yaml exec -T backend \
+  sh -c 'python manage.py shell < /scripts/<script-name>.py'
+```
+
 ## Deploying an update
 
 Back up the database and media before an update that changes models or file

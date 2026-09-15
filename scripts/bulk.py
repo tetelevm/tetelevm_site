@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.db.transaction import atomic
 from django.db.models import F, Func, IntegerField, Value
 from django.db.models.functions import Cast
@@ -21,7 +23,7 @@ def _order_photos(q):
 
 
 @atomic
-def import_posts(posts):
+def import_mokhetiale(posts):
     for p in posts:
         project = Project.objects.get(link="mokhetiale")
         post = Post.objects.create(
@@ -36,3 +38,24 @@ def import_posts(posts):
             tag = Tag.objects.get(code=t)
             post.tags.add(tag)
         print(p["number"])
+
+
+@atomic
+def import_shenishvnebi(posts: list[dict[str, object]]) -> None:
+    project = Project.objects.get(link="shenishvnebi")
+
+    for data in posts:
+        post = Post.objects.create(
+            project=project,
+            number=int(data["number"]),
+            date=date.fromisoformat(str(data["date"])),
+            text=str(data.get("text", "")),
+        )
+        files = File.objects.filter(
+            original_name__in=data.get("photos", []),
+        )
+        for order, file in enumerate(_order_photos(files)):
+            PostFile.objects.create(post=post, file=file, order=order)
+        for code in data.get("tags", []):
+            post.tags.add(Tag.objects.get(code=code))
+        print(post.number)
