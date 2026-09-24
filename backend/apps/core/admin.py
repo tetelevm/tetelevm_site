@@ -29,12 +29,12 @@ class FileAdmin(admin.ModelAdmin):
     list_display = (
         "thumbnail_preview",
         "id",
-        "original_name",
+        "label",
         "file_type",
         "uploaded_at",
     )
     list_filter = ("file_type",)
-    search_fields = ("original_name",)
+    search_fields = ("label",)
     ordering = ("-uploaded_at",)
 
     def get_readonly_fields(
@@ -44,7 +44,7 @@ class FileAdmin(admin.ModelAdmin):
     ) -> tuple[str, ...]:
         fields = super().get_readonly_fields(request, obj)
         if obj is None:
-            return (*fields, "original_name")
+            return (*fields, "label")
         return fields
 
     def get_fields(
@@ -85,8 +85,8 @@ class FileAdmin(admin.ModelAdmin):
                 file = File(content=uploaded_file)
                 file.save(compress_image=compress_images)
                 if prefix:
-                    file.original_name = f"{prefix}{file.original_name}"
-                    file.save(update_fields=("original_name",))
+                    file.label = f"{prefix}{file.label}"
+                    file.save(update_fields=("label",))
             self.message_user(
                 request,
                 _("Successfully uploaded %(count)d files.") % {"count": len(files)},

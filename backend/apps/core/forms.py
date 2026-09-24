@@ -24,10 +24,10 @@ class MultipleFileField(forms.FileField):
 
 class BulkFileUploadForm(forms.Form):
     prefix = forms.CharField(
-        label=_("Original name prefix"),
+        label=_("Label prefix"),
         required=False,
         max_length=255,
-        help_text=_("Added before each uploaded file name."),
+        help_text=_("Added before each uploaded file label."),
     )
     files = MultipleFileField(
         label=_("Files"),
@@ -52,7 +52,7 @@ class BulkFileUploadForm(forms.Form):
                 self.add_error(
                     "prefix",
                     _(
-                        "Prefix and file name must contain at most 255 "
+                        "Prefix and file label must contain at most 255 "
                         "characters: %(name)s"
                     )
                     % {"name": uploaded_file.name},

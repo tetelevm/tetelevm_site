@@ -12,7 +12,7 @@ def _order_photos(q):
     return q.annotate(
         order=Cast(
             Func(
-                F("original_name"),
+                F("label"),
                 Value(r"^.*_(\d+)\.[^.]+$"),
                 Value(r"\1"),
                 function="regexp_replace",
@@ -31,7 +31,7 @@ def import_mokhetiale(posts):
             number=p["number"],
             text=p["text"],
         )
-        files = File.objects.filter(original_name__in=p["photos"])
+        files = File.objects.filter(label__in=p["photos"])
         for (n, f) in enumerate(_order_photos(files)):
             PostFile.objects.create(post=post, file=f, order=n)
         for t in p["tags"]:
@@ -52,7 +52,7 @@ def import_shenishvnebi(posts: list[dict[str, object]]) -> None:
             text=str(data.get("text", "")),
         )
         files = File.objects.filter(
-            original_name__in=data.get("photos", []),
+            label__in=data.get("photos", []),
         )
         for order, file in enumerate(_order_photos(files)):
             PostFile.objects.create(post=post, file=file, order=order)
