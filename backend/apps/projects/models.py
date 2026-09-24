@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.functions import Coalesce, Concat
 from django.utils.translation import gettext_lazy as _
@@ -198,7 +199,7 @@ class Post(models.Model):
         related_name="posts",
         verbose_name=_("Project"),
     )
-    number = models.PositiveIntegerField(_("Number"))
+    number = models.IntegerField(_("Number"))
     is_draft = models.BooleanField(_("Draft"), default=False)
     date = models.DateField(_("Date"), blank=True, null=True)
     name = models.CharField(_("Name"), max_length=255, blank=True)
@@ -238,6 +239,13 @@ class Post(models.Model):
             models.UniqueConstraint(
                 fields=("project", "number"),
                 name="unique_post_number_per_project",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(is_draft=True, number__lte=0)
+                    | models.Q(is_draft=False, number__gt=0)
+                ),
+                name="post_number_sign_matches_draft_status",
             ),
         ]
         verbose_name = _("Post")
@@ -293,6 +301,21 @@ class Post(models.Model):
 
     def __str__(self) -> str:
         return f"{self.project}: #{self.number} — {self.display_label}"
+
+    def clean(self) -> None:
+        super().clean()
+        if self.is_draft and self.number > 0:
+            raise ValidationError(
+                {
+                    "number": _(
+                        "Draft posts must have a non-positive number."
+                    )
+                }
+            )
+        if not self.is_draft and self.number <= 0:
+            raise ValidationError(
+                {"number": _("Published posts must have a positive number.")}
+            )
 
 
 class PostFile(models.Model):

@@ -102,6 +102,7 @@ class PostSerializer(serializers.ModelSerializer):
     projectCode = serializers.CharField(source="project.link", read_only=True)
     projectName = serializers.CharField(source="project.name", read_only=True)
     postType = serializers.CharField(source="project.post_type", read_only=True)
+    isDraft = serializers.BooleanField(source="is_draft", read_only=True)
     mainFile = FileSerializer(source="main_file", read_only=True)
     files = serializers.SerializerMethodField()
     tags = TagSerializer(many=True, read_only=True)
@@ -128,6 +129,7 @@ class PostSerializer(serializers.ModelSerializer):
             "projectCode",
             "projectName",
             "postType",
+            "isDraft",
             "date",
             "name",
             "text",

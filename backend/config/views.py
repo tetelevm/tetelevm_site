@@ -17,7 +17,7 @@ DESCRIPTION_LIMIT = 160
 ARCHIVE_DESCRIPTION = "Архив форматов: тексты, фотографии и другое."
 PROJECT_PATH = re.compile(r"^/archive/(?P<project>[^/]+)/$")
 POST_PATH = re.compile(
-    r"^/archive/(?P<project>[^/]+)/(?P<number>[0-9]+)/$"
+    r"^/archive/(?P<project>[^/]+)/(?P<number>-?[0-9]+)/$"
 )
 
 
@@ -91,16 +91,18 @@ def metadata_for_path(request: HttpRequest, path: str) -> PageMetadata:
 
     post_match = POST_PATH.fullmatch(path)
     if post_match:
-        post = (
-            Post.objects.published().with_display_file_counts()
+        posts = (
+            Post.objects.with_display_file_counts()
             .select_related("project", "main_file")
             .filter(
                 project__in=visible_projects(request),
                 project__link=post_match["project"],
                 number=int(post_match["number"]),
             )
-            .first()
         )
+        if not request.user.is_staff:
+            posts = posts.published()
+        post = posts.first()
         if post is not None:
             post_name = post.name.strip()
             short_name = post_name or f"#{post.number}"
@@ -121,6 +123,7 @@ def metadata_for_path(request: HttpRequest, path: str) -> PageMetadata:
                 description=description,
                 image=image,
                 page_type="article",
+                noindex=post.is_draft,
             )
 
     project_match = PROJECT_PATH.fullmatch(path)
