@@ -52,6 +52,7 @@ async function loadPost(projectCode, postNumber) {
           : "/favicon.ico",
       path: post.value.link,
       type: "article",
+      noindex: post.value.isDraft,
     })
   } catch (error) {
     isNotFound.value = error.status === 404

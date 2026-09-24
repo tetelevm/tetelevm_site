@@ -144,10 +144,13 @@ class PostDetailView(RetrieveAPIView):
             .defer("extra")
             .order_by("project__order", "project_id", "-number", "-id")
         )
-        posts = Post.objects.published().filter(
+        posts = Post.objects.filter(
             project__in=visible_projects(user_is_authenticated),
             project__link=self.kwargs["project_code"],
-        ).with_adjacent_post_ids()
+        )
+        if not self.request.user.is_staff:
+            posts = posts.published()
+        posts = posts.with_adjacent_post_ids()
         return posts.select_related("project", "main_file").prefetch_related(
             "post_files__file",
             "tags",
@@ -161,6 +164,11 @@ class PostDetailView(RetrieveAPIView):
         **kwargs: object,
     ) -> Response:
         post = self.get_object()
+        if post.is_draft:
+            post.previous_post_summary = None
+            post.next_post_summary = None
+            return Response(self.get_serializer(post).data)
+
         adjacent_ids = {
             post_id
             for post_id in (post.previous_post_id, post.next_post_id)

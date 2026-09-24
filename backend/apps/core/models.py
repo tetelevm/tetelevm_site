@@ -70,8 +70,8 @@ class File(models.Model):
         default=uuid.uuid4,
         editable=False,
     )
-    original_name = models.CharField(
-        _("Original name"),
+    label = models.CharField(
+        _("Label"),
         max_length=255,
         blank=True,
     )
@@ -116,7 +116,7 @@ class File(models.Model):
     ) -> None:
         has_new_content = bool(self.content and not self.content._committed)
         if has_new_content:
-            self.original_name = Path(self.content.name).name
+            self.label = Path(self.content.name).name
             self.file_type = detect_file_type(self.content.name)
             previous_names = self._stored_file_names()
             if self.file_type == FileType.PHOTO:
@@ -124,7 +124,11 @@ class File(models.Model):
                 if generated is not None:
                     original, thumbnail = generated
                     self._delete_stored_files(previous_names)
-                    if compress_image:
+                    should_compress = (
+                        compress_image
+                        and Path(self.label).suffix.lower() != ".gif"
+                    )
+                    if should_compress:
                         self.content.save(
                             f"{self.id}.jpg",
                             jpeg_content(original, quality=90),
@@ -145,7 +149,7 @@ class File(models.Model):
             if kwargs.get("update_fields") is not None:
                 kwargs["update_fields"] = set(kwargs["update_fields"]) | {
                     "content",
-                    "original_name",
+                    "label",
                     "file_type",
                     "thumbnail",
                 }
@@ -195,4 +199,4 @@ class File(models.Model):
         return original, thumbnail
 
     def __str__(self) -> str:
-        return self.original_name or str(self.id)
+        return self.label or str(self.id)

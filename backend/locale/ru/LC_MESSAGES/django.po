@@ -304,8 +304,8 @@ msgstr "Дата"
 msgid "Draft"
 msgstr "Черновик"
 
-msgid "Draft posts must have a negative number."
-msgstr "У черновиков должен быть отрицательный номер."
+msgid "Draft posts must have a non-positive number."
+msgstr "У черновиков должен быть неположительный номер."
 
 msgid "Published posts must have a positive number."
 msgstr "У опубликованных постов должен быть положительный номер."
