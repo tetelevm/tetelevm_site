@@ -29,7 +29,7 @@ class FileModelTests(TestCase):
                     self.assertEqual(original.size, (1500, 1000))
                     self.assertEqual(original.format, "JPEG")
 
-                self.assertEqual(uploaded.original_name, "photo.jpg")
+                self.assertEqual(uploaded.label, "photo.jpg")
                 self.assertEqual(uploaded.file_type, FileType.PHOTO)
                 self.assertEqual(
                     uploaded.content.name,
@@ -58,7 +58,7 @@ class FileModelTests(TestCase):
                 uploaded.save()
 
                 uploaded.refresh_from_db()
-                self.assertEqual(uploaded.original_name, "replacement.png")
+                self.assertEqual(uploaded.label, "replacement.png")
                 self.assertEqual(uploaded.content.name, f"content/{uploaded.id}.jpg")
                 with Image.open(uploaded.content.path) as original:
                     self.assertEqual(original.size, (800, 1200))
@@ -80,6 +80,44 @@ class FileModelTests(TestCase):
                 with Image.open(uploaded.thumbnail.path) as thumbnail:
                     self.assertEqual(thumbnail.size, (150, 150))
 
+    def test_gif_original_is_preserved_when_compression_is_enabled(self) -> None:
+        source = BytesIO()
+        frames = [
+            Image.new("RGB", (200, 100), color)
+            for color in ("red", "blue")
+        ]
+        frames[0].save(
+            source,
+            format="GIF",
+            save_all=True,
+            append_images=frames[1:],
+            duration=100,
+            loop=0,
+        )
+        original_content = source.getvalue()
+
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root, MEDIA_URL="/files/"):
+                uploaded = File.objects.create(
+                    content=SimpleUploadedFile(
+                        "animated.gif",
+                        original_content,
+                    )
+                )
+
+                self.assertEqual(uploaded.file_type, FileType.PHOTO)
+                self.assertEqual(
+                    uploaded.content.name,
+                    f"content/{uploaded.id}.gif",
+                )
+                self.assertEqual(uploaded.content.read(), original_content)
+                with Image.open(uploaded.content.path) as original:
+                    self.assertEqual(original.format, "GIF")
+                    self.assertEqual(original.n_frames, 2)
+                with Image.open(uploaded.thumbnail.path) as thumbnail:
+                    self.assertEqual(thumbnail.size, (150, 150))
+                    self.assertEqual(thumbnail.format, "JPEG")
+
     def test_non_image_uses_uuid_filename_and_has_no_derivatives(self) -> None:
         with tempfile.TemporaryDirectory() as media_root:
             with override_settings(MEDIA_ROOT=media_root, MEDIA_URL="/files/"):
@@ -87,7 +125,7 @@ class FileModelTests(TestCase):
                     content=SimpleUploadedFile("Example.MOV", b"video")
                 )
 
-                self.assertEqual(uploaded.original_name, "Example.MOV")
+                self.assertEqual(uploaded.label, "Example.MOV")
                 self.assertEqual(uploaded.file_type, FileType.VIDEO)
                 self.assertEqual(
                     uploaded.content.name,
@@ -112,7 +150,7 @@ class FileAdminTests(TestCase):
 
     def test_file_changelist_displays_image_thumbnail(self) -> None:
         uploaded = File.objects.create(
-            original_name="photo.jpg",
+            label="photo.jpg",
             file_type=FileType.PHOTO,
             content="content/photo.jpg",
             thumbnail="thumbnail/photo.jpg",
@@ -128,7 +166,7 @@ class FileAdminTests(TestCase):
 
     def test_file_change_page_displays_image_preview(self) -> None:
         uploaded = File.objects.create(
-            original_name="photo.jpg",
+            label="photo.jpg",
             file_type=FileType.PHOTO,
             content="content/photo.jpg",
             thumbnail="thumbnail/photo.jpg",
@@ -146,7 +184,7 @@ class FileAdminTests(TestCase):
 
     def test_file_change_page_starts_with_original_file_link(self) -> None:
         uploaded = File.objects.create(
-            original_name="photo.jpg",
+            label="photo.jpg",
             file_type=FileType.PHOTO,
             content="content/photo.jpg",
         )
@@ -164,12 +202,12 @@ class FileAdminTests(TestCase):
         )
         self.assertLess(
             content.index("field-original_file_link"),
-            content.index("field-original_name"),
+            content.index("field-label"),
         )
 
-    def test_file_change_page_allows_editing_original_name(self) -> None:
+    def test_file_change_page_allows_editing_label(self) -> None:
         uploaded = File.objects.create(
-            original_name="photo.jpg",
+            label="photo.jpg",
             file_type=FileType.PHOTO,
             content="content/photo.jpg",
         )
@@ -177,12 +215,12 @@ class FileAdminTests(TestCase):
 
         response = self.client.post(
             reverse("admin:core_file_change", args=(uploaded.id,)),
-            {"original_name": "renamed photo.jpg"},
+            {"label": "renamed photo.jpg"},
         )
 
         self.assertRedirects(response, reverse("admin:core_file_changelist"))
         uploaded.refresh_from_db()
-        self.assertEqual(uploaded.original_name, "renamed photo.jpg")
+        self.assertEqual(uploaded.label, "renamed photo.jpg")
 
     def test_file_changelist_links_to_bulk_upload(self) -> None:
         self.client.force_login(self.admin)
@@ -227,11 +265,11 @@ class FileAdminTests(TestCase):
         self.assertRedirects(response, reverse("admin:core_file_changelist"))
         self.assertEqual(File.objects.count(), 2)
         self.assertCountEqual(
-            File.objects.values_list("original_name", flat=True),
+            File.objects.values_list("label", flat=True),
             ["first.txt", "second.mp3"],
         )
 
-    def test_bulk_upload_adds_prefix_to_original_names(self) -> None:
+    def test_bulk_upload_adds_prefix_to_labels(self) -> None:
         self.client.force_login(self.admin)
 
         with tempfile.TemporaryDirectory() as media_root:
@@ -249,7 +287,7 @@ class FileAdminTests(TestCase):
 
         self.assertRedirects(response, reverse("admin:core_file_changelist"))
         self.assertCountEqual(
-            File.objects.values_list("original_name", flat=True),
+            File.objects.values_list("label", flat=True),
             ["ph-01.jpg", "ph-02.jpg"],
         )
 

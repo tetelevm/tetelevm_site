@@ -40,14 +40,14 @@ The administrator is the site owner. The administrator can:
 - edit type-specific item metadata through individual validated fields instead
   of raw JSON;
 - upload media used by the content, including many files in one operation;
-- optionally prepend one shared string to every original-name label during a
-  multi-file upload;
+- optionally prepend one shared string to every file label during a multi-file
+  upload;
 - choose during a multi-file upload whether image originals are resized and
-  compressed; thumbnails are generated in either mode;
+  compressed; GIF originals always retain their animation and `.gif` format,
+  while thumbnails are generated in either mode;
 - paste a clipboard image into the standard administrative file-add form as an
   alternative to selecting it through the browser;
-- edit the original-name label of an uploaded file without renaming its stored
-  content;
+- edit the label of an uploaded file without renaming its stored content;
 - open the stored original from a direct path link shown first on the file's
   administrative change page;
 - see generated image thumbnails directly in the administrative file list and
@@ -167,10 +167,14 @@ Posts may be connected to any number of other posts through symmetric
 relationships. Detail pages show every related post visible to the current
 visitor as a row card; links to private content remain hidden from anonymous
 visitors.
-Posts can be marked as drafts in Django Admin. Drafts are administrative-only:
-they are excluded from format lists and counts, tag filters, random selection,
-related and adjacent navigation, direct post URLs, and page metadata for every
-public-site visitor, including authenticated guests and administrators.
+Posts can be marked as drafts in Django Admin. A draft always has a zero or
+negative number, while a published post always has a positive number. Drafts are
+excluded from format lists and counts, tag filters, random selection, adjacent
+navigation, and related-post blocks for every role. Anonymous visitors and
+authenticated guests receive a not-found response for a draft's direct URL;
+staff administrators can open that URL, and its page is excluded from search
+indexing. A draft page has no adjacent-post navigation but may show its own
+relationships to ordinary published posts.
 Post tags are links to the current format with a `tag=<code>` query parameter.
 Opening one shows only posts in that format carrying the selected tag; list
 pagination retains the filter. The active filter appears between the format
@@ -206,7 +210,7 @@ Visibility is defined at format level:
 - authenticated guests can view both public and private formats.
 
 Items do not have independent audience visibility settings. The draft flag is
-an authoring-state exception that hides an item from every public-site role.
+an authoring-state exception visible by direct URL only to staff administrators.
 Per-item audience permissions should only be introduced if a future product
 requirement needs them.
 
