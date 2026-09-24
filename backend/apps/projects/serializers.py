@@ -20,7 +20,7 @@ class FileSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "link", "linkFull", "mediaType")
 
     def get_name(self, obj: File) -> str:
-        return obj.original_name or Path(obj.content.name).name
+        return obj.label or Path(obj.content.name).name
 
 
 class FileListSerializer(serializers.ModelSerializer):

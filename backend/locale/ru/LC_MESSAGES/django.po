@@ -35,15 +35,15 @@ msgstr "Основное"
 msgid "Files"
 msgstr "Файлы"
 
-msgid "Original name prefix"
-msgstr "Префикс исходного имени"
+msgid "Label prefix"
+msgstr "Префикс метки"
 
-msgid "Added before each uploaded file name."
-msgstr "Добавляется перед именем каждого загружаемого файла."
+msgid "Added before each uploaded file label."
+msgstr "Добавляется перед меткой каждого загружаемого файла."
 
 #, python-format
-msgid "Prefix and file name must contain at most 255 characters: %(name)s"
-msgstr "Префикс и имя файла должны содержать не более 255 символов: %(name)s"
+msgid "Prefix and file label must contain at most 255 characters: %(name)s"
+msgstr "Префикс и метка файла должны содержать не более 255 символов: %(name)s"
 
 #: apps/core/forms.py:27
 msgid "Select all files you want to upload."
@@ -70,8 +70,8 @@ msgid "ID"
 msgstr "ID"
 
 #: apps/core/models.py:74
-msgid "Original name"
-msgstr "Исходное имя"
+msgid "Label"
+msgstr "Метка"
 
 #: apps/core/models.py:80
 msgid "File type"
@@ -303,6 +303,12 @@ msgstr "Дата"
 #: apps/projects/models.py
 msgid "Draft"
 msgstr "Черновик"
+
+msgid "Draft posts must have a negative number."
+msgstr "У черновиков должен быть отрицательный номер."
+
+msgid "Published posts must have a positive number."
+msgstr "У опубликованных постов должен быть положительный номер."
 
 #: apps/projects/models.py:157
 msgid "Main file"
