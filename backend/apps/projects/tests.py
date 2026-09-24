@@ -3,6 +3,7 @@ from datetime import date
 
 from django import forms
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
 from django.urls import reverse
@@ -80,6 +81,39 @@ class PostDisplayLabelTests(TestCase):
         post.text = "  A text\nexcerpt  "
         self.assertEqual(post.display_label, "A text excerpt")
 
+    def test_post_number_sign_must_match_draft_status(self) -> None:
+        invalid_draft = Post(
+            project=self.project,
+            number=1,
+            is_draft=True,
+        )
+        invalid_published = Post(
+            project=self.project,
+            number=-1,
+            is_draft=False,
+        )
+
+        with self.assertRaises(ValidationError):
+            invalid_draft.full_clean()
+        with self.assertRaises(ValidationError):
+            invalid_published.full_clean()
+
+        Post(
+            project=self.project,
+            number=-1,
+            is_draft=True,
+        ).full_clean()
+        Post(
+            project=self.project,
+            number=0,
+            is_draft=True,
+        ).full_clean()
+        Post(
+            project=self.project,
+            number=1,
+            is_draft=False,
+        ).full_clean()
+
     def test_display_label_truncates_long_text(self) -> None:
         post = Post.objects.create(
             project=self.project,
@@ -92,12 +126,12 @@ class PostDisplayLabelTests(TestCase):
 
     def test_annotated_file_labels_do_not_make_n_plus_one_queries(self) -> None:
         photo = File.objects.create(
-            original_name="photo.jpg",
+            label="photo.jpg",
             file_type=FileType.PHOTO,
             content="content/photo.jpg",
         )
         audio = File.objects.create(
-            original_name="audio.mp3",
+            label="audio.mp3",
             file_type=FileType.AUDIO,
             content="content/audio.mp3",
         )
@@ -140,7 +174,7 @@ class PostAdminTests(TestCase):
         )
         self.post = Post.objects.create(project=self.project, number=1)
         photo = File.objects.create(
-            original_name="photo.jpg",
+            label="photo.jpg",
             file_type=FileType.PHOTO,
             content="content/photo.jpg",
             thumbnail="thumbnail/photo.jpg",
@@ -609,7 +643,7 @@ class ProjectApiTests(APITestCase):
     def test_drafts_are_excluded_from_format_lists_and_counts(self) -> None:
         Post.objects.create(
             project=self.public_project,
-            number=2,
+            number=-1,
             name="Draft post",
             is_draft=True,
         )
@@ -779,8 +813,9 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_random_post_excludes_starred_drafts(self) -> None:
+        self.public_post.number = -1
         self.public_post.is_draft = True
-        self.public_post.save(update_fields=("is_draft",))
+        self.public_post.save(update_fields=("number", "is_draft"))
         self.public_post.tags.add(self.star_tag)
 
         response = self.client.get(reverse("projects:random-post"))
@@ -859,7 +894,7 @@ class ProjectApiTests(APITestCase):
 
     def test_card_lists_use_main_file_thumbnail(self) -> None:
         photo = File.objects.create(
-            original_name="photo.jpg",
+            label="photo.jpg",
             file_type=FileType.PHOTO,
             content="content/photo.jpg",
             thumbnail="thumbnail/photo.jpg",
@@ -891,13 +926,13 @@ class ProjectApiTests(APITestCase):
 
     def test_card_lists_fall_back_to_first_ordered_additional_file(self) -> None:
         later_photo = File.objects.create(
-            original_name="later.jpg",
+            label="later.jpg",
             file_type=FileType.PHOTO,
             content="content/later.jpg",
             thumbnail="thumbnail/later.jpg",
         )
         first_photo = File.objects.create(
-            original_name="first.jpg",
+            label="first.jpg",
             file_type=FileType.PHOTO,
             content="content/first.jpg",
             thumbnail="thumbnail/first.jpg",
@@ -975,24 +1010,45 @@ class ProjectApiTests(APITestCase):
         self.assertIsNone(response.data["previousPost"])
         self.assertIsNone(response.data["nextPost"])
 
-    def test_draft_detail_is_hidden_from_authenticated_admin(self) -> None:
+    def test_draft_detail_is_visible_only_to_staff_without_adjacent_posts(
+        self,
+    ) -> None:
+        self.public_post.number = -1
         self.public_post.is_draft = True
-        self.public_post.save(update_fields=("is_draft",))
-        self.client.force_login(self.admin)
-
-        response = self.client.get(
-            reverse(
-                "projects:post-detail",
-                kwargs={"project_code": "public", "post_num": 1},
-            )
+        self.public_post.save(update_fields=("number", "is_draft"))
+        related = Post.objects.create(
+            project=self.public_project,
+            number=2,
+            name="Published relation",
+        )
+        self.public_post.related_posts.add(related)
+        url = reverse(
+            "projects:post-detail",
+            kwargs={"project_code": "public", "post_num": -1},
         )
 
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(self.client.get(url).status_code, 404)
+
+        self.client.force_login(self.guest)
+        self.assertEqual(self.client.get(url).status_code, 404)
+
+        self.client.force_login(self.admin)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["isDraft"])
+        self.assertEqual(response.data["number"], -1)
+        self.assertIsNone(response.data["previousPost"])
+        self.assertIsNone(response.data["nextPost"])
+        self.assertEqual(
+            [post["number"] for post in response.data["relatedPosts"]],
+            [2],
+        )
 
     def test_adjacent_and_related_navigation_exclude_drafts(self) -> None:
         draft = Post.objects.create(
             project=self.public_project,
-            number=2,
+            number=-1,
             name="Draft neighbor",
             is_draft=True,
         )
@@ -1014,6 +1070,19 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.data["nextPost"]["number"], 3)
         self.assertEqual(
             [post["number"] for post in response.data["relatedPosts"]],
+            [3],
+        )
+
+        self.client.force_login(self.admin)
+        admin_response = self.client.get(
+            reverse(
+                "projects:post-detail",
+                kwargs={"project_code": "public", "post_num": 1},
+            )
+        )
+        self.assertEqual(admin_response.data["nextPost"]["number"], 3)
+        self.assertEqual(
+            [post["number"] for post in admin_response.data["relatedPosts"]],
             [3],
         )
 
@@ -1093,7 +1162,7 @@ class ProjectApiTests(APITestCase):
 
     def test_related_posts_are_symmetric_and_use_row_summaries(self) -> None:
         photo = File.objects.create(
-            original_name="related.jpg",
+            label="related.jpg",
             file_type=FileType.PHOTO,
             content="content/related.jpg",
             thumbnail="thumbnail/related.jpg",

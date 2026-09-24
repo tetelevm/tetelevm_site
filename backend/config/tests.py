@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
@@ -136,18 +137,40 @@ class SearchDiscoveryTests(TestCase):
     def test_page_meta_does_not_expose_draft_posts(self) -> None:
         Post.objects.create(
             project=self.public_project,
-            number=99,
+            number=-1,
             name="Secret draft title",
             is_draft=True,
         )
 
         response = self.client.get(
             reverse("page-meta"),
-            {"path": "/archive/public-project/99/"},
+            {"path": "/archive/public-project/-1/"},
         )
 
         self.assertNotContains(response, "Secret draft title")
         self.assertContains(response, "{{httpError 404}}")
+
+    def test_page_meta_exposes_draft_to_staff_as_noindex(self) -> None:
+        Post.objects.create(
+            project=self.public_project,
+            number=-1,
+            name="Staff draft title",
+            is_draft=True,
+        )
+        admin = get_user_model().objects.create_superuser(
+            "admin",
+            password="admin",
+        )
+        self.client.force_login(admin)
+
+        response = self.client.get(
+            reverse("page-meta"),
+            {"path": "/archive/public-project/-1/"},
+        )
+
+        self.assertContains(response, "Staff draft title")
+        self.assertContains(response, 'name="robots" content="noindex"')
+        self.assertNotContains(response, "{{httpError 404}}")
 
     def test_page_meta_does_not_expose_private_project_to_anonymous_user(self) -> None:
         response = self.client.get(

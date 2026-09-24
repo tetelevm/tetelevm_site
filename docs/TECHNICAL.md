@@ -34,6 +34,10 @@ automation.
 The backend image copies this directory to `/scripts`; it remains separate from
 the Django application in `/app` and is therefore available to production
 operators without turning one-off maintenance routines into management commands.
+`tidy_media.py` contains explicit operator-invoked functions for compacting
+published post numbers, rebuilding per-project file labels in batches, listing
+or deleting database file records unused by posts, and removing
+physical media files that have no database field reference.
 
 The project is a monorepo. It is deliberately optimized for clarity and simple
 operation rather than independent service deployment or high traffic.
@@ -134,12 +138,12 @@ incomplete or unsafe values.
 
 Relations to potentially large collections use Django Admin's built-in AJAX
 autocomplete widgets. They keep the default 20-result pages and load further
-results on scroll. File choices are searchable by original upload name and ordered
+results on scroll. File choices are searchable by their editable label and ordered
 by newest upload first. The main file changelist displays existing image
 thumbnails inline at 64 by 64 pixels and leaves the preview cell empty for
 non-image files. An image file's change page shows its aspect-ratio-preserving
 stored original within a 600-pixel-high administrative frame. A saved file's
-`original_name` can be edited as display
+`label` can be edited as display
 metadata without renaming or moving stored content. Its change page starts with
 a read-only, clickable `content.url` for the stored original; during initial
 upload it is still derived from the browser-provided filename. The standard
@@ -151,7 +155,7 @@ per upload using the model's media-processing path. A checked-by-default option
 normalizes image originals through the usual 1500-pixel JPEG conversion; when
 unchecked, the uploaded original bytes and extension are retained while a
 thumbnail derivative is still generated. Its optional prefix
-is prepended to each resulting `original_name` after processing and therefore
+is prepended to each resulting `label` after processing and therefore
 does not affect stored UUID paths or file-type detection. The post changelist
 places the project column before the post number and display label. Saved `PostFileInline`
 rows show 64-pixel thumbnails and use
@@ -223,7 +227,7 @@ Tag
 
 Post
     project -> Project
-    number: unique within project
+    number: unique within project; non-positive for drafts and positive otherwise
     is_draft: administrative authoring state
     optional date
     link: /archive/<format link>/<number>/
@@ -243,9 +247,12 @@ uses reusable card choices: `row_card`, `photo_card`, `label_photo_card`, and
 `rated_photo_card`. A post belongs to exactly one project; its number determines
 its position and is unique within that project.
 `PostQuerySet.published()` is the shared backend boundary for excluding drafts.
-Every visitor-facing post queryset uses it, regardless of authentication; post
-counts use an equivalent filtered aggregate. Django Admin retains the unfiltered
-default manager and is the only place where drafts are visible.
+Lists, counts, tag filters, random selection, related-post prefetches, and
+adjacent navigation always use it. Direct detail and metadata queries omit this
+filter only for `is_staff` users; draft metadata is marked `noindex`. Django
+Admin retains the unfiltered default manager. Model validation and a database
+check constraint require non-positive draft numbers and positive published
+numbers.
 Additional post files are connected through `PostFile`, which stores their
 order. Its per-post order uniqueness constraint is deferred until transaction
 commit so Django Admin can swap existing positions without a transient
@@ -263,7 +270,9 @@ counts. List API and admin querysets opt into it explicitly, avoiding per-post
 queries without adding aggregation overhead to unrelated post queries.
 `PostQuerySet.with_adjacent_post_ids()` uses correlated subqueries scoped by
 `project_id` to annotate the nearest lower-numbered and higher-numbered post
-IDs. Gaps in numbering therefore require no special handling.
+IDs from published posts. Gaps in numbering therefore require no special
+handling. The detail view suppresses both annotations when the current post is
+a draft.
 
 Project status describes its lifecycle and does not control authorization.
 Project cards show no badge for `open`, a warm yellow-orange “на паузе” badge
@@ -361,16 +370,19 @@ root `media/` directory, whose contents are ignored by Git. Compose mounts it at
 `/media` in the backend container. Production deployment must preserve this
 directory independently of container replacement.
 
-Uploaded files are represented by the `File` model, retain their upload name in
-`original_name`, and store `file_type` as `photo`, `video`, `audio`, or `other`.
+Uploaded files are represented by the `File` model. Its editable `label` starts
+with the browser-provided upload name, while stored paths remain UUID-based.
+The model stores `file_type` as `photo`, `video`, `audio`, or `other`.
 The type is detected from the extension when a new file is uploaded. Stored
 files use the model UUID and are separated by role:
 non-image originals use `content/<UUID>.<extension>`, normalized image originals
 use `content/<UUID>.jpg`, and image thumbnails use `thumbnail/<UUID>.jpg`.
 Image originals are normally normalized to metadata-free JPEG at 90 percent
 quality and constrained to 1500 pixels on each axis without upscaling. Bulk
-upload can explicitly retain the uploaded original instead. Thumbnails are
-metadata-free 150-by-150 JPEGs produced with a centered square
+upload can explicitly retain the uploaded original instead. GIF uploads always
+retain their original bytes and `.gif` extension even when image compression is
+enabled, preserving animation; they still receive a static JPEG thumbnail.
+Thumbnails are metadata-free 150-by-150 JPEGs produced with a centered square
 crop and are upscaled when the source is smaller. Replacing an uploaded image
 regenerates the normalized original and thumbnail. `link` and `link_full`
 point to the stored original for every file, while `link_small` uses an image
@@ -490,11 +502,12 @@ updates the stage once from the new image or video dimensions. This avoids an
 intermediate zero-height layout without adding media dimensions to the API.
 
 Detail post responses expose `relatedPosts` as an array containing each visible
-related post's ID, number, model-generated link, display label, optional photo
-thumbnail, and date. The relation prefetch applies the same project-visibility
-rules as normal post access, annotates display-label file counts, and prefetches
-thumbnail candidates so rendering multiple related cards does not cause N+1
-queries. Results use project order followed by descending post number. The
+published related post's ID, number, model-generated link, display label,
+optional photo thumbnail, and date. Drafts are excluded even for staff, while a
+draft's own response may still contain its published relations. The relation
+prefetch applies the normal project-visibility rules, annotates display-label
+file counts, and prefetches thumbnail candidates so rendering multiple related
+cards does not cause N+1 queries. Results use project order followed by descending post number. The
 `PostPage` passes these summaries through the shared `PostRowList` renderer.
 `PostFooter` composes that result with the post's tags and adjacent-post
 navigation after every type-specific body; it does not reconstruct backend
@@ -502,7 +515,7 @@ routes.
 The detail queryset also annotates adjacent post IDs. The view loads both
 adjacent objects together with annotated display-label counts and exposes them
 as nullable `previousPost` and `nextPost` summaries containing `number`, `link`,
-and `label`. `PostPage` renders those summaries below the type-specific content,
+and `label`; both are null for a draft detail. `PostPage` renders those summaries below the type-specific content,
 using the current project name in the link text. `PostNavigation` truncates only
 the visible label portion to 80 Unicode characters, retains the full value in
 the accessible link label, permits breaks inside uninterrupted strings, and
