@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from django.db.models import Count, Prefetch, Q, QuerySet
 from django.db.models.fields.json import KeyTransform
+from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from apps.core.models import File
 
 from .models import Post, Project, Tag
 from .serializers import (
@@ -16,6 +22,38 @@ from .serializers import (
 )
 
 RANDOM_POST_TAG_CODE = "star"
+
+
+class IsSuperuser(BasePermission):
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        return bool(request.user.is_superuser)
+
+
+class TagListAdminView(APIView):
+    permission_classes = (IsSuperuser,)
+
+    def get(self, request: Request) -> Response:
+        return Response(dict(Tag.objects.values_list("code", "name")))
+
+
+class FileDetailAdminView(APIView):
+    permission_classes = (IsSuperuser,)
+
+    def get(self, request: Request, file_id: UUID) -> Response:
+        file = get_object_or_404(File, pk=file_id)
+        return Response({"id": str(file.id), "label": file.label})
+
+
+class ProjectPostTagsAdminView(APIView):
+    permission_classes = (IsSuperuser,)
+
+    def get(self, request: Request, project_code: str) -> Response:
+        project = get_object_or_404(Project, link=project_code)
+        posts = project.posts.published().prefetch_related("tags").order_by("number")
+        return Response({
+            str(post.number): [tag.code for tag in post.tags.all()]
+            for post in posts
+        })
 
 
 def visible_projects(user_is_authenticated: bool) -> QuerySet[Project]:
