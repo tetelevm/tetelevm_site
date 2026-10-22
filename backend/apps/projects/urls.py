@@ -1,10 +1,13 @@
 from django.urls import path, register_converter
 
 from .views import (
+    FileDetailAdminView,
     PostDetailView,
     ProjectListView,
+    ProjectPostTagsAdminView,
     ProjectPostsView,
     RandomPostView,
+    TagListAdminView,
 )
 
 app_name = "projects"
@@ -23,7 +26,18 @@ class SignedIntConverter:
 register_converter(SignedIntConverter, "signed_int")
 
 urlpatterns = [
+    path("tags/", TagListAdminView.as_view(), name="tag-list-admin"),
+    path(
+        "files/<uuid:file_id>/",
+        FileDetailAdminView.as_view(),
+        name="file-detail-admin",
+    ),
     path("random-post/", RandomPostView.as_view(), name="random-post"),
+    path(
+        "formats/<str:project_code>/post-tags/",
+        ProjectPostTagsAdminView.as_view(),
+        name="project-post-tags-admin",
+    ),
     path("formats/", ProjectListView.as_view(), name="project-list"),
     path(
         "formats/<str:project_code>/",

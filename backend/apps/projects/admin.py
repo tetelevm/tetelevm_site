@@ -21,6 +21,7 @@ POST_TYPE_EXTRA_FIELDS: dict[str, tuple[str, ...]] = {
     PostType.ANIME: (
         "extra_original_title",
         "extra_subtitle",
+        "extra_anime_year",
         "extra_anime_rating",
         "extra_result",
     ),
@@ -57,6 +58,7 @@ MANAGED_EXTRA_KEYS: frozenset[str] = frozenset(
         "md",
         "original_title",
         "subtitle",
+        "year",
         "rating",
         "result",
         "uniqueness",
@@ -81,6 +83,11 @@ class PostAdminForm(forms.ModelForm):
     )
     extra_subtitle = forms.CharField(
         label=_("Subtitle"),
+        required=False,
+    )
+    extra_anime_year = forms.IntegerField(
+        label=_("Release year"),
+        min_value=1,
         required=False,
     )
     extra_anime_rating = forms.IntegerField(
@@ -207,6 +214,7 @@ class PostAdminForm(forms.ModelForm):
                 {
                     "extra_original_title": extra.get("original_title", ""),
                     "extra_subtitle": extra.get("subtitle", ""),
+                    "extra_anime_year": extra.get("year"),
                     "extra_anime_rating": extra.get("rating"),
                     "extra_result": extra.get("result", ""),
                 }
@@ -266,6 +274,9 @@ class PostAdminForm(forms.ModelForm):
                     "result": self.cleaned_data["extra_result"],
                 }
             )
+            year = self.cleaned_data["extra_anime_year"]
+            if year is not None:
+                extra["year"] = year
             subtitle = self.cleaned_data["extra_subtitle"]
             if subtitle:
                 extra["subtitle"] = subtitle
@@ -387,6 +398,7 @@ class PostAdmin(admin.ModelAdmin):
                     "extra_md",
                     "extra_original_title",
                     "extra_subtitle",
+                    "extra_anime_year",
                     "extra_anime_rating",
                     "extra_result",
                     "extra_abandoned_rating",
