@@ -165,8 +165,9 @@ location values are present, the coordinates appear as an external map link
 directly below the post title and above its text.
 An anime post may include a subtitle string. When present, it appears in italics
 immediately after the post name on the same title line.
-An anime post may also store its release year in metadata without displaying it
-on the post page.
+An anime post may also store its release year in metadata. When present, the
+year appears in parentheses immediately after the original title on the post
+page.
 General posts display their body as plain text by default. An optional boolean
 flag enables Markdown rendering for an individual general post.
 Travel posts provide the same optional Markdown flag for their text body. It
