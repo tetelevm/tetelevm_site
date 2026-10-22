@@ -334,8 +334,8 @@ fields together in one block, enabling the subset selected by the format's
 `post_type`:
 
 - `post` and `travel` show the optional `md` checkbox;
-- `anime` shows `original_title`, optional `subtitle`, integer `rating` from 1 to
-  10, and the one-line `result`;
+- `anime` shows `original_title`, optional `subtitle`, optional integer release
+  `year`, integer `rating` from 1 to 10, and the one-line `result`;
 - `abandoned` shows float `rating` from 1 to 5, float location coordinates, a
   string location link, and four integer ratings from 1 to 5;
 - all other types leave every `extra` control disabled.

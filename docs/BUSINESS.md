@@ -56,6 +56,11 @@ The administrator is the site owner. The administrator can:
 - find related posts in the administrative selector by format name and post
   number, including combined queries such as `погулялки #10`;
 - open Django Admin from a staff-only icon in the public site header;
+- retrieve all tag codes and names, or a file's ID and label, through
+  read-only API endpoints available only to a superuser;
+- retrieve every published post number and its tag codes for a format through
+  a read-only API endpoint available only to a superuser, including posts with
+  no tags and excluding drafts;
 - manage the site through an administrative interface.
 
 ## Main areas
@@ -159,6 +164,8 @@ location values are present, the coordinates appear as an external map link
 directly below the post title and above its text.
 An anime post may include a subtitle string. When present, it appears in italics
 immediately after the post name on the same title line.
+An anime post may also store its release year in metadata without displaying it
+on the post page.
 General posts display their body as plain text by default. An optional boolean
 flag enables Markdown rendering for an individual general post.
 Travel posts provide the same optional Markdown flag for their text body. It

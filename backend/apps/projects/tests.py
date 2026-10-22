@@ -1,4 +1,5 @@
 import json
+import uuid
 from datetime import date
 
 from django import forms
@@ -296,6 +297,7 @@ class PostAdminTests(TestCase):
         self.post.extra = {
             "original_title": "Sousou no Frieren",
             "subtitle": "Сезон 2",
+            "year": 2023,
             "rating": 9,
             "result": "да",
         }
@@ -309,6 +311,7 @@ class PostAdminTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'value="Sousou no Frieren"')
         self.assertContains(response, 'value="Сезон 2"')
+        self.assertContains(response, 'value="2023"')
         self.assertContains(response, 'value="9"')
 
     def test_related_post_autocomplete_searches_project_and_number(self) -> None:
@@ -398,6 +401,7 @@ class PostAdminTests(TestCase):
         self.post.extra = {
             "original_title": "Sousou no Frieren",
             "subtitle": "Сезон 2",
+            "year": 2023,
             "rating": 9,
             "result": "да",
         }
@@ -410,6 +414,7 @@ class PostAdminTests(TestCase):
             "Sousou no Frieren",
         )
         self.assertEqual(form.initial["extra_subtitle"], "Сезон 2")
+        self.assertEqual(form.initial["extra_anime_year"], 2023)
         self.assertEqual(form.initial["extra_anime_rating"], 9)
         self.assertTrue(form.fields["extra_original_title"].required)
         self.assertFalse(form.fields["extra_subtitle"].required)
@@ -448,6 +453,7 @@ class PostAdminTests(TestCase):
                 "text": "",
                 "extra_original_title": "Title",
                 "extra_subtitle": "Сезон 2",
+                "extra_anime_year": 2023,
                 "extra_anime_rating": 9,
                 "extra_result": "да",
             },
@@ -458,6 +464,7 @@ class PostAdminTests(TestCase):
         post = form.save()
 
         self.assertEqual(post.extra["subtitle"], "Сезон 2")
+        self.assertEqual(post.extra["year"], 2023)
         self.assertNotIn("season", post.extra)
 
     def test_abandoned_extra_fields_are_serialized_and_preserve_unknowns(
@@ -551,6 +558,7 @@ class PostAdminTests(TestCase):
                 "extra_md",
                 "extra_original_title",
                 "extra_subtitle",
+                "extra_anime_year",
                 "extra_anime_rating",
                 "extra_result",
                 "extra_abandoned_rating",
@@ -611,6 +619,98 @@ class ProjectApiTests(APITestCase):
             "admin",
             password="admin",
         )
+
+    def test_tag_list_is_only_available_to_superuser(self) -> None:
+        Tag.objects.create(code="other", name="Other")
+        url = reverse("projects:tag-list-admin")
+
+        self.assertEqual(self.client.get(url).status_code, 403)
+        self.client.force_login(self.guest)
+        self.assertEqual(self.client.get(url).status_code, 403)
+
+        staff = get_user_model().objects.create_user(
+            "staff", password="staff", is_staff=True
+        )
+        self.client.force_login(staff)
+        self.assertEqual(self.client.get(url).status_code, 403)
+
+        self.client.force_login(self.admin)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, {"star": "Featured", "other": "Other"})
+
+    def test_file_detail_is_only_available_to_superuser(self) -> None:
+        self.cover.label = "Обложка.jpg"
+        self.cover.save(update_fields=("label",))
+        url = reverse(
+            "projects:file-detail-admin", kwargs={"file_id": self.cover.id}
+        )
+
+        self.assertEqual(self.client.get(url).status_code, 403)
+        self.client.force_login(self.guest)
+        self.assertEqual(self.client.get(url).status_code, 403)
+
+        staff = get_user_model().objects.create_user(
+            "staff", password="staff", is_staff=True
+        )
+        self.client.force_login(staff)
+        self.assertEqual(self.client.get(url).status_code, 403)
+
+        self.client.force_login(self.admin)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data,
+            {"id": str(self.cover.id), "label": "Обложка.jpg"},
+        )
+        missing_url = reverse(
+            "projects:file-detail-admin", kwargs={"file_id": uuid.uuid4()}
+        )
+        self.assertEqual(self.client.get(missing_url).status_code, 404)
+
+    def test_project_post_tags_requires_superuser(self) -> None:
+        url = reverse(
+            "projects:project-post-tags-admin",
+            kwargs={"project_code": "private"},
+        )
+        self.assertEqual(self.client.get(url).status_code, 403)
+        self.client.force_login(self.guest)
+        self.assertEqual(self.client.get(url).status_code, 403)
+
+        staff = get_user_model().objects.create_user(
+            "staff", password="staff", is_staff=True
+        )
+        self.client.force_login(staff)
+        self.assertEqual(self.client.get(url).status_code, 403)
+
+        self.client.force_login(self.admin)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, {"1": []})
+
+    def test_project_post_tags_includes_untagged_posts_but_not_drafts(self) -> None:
+        self.public_post.tags.add(self.star_tag)
+        Post.objects.create(project=self.public_project, number=3)
+        Post.objects.create(
+            project=self.public_project,
+            number=-1,
+            is_draft=True,
+        )
+        self.client.force_login(self.admin)
+
+        url = reverse(
+            "projects:project-post-tags-admin",
+            kwargs={"project_code": "public"},
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, {"1": ["star"], "3": []})
+
+        missing_url = reverse(
+            "projects:project-post-tags-admin",
+            kwargs={"project_code": "missing"},
+        )
+        self.assertEqual(self.client.get(missing_url).status_code, 404)
 
     def test_anonymous_user_only_sees_public_projects(self) -> None:
         response = self.client.get(reverse("projects:project-list"))
