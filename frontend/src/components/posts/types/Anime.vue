@@ -2,7 +2,7 @@
 import { computed } from "vue"
 
 import MediaFile from "../../media/MediaFile.vue"
-import PlainPostText from "../blocks/PlainPostText.vue"
+import MarkdownContent from "../blocks/MarkdownContent.vue"
 import PostLayout from "../blocks/PostLayout.vue"
 
 const props = defineProps({
@@ -35,7 +35,7 @@ const screenshots = computed(() =>
       </div>
     </div>
 
-    <PlainPostText :text="post.text" />
+    <MarkdownContent :source="post.text" />
 
     <p v-if="post.extra?.result" class="anime-post__result">
       <span>стоит смотреть:</span>

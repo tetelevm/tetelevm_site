@@ -9,3 +9,4 @@ backend/staticfiles/
 !/media/.gitkeep
 frontend/node_modules/
 frontend/dist/
+/site_export/

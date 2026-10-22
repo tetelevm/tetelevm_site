@@ -85,6 +85,7 @@ Russian and English for the current page visit; the selection is not persisted.
 The Content area contains material created by the site owner, including
 articles, notes, photographs, anime write-ups, long-form text, and media
 publications.
+Anime write-up bodies are always displayed as Markdown.
 
 The public section is named “Archive” and is available at `/archive/`. Its
 landing page shows formats, not a single feed mixing unrelated items. Each
