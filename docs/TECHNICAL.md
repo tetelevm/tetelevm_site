@@ -31,16 +31,39 @@ operational tasks, such as backups, restores, data imports, release helpers, or
 deployment automation. Application code and reusable Django or Vue logic do not
 belong there. Scripts should be added only when a real repeated operation needs
 automation.
-The backend image copies this directory to `/scripts`; it remains separate from
-the Django application in `/app` and is therefore available to production
-operators without turning one-off maintenance routines into management commands.
+The backend image copies this directory to `/app/scripts`, making its modules
+importable from Django shell while keeping one-off maintenance routines separate
+from management commands.
 `tidy_media.py` contains explicit operator-invoked functions for compacting
-published post numbers, rebuilding per-project file labels in batches, listing
-or deleting database file records unused by posts, and removing
-physical media files that have no database field reference.
+published post numbers in their current order or by ascending date (undated
+posts last, then existing number), rebuilding per-project file labels in batches,
+listing or deleting database file records unused by posts, and removing physical
+media files that have no database field reference.
+`download_site.py` is a standalone client configured by variables at the top
+of the file. It authenticates through the site's CSRF-protected session login,
+exports all tags to `<target>/tags.json` through the superuser-only tag API,
+then requests the superuser-only post-tag map for each format. It overwrites
+`<target>/<slug>/info/tag_list.json` with that map and downloads only post
+numbers absent from `info/saved_posts.txt`, appending each number after the post
+is saved. Each format directory also receives its cover converted to `main.jpg`
+and an `images/` directory. `info/saved_posts.txt` lists saved post numbers one
+per line. The `leksebi`, `gancdebi`, and `ikhvomedia` exporters write post text
+to `.txt` files; other formats retain the raw detail JSON until their exporters
+are implemented. Shared export steps write `info/related.json` as
+`{post_number: ["project/related_number"]}` and `info/photos.json` as
+`{post_number: {"main": filename_or_null, "files": [filenames]}}`. Originals
+from `mainFile`, `files`, and any extra file references returned by the format
+exporter are downloaded to `images/` under labels returned by the superuser-only
+file API. Format exporters currently return no extra files; future exporters
+can extract references embedded in post text. Existing saved posts missing
+metadata are fetched again to fill it (and their text is rewritten when photo
+metadata is missing). Removing a number from `saved_posts.txt` forces a fresh
+export of that post, overwriting its related/photo entries and downloaded files.
 
 The project is a monorepo. It is deliberately optimized for clarity and simple
 operation rather than independent service deployment or high traffic.
+Anime release year is an optional integer in `Post.extra.year`, edited through
+the dedicated Django Admin field and included in the existing post `extra` API.
 
 ## Production deployment
 
@@ -172,6 +195,13 @@ Expected read capabilities include:
 - projects visible to the current user;
 - details and items for a selected project;
 - individual item details when required by a project type.
+
+Three read-only administrative endpoints are restricted to `is_superuser` by a
+backend permission class: `GET /_api/tags/` returns a `{code: name}` object for
+all tags; `GET /_api/files/<uuid>/` returns a file's `id` and `label`; and
+`GET /_api/formats/<slug>/post-tags/` returns `{post_number: [tag_codes]}` for
+every published post in the format, including empty lists for untagged posts.
+Missing files or formats return 404. They use the existing Django session.
 
 ## Authentication and authorization
 
