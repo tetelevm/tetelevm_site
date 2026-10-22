@@ -154,7 +154,7 @@ Post:
 - a circular overall `extra.rating` sits to the right of the title block;
 - three square screenshots from the first three additional files appear below;
 - selecting a screenshot opens its original in a full-screen lightbox;
-- the main `text` follows;
+- the main `text` follows and is always rendered as Markdown;
 - the bottom row contains the Russian label “стоит смотреть:” (“worth
   watching:”) in slightly smaller uppercase text, followed by the italicized
   `extra.result`, without its own top divider.

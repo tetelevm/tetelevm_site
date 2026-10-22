@@ -40,23 +40,59 @@ posts last, then existing number), rebuilding per-project file labels in batches
 listing or deleting database file records unused by posts, and removing physical
 media files that have no database field reference.
 `download_site.py` is a standalone client configured by variables at the top
-of the file. It authenticates through the site's CSRF-protected session login,
-exports all tags to `<target>/tags.json` through the superuser-only tag API,
+of the file. It uses a `requests.Session` for the site's CSRF-protected login
+and subsequent downloads. It exports all tags to `<target>/tags.json` through
+the superuser-only tag API,
 then requests the superuser-only post-tag map for each format. It overwrites
-`<target>/<slug>/info/tag_list.json` with that map and downloads only post
+`<target>/<slug>/info/tag_list.json` with that map, saves the format's Markdown
+description to `info/description.md`, and downloads only post
 numbers absent from `info/saved_posts.txt`, appending each number after the post
 is saved. Each format directory also receives its cover converted to `main.jpg`
 and an `images/` directory. `info/saved_posts.txt` lists saved post numbers one
-per line. The `leksebi`, `gancdebi`, and `ikhvomedia` exporters write post text
-to `.txt` files; other formats retain the raw detail JSON until their exporters
-are implemented. Shared export steps write `info/related.json` as
+per line. An explicit slug-to-saver registry selects one dataclass per format.
+Each saver's `from_post` extracts its fields from the API post and the actual
+local names and types of downloaded media. Its `file` and `text` properties
+describe the output, and `write` saves it. The `leksebi`, `gancdebi`,
+`ikhvomedia`, and `nacherchebi` savers write post text to numbered `.txt` files.
+`natserebi` writes `<number>.md` with a title, body, italic date, and a relative
+link to its main image in `images/`.
+`nomrebi`, `nakhalebi`, `sakhlugeba`, and `karebi` each have a dedicated saver
+that updates a single `<target>/<slug>/posts.md`, ordered by post number and
+separated by Markdown horizontal rules. The shared `CombinedMarkdown` writer
+stores sections in `info/combined_entries.json` so forced re-exports replace
+the old section without duplicates. `nadzerpi` writes `<number>.md` with a dated
+main image, divider, and additional photos. `mokhetiale` and `mitovebuli` each write one
+Markdown file per year (`xxx.md` for undated posts), with their own section
+formatting and ordered photo links. Dates and emphasized post numbers use
+Markdown italics, while `mitovebuli` uses bold for its overall rating. The
+shared `YearlyMarkdown` writer keeps
+sections in `info/year_entries.json` to replace re-exported posts, including
+posts whose year changes. `publika` writes `<number>.md` with a title, italic
+date, and body. When the body contains Markdown images, its saver requests the
+paired negative-number draft, downloads the draft's attached files, and replaces
+image URLs with relative `images/` links while retaining alt text and image
+titles. `shenishvnebi` and `chasatseri` each use their own saver to write
+numbered sections in yearly Markdown files (`xxx.md` when undated), containing
+an optional name, italic date, text, main media, and additional attachments.
+For Markdown text (`extra.md`), they use the same negative-number draft lookup
+and image rewrite. Draft-only files are not appended again after the body, and
+published media already linked inside the body is not duplicated. Non-photo
+attachments use ordinary Markdown file links. `animeebi` has a dedicated saver
+that groups numbered sections by `post number // 1000` into `<group>.md`.
+Each section contains the post number, title, optional original title and
+release year, bold rating, Markdown body, recommendation result, and up to three
+additional photos. Its main image is downloaded and listed in `info/photos.json`
+but not repeated in the Markdown body. `info/animeebi_entries.json` records the
+sections so re-exporting a post replaces its section and can move it to a new
+group. Unmatched local images cause the export to fail so a post is not marked
+as saved with broken links. Formats without dedicated savers retain the raw
+detail JSON.
+Shared export steps write `info/related.json` as
 `{post_number: ["project/related_number"]}` and `info/photos.json` as
 `{post_number: {"main": filename_or_null, "files": [filenames]}}`. Originals
-from `mainFile`, `files`, and any extra file references returned by the format
-exporter are downloaded to `images/` under labels returned by the superuser-only
-file API. Format exporters currently return no extra files; future exporters
-can extract references embedded in post text. Existing saved posts missing
-metadata are fetched again to fill it (and their text is rewritten when photo
+from `mainFile` and `files` are downloaded to `images/` under labels returned by
+the superuser-only file API. Existing saved posts missing metadata are fetched
+again to fill it (and their text is rewritten when photo
 metadata is missing). Removing a number from `saved_posts.txt` forces a fresh
 export of that post, overwriting its related/photo entries and downloaded files.
 
