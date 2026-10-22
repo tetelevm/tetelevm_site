@@ -24,6 +24,13 @@ const hasSubtitle = computed(() =>
   Boolean(props.post.extra?.original_title || props.post.extra?.subtitle),
 )
 const hasRating = computed(() => props.post.extra?.rating != null)
+const originalTitle = computed(() => {
+  const title = props.post.extra?.original_title
+  if (!title) return ""
+
+  const year = props.post.extra?.year
+  return year != null ? `${title} (${year})` : title
+})
 </script>
 
 <template>
@@ -38,7 +45,7 @@ const hasRating = computed(() => props.post.extra?.rating != null)
       <PostHeader
         :title="post.name"
         :date="post.date"
-        :subtitle="post.extra?.original_title"
+        :subtitle="originalTitle"
         :title-suffix="post.extra?.subtitle"
         :rating="hasRating ? post.extra.rating : null"
         :title-size="hasSubtitle ? 'compact' : 'normal'"

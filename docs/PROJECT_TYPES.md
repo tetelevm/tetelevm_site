@@ -149,7 +149,8 @@ Post:
 - optional `extra.subtitle` appears in italics immediately after `name` on the
   same title line; when both no longer fit, the subtitle moves separately rather
   than taking the title's final word with it;
-- `extra.original_title` appears directly below it in italics;
+- `extra.original_title` appears directly below it in italics, followed by the
+  optional release year in parentheses;
 - an optional post date appears directly below the name;
 - a circular overall `extra.rating` sits to the right of the title block;
 - three square screenshots from the first three additional files appear below;

@@ -133,6 +133,10 @@ msgstr "Оригинальное название"
 msgid "Subtitle"
 msgstr "Подзаголовок"
 
+#: apps/projects/admin.py:89
+msgid "Release year"
+msgstr "Год выпуска"
+
 #: apps/projects/admin.py:86 apps/projects/admin.py:96
 msgid "Rating"
 msgstr "Оценка"
