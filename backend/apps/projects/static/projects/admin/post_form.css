@@ -6,10 +6,6 @@
   max-width: 45vw;
 }
 
-#id_extra_subtitle {
-  width: 20em;
-}
-
 #id_extra_location_latitude,
 #id_extra_location_longitude {
   width: 14em;

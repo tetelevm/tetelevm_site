@@ -20,9 +20,7 @@ const props = defineProps({
   },
 })
 
-const hasSubtitle = computed(() =>
-  Boolean(props.post.extra?.original_title || props.post.extra?.subtitle),
-)
+const hasOriginalTitle = computed(() => Boolean(props.post.extra?.original_title))
 const hasRating = computed(() => props.post.extra?.rating != null)
 const originalTitle = computed(() => {
   const title = props.post.extra?.original_title
@@ -45,11 +43,10 @@ const originalTitle = computed(() => {
       <PostHeader
         :title="post.name"
         :date="post.date"
-        :subtitle="originalTitle"
-        :title-suffix="post.extra?.subtitle"
+        :original-title="originalTitle"
         :rating="hasRating ? post.extra.rating : null"
-        :title-size="hasSubtitle ? 'compact' : 'normal'"
-        :divided="hasSubtitle"
+        :title-size="hasOriginalTitle ? 'compact' : 'normal'"
+        :divided="hasOriginalTitle"
       />
       <slot name="header-extra" />
     </div>

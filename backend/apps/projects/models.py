@@ -304,6 +304,8 @@ class Post(models.Model):
 
     def clean(self) -> None:
         super().clean()
+        if self.number is None:
+            return
         if self.is_draft and self.number > 0:
             raise ValidationError(
                 {

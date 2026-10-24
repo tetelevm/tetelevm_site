@@ -115,6 +115,17 @@ class PostDisplayLabelTests(TestCase):
             is_draft=False,
         ).full_clean()
 
+    def test_missing_post_number_raises_validation_error(self) -> None:
+        for is_draft in (False, True):
+            with self.subTest(is_draft=is_draft):
+                with self.assertRaises(ValidationError) as error:
+                    Post(
+                        project=self.project,
+                        number=None,
+                        is_draft=is_draft,
+                    ).full_clean()
+                self.assertIn("number", error.exception.message_dict)
+
     def test_display_label_truncates_long_text(self) -> None:
         post = Post.objects.create(
             project=self.project,
@@ -194,6 +205,38 @@ class PostAdminTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "📷 1")
+
+    def test_missing_post_number_shows_form_error(self) -> None:
+        self.client.force_login(self.admin)
+
+        for is_draft in (False, True):
+            for change in (False, True):
+                with self.subTest(is_draft=is_draft, change=change):
+                    url = reverse(
+                        "admin:projects_post_change" if change else "admin:projects_post_add",
+                        args=(self.post.pk,) if change else (),
+                    )
+                    response = self.client.post(
+                        url,
+                        {
+                            "project": self.project.pk,
+                            "number": "",
+                            "is_draft": "on" if is_draft else "",
+                            "name": "",
+                            "date": "",
+                            "main_file": "",
+                            "text": "",
+                            "post_files-TOTAL_FORMS": "0",
+                            "post_files-INITIAL_FORMS": "0",
+                            "post_files-MIN_NUM_FORMS": "0",
+                            "post_files-MAX_NUM_FORMS": "1000",
+                        },
+                    )
+
+                    self.assertEqual(response.status_code, 200)
+                    self.assertIn(
+                        "number", response.context["adminform"].form.errors
+                    )
 
     def test_project_description_mentions_markdown_and_spoilers(self) -> None:
         self.client.force_login(self.admin)
@@ -296,7 +339,6 @@ class PostAdminTests(TestCase):
         self.project.save(update_fields=("post_type",))
         self.post.extra = {
             "original_title": "Sousou no Frieren",
-            "subtitle": "Сезон 2",
             "year": 2023,
             "rating": 9,
             "result": "да",
@@ -310,7 +352,7 @@ class PostAdminTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'value="Sousou no Frieren"')
-        self.assertContains(response, 'value="Сезон 2"')
+        self.assertNotContains(response, 'name="extra_subtitle"')
         self.assertContains(response, 'value="2023"')
         self.assertContains(response, 'value="9"')
 
@@ -400,7 +442,6 @@ class PostAdminTests(TestCase):
         self.project.save(update_fields=("post_type",))
         self.post.extra = {
             "original_title": "Sousou no Frieren",
-            "subtitle": "Сезон 2",
             "year": 2023,
             "rating": 9,
             "result": "да",
@@ -413,11 +454,10 @@ class PostAdminTests(TestCase):
             form.initial["extra_original_title"],
             "Sousou no Frieren",
         )
-        self.assertEqual(form.initial["extra_subtitle"], "Сезон 2")
         self.assertEqual(form.initial["extra_anime_year"], 2023)
         self.assertEqual(form.initial["extra_anime_rating"], 9)
         self.assertTrue(form.fields["extra_original_title"].required)
-        self.assertFalse(form.fields["extra_subtitle"].required)
+        self.assertNotIn("extra_subtitle", form.fields)
         self.assertFalse(form.fields["extra_anime_rating"].disabled)
         self.assertEqual(form.fields["extra_anime_rating"].min_value, 1)
         self.assertEqual(form.fields["extra_anime_rating"].max_value, 10)
@@ -442,9 +482,11 @@ class PostAdminTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("extra_anime_rating", form.errors)
 
-    def test_anime_subtitle_is_serialized(self) -> None:
+    def test_anime_save_removes_legacy_subtitle(self) -> None:
         self.project.post_type = PostType.ANIME
         self.project.save(update_fields=("post_type",))
+        self.post.extra = {"subtitle": "Сезон 2"}
+        self.post.save(update_fields=("extra",))
         form = PostAdminForm(
             data={
                 "project": self.project.id,
@@ -452,7 +494,6 @@ class PostAdminTests(TestCase):
                 "name": "",
                 "text": "",
                 "extra_original_title": "Title",
-                "extra_subtitle": "Сезон 2",
                 "extra_anime_year": 2023,
                 "extra_anime_rating": 9,
                 "extra_result": "да",
@@ -463,9 +504,8 @@ class PostAdminTests(TestCase):
         self.assertTrue(form.is_valid(), form.errors)
         post = form.save()
 
-        self.assertEqual(post.extra["subtitle"], "Сезон 2")
+        self.assertNotIn("subtitle", post.extra)
         self.assertEqual(post.extra["year"], 2023)
-        self.assertNotIn("season", post.extra)
 
     def test_abandoned_extra_fields_are_serialized_and_preserve_unknowns(
         self,
@@ -557,7 +597,6 @@ class PostAdminTests(TestCase):
             (
                 "extra_md",
                 "extra_original_title",
-                "extra_subtitle",
                 "extra_anime_year",
                 "extra_anime_rating",
                 "extra_result",
