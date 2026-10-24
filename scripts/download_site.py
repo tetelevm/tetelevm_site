@@ -13,12 +13,27 @@ import requests
 from PIL import Image, ImageOps
 
 
-SITE_URL = "https://example.com"
-TARGET = Path("./site_export")
-USERNAME = ""
-PASSWORD = ""
+SITE_URL = "https://tetelevm.ru"
+TARGET = Path("/home/t/tetelevm/")
+USERNAME = "REMOVED_USERNAME"
+PASSWORD = "REMOVED_PASSWORD"
 PROJECTS = [
-    "project-slug",
+    "animeebi",
+    "chasatseri",
+    "gancdebi",
+    "ikhvomedia",
+    "karebi",
+    "leksebi",
+    "mitovebuli",
+    "mokhetiale",
+    "nacherchebi",
+    "nadzerpi",
+    "nakhalebi",
+    "natserebi",
+    "nomrebi",
+    "publika",
+    "sakhlugeba",
+    "shenishvnebi",
 ]
 
 

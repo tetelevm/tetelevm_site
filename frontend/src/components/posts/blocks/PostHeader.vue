@@ -12,11 +12,7 @@ defineProps({
     type: String,
     default: "",
   },
-  subtitle: {
-    type: String,
-    default: "",
-  },
-  titleSuffix: {
+  originalTitle: {
     type: String,
     default: "",
   },
@@ -38,15 +34,14 @@ defineProps({
 
 <template>
   <header
-    v-if="title || date || subtitle || titleSuffix || rating != null"
+    v-if="title || date || originalTitle || rating != null"
     class="post-header"
     :class="{ 'post-header--divided': divided }"
   >
     <PostTitle
-      v-if="title || subtitle || titleSuffix"
+      v-if="title || originalTitle"
       :title="title"
-      :subtitle="subtitle"
-      :suffix="titleSuffix"
+      :original-title="originalTitle"
       :size="titleSize"
     >
       <time v-if="date" class="post-header__date" :datetime="date">

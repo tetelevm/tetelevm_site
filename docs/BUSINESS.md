@@ -163,8 +163,6 @@ behavior are specified in `docs/PROJECT_TYPES.md`.
 An abandoned-building post may include linked latitude and longitude. When all
 location values are present, the coordinates appear as an external map link
 directly below the post title and above its text.
-An anime post may include a subtitle string. When present, it appears in italics
-immediately after the post name on the same title line.
 An anime post may also store its release year in metadata. When present, the
 year appears in parentheses immediately after the original title on the post
 page.

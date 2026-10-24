@@ -188,12 +188,12 @@ mobile.
 For general and travel posts the Markdown checkbox writes a JSON boolean; each
 detail component uses `MarkdownContent` for its text only when the value is
 `true` and otherwise keeps the plain-text renderer. Travel carousel selection
-is independent of this flag. Anime's optional `subtitle` is rendered inline in italics
-after the post name; `PostTitle` places an explicit line-break opportunity
-before it so the suffix wraps independently. Abandoned posts store `latitude`,
+is independent of this flag. Abandoned posts store `latitude`,
 `longitude`, and `link` below a nested `location` key. Their Vue detail
 component renders complete locations as an `http(s)` external link and ignores
 incomplete or unsafe values.
+The anime subtitle field has been retired. Admin saves discard its legacy
+`subtitle` key from post metadata.
 
 Relations to potentially large collections use Django Admin's built-in AJAX
 autocomplete widgets. They keep the default 20-result pages and load further
@@ -475,7 +475,7 @@ and avoid runtime requests to third-party font services.
 
 Every detail component passes its post to `PostLayout`, which renders the
 shared conditional `PostHeader` once. Name and date appear when present; anime
-adds its original title, subtitle, and rating, while abandoned-building posts add
+adds its original title and rating, while abandoned-building posts add
 their rating. Type components retain only body presentation and optional
 header-adjacent content such as abandoned-building coordinates.
 
@@ -527,7 +527,7 @@ The shared frontend building blocks are:
   spacing of detail posts;
 - `PostHeader` for optional title, date, type-specific title metadata, and
   overall rating;
-- `PostTitle` for shared detail-title and optional subtitle typography;
+- `PostTitle` for shared detail-title and original-title typography;
 - `PlainPostText` for consistently styled plain-text post bodies;
 - `PostImage` for aspect-ratio-preserving natural-size or framed standalone
   images, optionally using the shared lightbox;

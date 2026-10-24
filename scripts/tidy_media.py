@@ -101,17 +101,8 @@ def relabel_project_files(project_code: str) -> int:
         .prefetch_related(post_files)
         .order_by("number", "id")
     )
-    pending: dict[object, File] = {}
-    updated = 0
-
-    def flush() -> None:
-        nonlocal updated
-        if not pending:
-            return
-        files = list(pending.values())
-        File.objects.bulk_update(files, ("label",), batch_size=BATCH_SIZE)
-        updated += len(files)
-        pending.clear()
+    files_by_id: dict[object, File] = {}
+    original_labels: dict[object, str] = {}
 
     for post in posts.iterator(chunk_size=BATCH_SIZE):
         post_number = f"d{abs(post.number)}" if post.is_draft else str(post.number)
@@ -126,14 +117,19 @@ def relabel_project_files(project_code: str) -> int:
                 unique_files.append(file)
         for file_number, file in enumerate(unique_files, start=1):
             extension = Path(file.content.name).suffix.lower()
-            file.label = (
-                f"{project_code}_{post_number}_{file_number}{extension}"
-            )
-            pending[file.pk] = file
-            if len(pending) >= BATCH_SIZE:
-                flush()
+            label = f"{project_code}_{post_number}_{file_number}{extension}"
+            original_labels.setdefault(file.pk, file.label)
+            file.label = label
+            files_by_id[file.pk] = file
 
-    flush()
+    changed_files = [
+        file
+        for file_id, file in files_by_id.items()
+        if file.label != original_labels[file_id]
+    ]
+    if changed_files:
+        File.objects.bulk_update(changed_files, ("label",), batch_size=BATCH_SIZE)
+    updated = len(changed_files)
     print(f"Обновлено меток файлов: {updated}")
     return updated
 

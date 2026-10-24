@@ -58,8 +58,8 @@ combined independently with detail post types. The supported list codes are
   presentation is intentionally image-only, while still using the label for
   accessible image text.
 - Anime and abandoned-building headers additionally show their type-specific
-  overall rating when present. Anime also shows its optional original title and
-  subtitle in the shared header.
+  overall rating when present. Anime also shows its original title in the
+  shared header.
 - Detail pages compose the shared `PostLayout`, `PostHeader`, `PostTitle`, `PlainPostText`,
   `PostImage`, media, and connection blocks where applicable. Type components
   retain only their data selection and genuinely type-specific markup.
@@ -146,9 +146,6 @@ Post:
 
 - a moderately sized `name` appears at the top, followed by a divider with
   spacing between the title block and the line;
-- optional `extra.subtitle` appears in italics immediately after `name` on the
-  same title line; when both no longer fit, the subtitle moves separately rather
-  than taking the title's final word with it;
 - `extra.original_title` appears directly below it in italics, followed by the
   optional release year in parentheses;
 - an optional post date appears directly below the name;
@@ -165,14 +162,13 @@ Expected `extra` structure:
 ```json
 {
   "original_title": "Sousou no Frieren",
-  "subtitle": "Сезон 2",
   "rating": 9,
   "result": "точно да"
 }
 ```
 
-`original_title` and the one-line `result` are required strings, `subtitle` is an
-optional string, and `rating` is an integer from 1 through 10 inclusive.
+`original_title` and the one-line `result` are required strings, and `rating`
+is an integer from 1 through 10 inclusive.
 
 The model and admin currently do not enforce exactly three screenshots. Missing
 files produce empty slots, while additional files beyond the first three are
@@ -335,7 +331,7 @@ fields together in one block, enabling the subset selected by the format's
 `post_type`:
 
 - `post` and `travel` show the optional `md` checkbox;
-- `anime` shows `original_title`, optional `subtitle`, optional integer release
+- `anime` shows `original_title`, optional integer release
   `year`, integer `rating` from 1 to 10, and the one-line `result`;
 - `abandoned` shows float `rating` from 1 to 5, float location coordinates, a
   string location link, and four integer ratings from 1 to 5;
