@@ -39,10 +39,14 @@ published post numbers in their current order or by ascending date (undated
 posts last, then existing number), rebuilding per-project file labels in batches,
 listing or deleting database file records unused by posts, and removing physical
 media files that have no database field reference.
-`download_site.py` is a standalone client configured by variables at the top
-of the file, with credentials supplied through the `SITE_DOWNLOAD_USERNAME`
-and `SITE_DOWNLOAD_PASSWORD` environment variables. It exits before making
-requests when either credential is missing. It uses a `requests.Session` for the site's CSRF-protected login
+`download_site.py` is a standalone client configured by `scripts/.env`, loaded
+with `python-dotenv` from the script's directory. It reads `SITE_URL`, `TARGET`,
+`USERNAME`, `PASSWORD`, and comma-separated `PROJECTS` without variable
+interpolation or process-environment overrides. All five settings are required;
+missing values stop the script before any requests. Relative target paths are
+resolved from the working directory. The local configuration is ignored by Git
+and excluded from Docker images; `scripts/.env.example` documents the format.
+It uses a `requests.Session` for the site's CSRF-protected login
 and subsequent downloads. It exports all tags to `<target>/tags.json` through
 the superuser-only tag API,
 then requests the superuser-only post-tag map for each format. It overwrites

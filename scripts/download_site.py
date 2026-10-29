@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import filecmp
 import json
-import os
 import re
 import shutil
 from dataclasses import dataclass
@@ -11,30 +10,20 @@ from typing import Any, Self
 from urllib.parse import quote, unquote, urljoin, urlsplit
 
 import requests
+from dotenv import dotenv_values
 from PIL import Image, ImageOps
 
 
-SITE_URL = "https://tetelevm.ru"
-TARGET = Path("/home/t/tetelevm/")
-USERNAME = os.environ.get("SITE_DOWNLOAD_USERNAME", "")
-PASSWORD = os.environ.get("SITE_DOWNLOAD_PASSWORD", "")
+CONFIG_PATH = Path(__file__).with_name(".env")
+CONFIG = dotenv_values(CONFIG_PATH, interpolate=False)
+SITE_URL = CONFIG.get("SITE_URL") or ""
+TARGET = Path(CONFIG.get("TARGET") or "./site_export")
+USERNAME = CONFIG.get("USERNAME") or ""
+PASSWORD = CONFIG.get("PASSWORD") or ""
 PROJECTS = [
-    "animeebi",
-    "chasatseri",
-    "gancdebi",
-    "ikhvomedia",
-    "karebi",
-    "leksebi",
-    "mitovebuli",
-    "mokhetiale",
-    "nacherchebi",
-    "nadzerpi",
-    "nakhalebi",
-    "natserebi",
-    "nomrebi",
-    "publika",
-    "sakhlugeba",
-    "shenishvnebi",
+    slug.strip()
+    for slug in (CONFIG.get("PROJECTS") or "").split(",")
+    if slug.strip()
 ]
 
 
@@ -1042,6 +1031,12 @@ class SiteDownloader:
 
 
 if __name__ == "__main__":
-    if not USERNAME or not PASSWORD:
-        raise SystemExit("Set SITE_DOWNLOAD_USERNAME and SITE_DOWNLOAD_PASSWORD before running.")
+    missing = [
+        key for key in ("SITE_URL", "TARGET", "USERNAME", "PASSWORD", "PROJECTS")
+        if not (CONFIG.get(key) or "").strip()
+    ]
+    if missing or not PROJECTS:
+        raise SystemExit(
+            f"Set {', '.join(missing) or 'PROJECTS'} in {CONFIG_PATH} before running."
+        )
     SiteDownloader(SITE_URL, TARGET).run(USERNAME, PASSWORD, PROJECTS)
