@@ -40,7 +40,9 @@ posts last, then existing number), rebuilding per-project file labels in batches
 listing or deleting database file records unused by posts, and removing physical
 media files that have no database field reference.
 `download_site.py` is a standalone client configured by variables at the top
-of the file. It uses a `requests.Session` for the site's CSRF-protected login
+of the file, with credentials supplied through the `SITE_DOWNLOAD_USERNAME`
+and `SITE_DOWNLOAD_PASSWORD` environment variables. It exits before making
+requests when either credential is missing. It uses a `requests.Session` for the site's CSRF-protected login
 and subsequent downloads. It exports all tags to `<target>/tags.json` through
 the superuser-only tag API,
 then requests the superuser-only post-tag map for each format. It overwrites

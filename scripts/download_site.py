@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import filecmp
 import json
+import os
 import re
 import shutil
 from dataclasses import dataclass
@@ -15,8 +16,8 @@ from PIL import Image, ImageOps
 
 SITE_URL = "https://tetelevm.ru"
 TARGET = Path("/home/t/tetelevm/")
-USERNAME = "REMOVED_USERNAME"
-PASSWORD = "REMOVED_PASSWORD"
+USERNAME = os.environ.get("SITE_DOWNLOAD_USERNAME", "")
+PASSWORD = os.environ.get("SITE_DOWNLOAD_PASSWORD", "")
 PROJECTS = [
     "animeebi",
     "chasatseri",
@@ -1041,4 +1042,6 @@ class SiteDownloader:
 
 
 if __name__ == "__main__":
+    if not USERNAME or not PASSWORD:
+        raise SystemExit("Set SITE_DOWNLOAD_USERNAME and SITE_DOWNLOAD_PASSWORD before running.")
     SiteDownloader(SITE_URL, TARGET).run(USERNAME, PASSWORD, PROJECTS)
