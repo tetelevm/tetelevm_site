@@ -6,12 +6,17 @@ from copy import deepcopy
 from typing import Any
 
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.core.exceptions import PermissionDenied
 from django.db.models import QuerySet
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import redirect
+from django.template.response import TemplateResponse
+from django.urls import path
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
+from .maintenance import relabel_project_files
 from .models import Post, PostFile, PostType, Project, Tag
 
 
@@ -365,6 +370,45 @@ class PostFileInline(admin.TabularInline):
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
+    change_list_template = "admin/projects/post/change_list.html"
+
+    def get_urls(self) -> list[Any]:
+        return [
+            path(
+                "relabel-project-files/",
+                self.admin_site.admin_view(self.relabel_files_view),
+                name="projects_post_relabel_files",
+            )
+        ] + super().get_urls()
+
+    def relabel_files_view(self, request: HttpRequest) -> HttpResponse:
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        if request.method == "POST":
+            count = relabel_project_files()
+            self.message_user(
+                request, f"Обновлено меток файлов: {count}.", messages.SUCCESS
+            )
+            return redirect("admin:projects_post_changelist")
+        return TemplateResponse(
+            request,
+            "admin/maintenance_confirm.html",
+            {
+                **self.admin_site.each_context(request),
+                "opts": self.model._meta,
+                "title": "Обновить метки файлов",
+                "description": (
+                    "Обработать все посты всех форматов, включая черновики, "
+                    "независимо от фильтров списка.\bМетки получат вид "
+                    "код_номер_позиция.расширение (для черновиков — d перед номером). "
+                    "Главный файл идёт первым, затем вложения по порядку без повторов.\n"
+                    "Для общего файла побеждает последний пост в порядке ID формата "
+                    "и номера поста. Ручные метки будут перезаписаны."
+                ),
+                "back_url": "admin:projects_post_changelist",
+            },
+        )
+
     form = PostAdminForm
     fieldsets = (
         (

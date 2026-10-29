@@ -9,5 +9,9 @@
       </a>
     </li>
   {% endif %}
+  <li><a href="{% url 'admin:core_file_changelist' %}?orphan=yes">Найти непривязанные файлы</a></li>
+  {% if request.user.is_superuser %}
+    <li><a href="{% url 'admin:core_file_tidy_media' %}">Очистить медиа</a></li>
+  {% endif %}
   {{ block.super }}
 {% endblock %}

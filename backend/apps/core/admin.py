@@ -4,6 +4,7 @@ from typing import Any
 
 from django.contrib import admin, messages
 from django.core.exceptions import PermissionDenied
+from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
@@ -12,7 +13,25 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from .forms import BulkFileUploadForm
+from .maintenance import find_orphan_files, tidy_media
 from .models import File, FileType
+
+
+class OrphanFileFilter(admin.SimpleListFilter):
+    title = "Использование"
+    parameter_name = "orphan"
+
+    def lookups(
+        self, request: HttpRequest, model_admin: admin.ModelAdmin
+    ) -> tuple[tuple[str, str], ...]:
+        return (("yes", "Непривязанные файлы"),)
+
+    def queryset(
+        self, request: HttpRequest, queryset: QuerySet[File]
+    ) -> QuerySet[File]:
+        if self.value() == "yes":
+            return queryset.filter(pk__in=find_orphan_files().values("pk"))
+        return queryset
 
 
 @admin.register(File)
@@ -33,7 +52,7 @@ class FileAdmin(admin.ModelAdmin):
         "file_type",
         "uploaded_at",
     )
-    list_filter = ("file_type",)
+    list_filter = ("file_type", OrphanFileFilter)
     search_fields = ("label",)
     ordering = ("-uploaded_at",)
 
@@ -65,12 +84,42 @@ class FileAdmin(admin.ModelAdmin):
     def get_urls(self) -> list[Any]:
         custom_urls = [
             path(
+                "tidy-media/",
+                self.admin_site.admin_view(self.tidy_media_view),
+                name="core_file_tidy_media",
+            ),
+            path(
                 "bulk-upload/",
                 self.admin_site.admin_view(self.bulk_upload_view),
                 name="core_file_bulk_upload",
             ),
         ]
         return custom_urls + super().get_urls()
+
+    def tidy_media_view(self, request: HttpRequest) -> HttpResponse:
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        if request.method == "POST":
+            count = tidy_media()
+            self.message_user(
+                request, f"Удалено файлов с диска: {count}.", messages.SUCCESS
+            )
+            return redirect("admin:core_file_changelist")
+        return TemplateResponse(
+            request,
+            "admin/maintenance_confirm.html",
+            {
+                **self.admin_site.each_context(request),
+                "opts": self.model._meta,
+                "title": "Очистить медиафайлы",
+                "description": (
+                    "Удалить с диска все файлы без ссылки в полях оригинала "
+                    "или миниатюры в базе.\nЗаписи файлов в базе сохраняются.\n"
+                    "Удаление необратимо."
+                ),
+                "back_url": "admin:core_file_changelist",
+            },
+        )
 
     def bulk_upload_view(self, request: HttpRequest) -> HttpResponse:
         if not self.has_add_permission(request):
