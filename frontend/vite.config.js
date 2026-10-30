@@ -26,6 +26,10 @@ export default defineConfig({
   plugins: [vue(), caddyTemplates],
   server: {
     proxy: {
+      "/r/": {
+        target: "http://backend:8000",
+        changeOrigin: true,
+      },
       "/_api": {
         target: "http://backend:8000",
         changeOrigin: true,

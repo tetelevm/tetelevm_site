@@ -1,6 +1,12 @@
 {$DOMAIN:?DOMAIN environment variable is required} {
 	encode zstd gzip
 
+	handle /r/* {
+		reverse_proxy backend:8000 {
+			header_up X-Forwarded-Proto https
+		}
+	}
+
 	handle /robots.txt {
 		reverse_proxy backend:8000 {
 			header_up X-Forwarded-Proto https
