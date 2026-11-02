@@ -125,8 +125,7 @@ class File(models.Model):
                     original, thumbnail = generated
                     self._delete_stored_files(previous_names)
                     should_compress = (
-                        compress_image
-                        and Path(self.label).suffix.lower() != ".gif"
+                        compress_image and Path(self.label).suffix.lower() != ".gif"
                     )
                     if should_compress:
                         self.content.save(
@@ -158,10 +157,15 @@ class File(models.Model):
     def _stored_file_names(self) -> set[str]:
         if self._state.adding:
             return set()
-        stored = type(self).objects.filter(pk=self.pk).values(
-            "content",
-            "thumbnail",
-        ).first()
+        stored = (
+            type(self)
+            .objects.filter(pk=self.pk)
+            .values(
+                "content",
+                "thumbnail",
+            )
+            .first()
+        )
         return {name for name in (stored or {}).values() if name}
 
     def _delete_stored_files(self, names: set[str]) -> None:
@@ -200,3 +204,51 @@ class File(models.Model):
 
     def __str__(self) -> str:
         return self.label or str(self.id)
+
+
+class Profile(models.Model):
+    language = models.CharField(
+        "Язык",
+        max_length=2,
+        choices=(("ru", "Русский"), ("en", "English")),
+        unique=True,
+    )
+    data = models.JSONField("Содержимое", default=dict)
+
+    class Meta:
+        verbose_name = "Визитка"
+        verbose_name_plural = "Визитки"
+
+    def clean(self) -> None:
+        from django.core.exceptions import ValidationError
+
+        from .profile_schema import ProfileContentForm, flatten_content
+
+        if not isinstance(self.data, dict) or not isinstance(
+            self.data.get("contacts"), dict
+        ):
+            raise ValidationError("Содержимое визитки должно иметь заданную структуру.")
+        if any(
+            not isinstance(contact, dict) for contact in self.data["contacts"].values()
+        ):
+            raise ValidationError("Контакты должны быть объектами.")
+        if type(self.data.get("lookingForWork")) is not bool:
+            raise ValidationError(
+                "Статус поиска работы должен быть логическим значением."
+            )
+        form = ProfileContentForm(data=flatten_content(self.data))
+        if not form.is_valid():
+            raise ValidationError(
+                [
+                    f"{field}: {', '.join(errors)}"
+                    for field, errors in form.errors.items()
+                ]
+            )
+        self.data = form.as_content()
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return f"Визитка — {self.get_language_display()}"

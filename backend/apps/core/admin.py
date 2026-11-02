@@ -12,6 +12,7 @@ from django.urls import path
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
+from . import profile_admin  # noqa: F401
 from .forms import BulkFileUploadForm
 from .maintenance import find_orphan_files, tidy_media
 from .models import File, FileType
@@ -73,9 +74,7 @@ class FileAdmin(admin.ModelAdmin):
     ) -> tuple[str, ...]:
         fields = tuple(super().get_fields(request, obj))
         if obj is None:
-            return tuple(
-                field for field in fields if field != "original_file_link"
-            )
+            return tuple(field for field in fields if field != "original_file_link")
         return (
             "original_file_link",
             *(field for field in fields if field != "original_file_link"),

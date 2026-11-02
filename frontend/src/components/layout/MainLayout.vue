@@ -34,6 +34,10 @@ defineProps({
       <slot />
     </main>
 
+    <div v-if="$slots['before-footer']" class="main-layout__before-footer">
+      <slot name="before-footer" />
+    </div>
+
     <AppFooter :language="language" />
   </div>
 </template>
@@ -87,5 +91,12 @@ defineProps({
 
 .main-layout__subheader + .main-layout__content {
   padding-top: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.main-layout__before-footer {
+  position: relative;
+  width: min(100% - 2rem, 800px);
+  margin-inline: auto;
+  padding-bottom: 1rem;
 }
 </style>

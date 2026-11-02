@@ -38,9 +38,7 @@ class BulkFileUploadForm(forms.Form):
         label=_("Compress images"),
         required=False,
         initial=True,
-        help_text=_(
-            "Resize image originals to 1500 pixels and save them as JPEG."
-        ),
+        help_text=_("Resize image originals to 1500 pixels and save them as JPEG."),
     )
 
     def clean(self) -> dict[str, Any]:
