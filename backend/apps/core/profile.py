@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import File, Profile
+from .profile_schema import CONTACT_KEYS, TEXT_FIELDS
 
 
 class ProfileView(APIView):
@@ -19,18 +20,26 @@ class ProfileView(APIView):
         if language not in {"ru", "en"}:
             raise Http404
         profile = get_object_or_404(Profile, language=language)
-        data = dict(profile.data)
+        data = {key: profile.data.get(key, "") for key in TEXT_FIELDS}
+        data["lookingForWork"] = profile.data["lookingForWork"]
+        data["contacts"] = {
+            key: {
+                part: profile.data["contacts"].get(key, {}).get(part, "")
+                for part in ("value", "url")
+            }
+            for key in CONTACT_KEYS
+        }
         file_ids = [
-            data[key]
+            profile.data[key]
             for key in ("photoFile", "resumePreviewFile", "resumeFile")
-            if data.get(key)
+            if profile.data.get(key)
         ]
         files = {
             str(file.pk): file.link for file in File.objects.filter(pk__in=file_ids)
         }
-        data["photoUrl"] = files.get(data.pop("photoFile", None))
-        data["resumePreviewUrl"] = files.get(data.pop("resumePreviewFile", None))
-        data["resumeUrl"] = files.get(data.pop("resumeFile", None))
+        data["photoUrl"] = files.get(profile.data.get("photoFile"))
+        data["resumePreviewUrl"] = files.get(profile.data.get("resumePreviewFile"))
+        data["resumeUrl"] = files.get(profile.data.get("resumeFile"))
         email = data["contacts"]["email"]
         if email["url"]:
             email["url"] = f"mailto:{email['url']}"

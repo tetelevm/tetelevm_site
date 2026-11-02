@@ -45,9 +45,7 @@ class ProfileAdmin(admin.ModelAdmin):
                         "role",
                         "about",
                         "photoFile",
-                        "photoPlaceholder",
                         "lookingForWork",
-                        "availabilityText",
                     )
                 },
             ),
@@ -55,12 +53,10 @@ class ProfileAdmin(admin.ModelAdmin):
                 "Контакты",
                 {
                     "fields": (
-                        "contactsTitle",
-                        "contactPending",
                         *(
                             f"{key}_{part}"
                             for key in CONTACT_KEYS
-                            for part in ("label", "value", "url")
+                            for part in ("value", "url")
                         ),
                     )
                 },
@@ -71,11 +67,7 @@ class ProfileAdmin(admin.ModelAdmin):
                     "fields": (
                         "resumeFile",
                         "resumePreviewFile",
-                        "resumeTitle",
-                        "resumeDescription",
-                        "resumePending",
                     )
                 },
             ),
-            ("Подвал", {"fields": ("footerCredit",)}),
         )

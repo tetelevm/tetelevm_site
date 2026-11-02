@@ -18,19 +18,7 @@ CONTACT_KEYS = (
     "instagram",
     "linktree",
 )
-TEXT_FIELDS = {
-    "name": "Имя",
-    "role": "Профессия",
-    "about": "Обо мне",
-    "availabilityText": "Текст статуса поиска работы",
-    "photoPlaceholder": "Подпись вместо фото",
-    "contactsTitle": "Заголовок контактов",
-    "contactPending": "Подпись пустого контакта",
-    "resumeTitle": "Заголовок резюме",
-    "resumeDescription": "Описание резюме",
-    "resumePending": "Подпись без PDF",
-    "footerCredit": "Благодарность перед футером",
-}
+TEXT_FIELDS = ("name", "role", "about")
 
 
 class ProfileContentForm(forms.Form):
@@ -48,13 +36,7 @@ class ProfileContentForm(forms.Form):
         label="PDF-резюме", queryset=File.objects.none(), required=False
     )
 
-    for key, label in TEXT_FIELDS.items():
-        if key not in locals():
-            locals()[key] = forms.CharField(label=label, required=False, max_length=500)
     for key in CONTACT_KEYS:
-        locals()[f"{key}_label"] = forms.CharField(
-            label=f"{key}: подпись", max_length=80
-        )
         locals()[f"{key}_value"] = forms.CharField(
             label=f"{key}: отображаемый адрес", required=False, max_length=255
         )
@@ -98,7 +80,7 @@ class ProfileContentForm(forms.Form):
             if data["resumePreviewFile"]
             else None,
             "contacts": {
-                key: {part: data[f"{key}_{part}"] for part in ("label", "value", "url")}
+                key: {part: data[f"{key}_{part}"] for part in ("value", "url")}
                 for key in CONTACT_KEYS
             },
         }
@@ -118,6 +100,6 @@ def flatten_content(data: dict[str, Any]) -> dict[str, Any]:
     contacts = data.get("contacts", {})
     for key in CONTACT_KEYS:
         contact = contacts.get(key, {})
-        for part in ("label", "value", "url"):
+        for part in ("value", "url"):
             flat[f"{key}_{part}"] = contact.get(part, "")
     return flat

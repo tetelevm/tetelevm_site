@@ -5,7 +5,7 @@ import MainLayout from "../components/layout/MainLayout.vue"
 import ProfileIntro from "../components/home/ProfileIntro.vue"
 import ProfileContacts from "../components/home/ProfileContacts.vue"
 import ProfileResume from "../components/home/ProfileResume.vue"
-import { contactLayout } from "../config/profile.js"
+import { contactLayout, profileText } from "../config/profile.js"
 import { getProfile } from "../api/profile.js"
 import PageStatus from "../components/common/PageStatus.vue"
 import { setPageMeta } from "../utils/pageMeta.js"
@@ -14,8 +14,9 @@ const language = ref("ru")
 const profile = ref(null)
 const loading = ref(false)
 const failed = ref(false)
+const text = computed(() => profileText[language.value])
 const contacts = computed(() => profile.value
-  ? contactLayout.map((item) => ({ ...item, ...profile.value.contacts[item.key] }))
+  ? contactLayout.map((item) => ({ ...item, ...profile.value.contacts[item.key], label: text.value.contactLabels[item.key] }))
   : [])
 
 watch(language, async (value, _oldValue, onCleanup) => {
@@ -72,22 +73,22 @@ watch(
         :about="profile.about"
         :looking-for-work="profile.lookingForWork"
         :photo-url="profile.photoUrl"
-        :availability-text="profile.availabilityText"
-        :photo-placeholder="profile.photoPlaceholder"
+        :availability-text="text.availabilityText"
+        :photo-placeholder="text.photoPlaceholder"
       />
-      <ProfileContacts :contacts="contacts" :title="profile.contactsTitle" :pending="profile.contactPending" />
+      <ProfileContacts :contacts="contacts" :title="text.contactsTitle" :pending="text.contactPending" />
       <ProfileResume
         :url="profile.resumeUrl"
         :preview-url="profile.resumePreviewUrl"
-        :title="profile.resumeTitle"
-        :description="profile.resumeDescription"
-        :pending="profile.resumePending"
+        :title="text.resumeTitle"
+        :description="text.resumeDescription"
+        :pending="text.resumePending"
       />
     </div>
 
     <template #before-footer>
       <p v-if="profile" class="home-credit">
-        {{ profile.footerCredit }}
+        {{ text.footerCredit }}
       </p>
     </template>
   </MainLayout>

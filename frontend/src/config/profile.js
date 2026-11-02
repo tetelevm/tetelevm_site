@@ -1,4 +1,4 @@
-// Presentation stays fixed; localized content comes from the profile API.
+// Layout and interface copy stay on the frontend; editable content comes from the API.
 export const contactLayout = [
   { key: "telegram", group: "primary" },
   { key: "email", group: "primary" },
@@ -8,3 +8,34 @@ export const contactLayout = [
   { key: "instagram", group: "secondary" },
   { key: "linktree", group: "secondary", compact: true },
 ]
+
+export const profileText = {
+  ru: {
+    availabilityText: "Ищу работу, пишите!",
+    photoPlaceholder: "Здесь будет фото",
+    contactsTitle: "Контакты",
+    contactPending: "Скоро",
+    resumeTitle: "Резюме",
+    resumeDescription: "Опыт, навыки и проекты — в одном файле.",
+    resumePending: "Файл скоро появится здесь",
+    footerCredit: "Спасибо роботам-муравьишкам 🐜",
+    contactLabels: {
+      telegram: "Telegram", email: "Email", linkedin: "LinkedIn", github: "GitHub",
+      channel: "Telegram-канал", instagram: "Instagram", linktree: "Linktree",
+    },
+  },
+  en: {
+    availabilityText: "Open to work, get in touch!",
+    photoPlaceholder: "Photo coming soon",
+    contactsTitle: "Contacts",
+    contactPending: "Coming soon",
+    resumeTitle: "Résumé",
+    resumeDescription: "Experience, skills, and projects — in one file.",
+    resumePending: "The file will be here soon",
+    footerCredit: "Thanks to the tiny ant robots 🐜",
+    contactLabels: {
+      telegram: "Telegram", email: "Email", linkedin: "LinkedIn", github: "GitHub",
+      channel: "Telegram channel", instagram: "Instagram", linktree: "Linktree",
+    },
+  },
+}
