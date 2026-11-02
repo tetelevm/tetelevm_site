@@ -22,7 +22,7 @@ defineProps({
     <div class="profile-intro__body">
       <h1 id="profile-name" class="profile-intro__name">{{ name }}</h1>
       <div class="profile-intro__role-line">
-        <p class="profile-intro__role">{{ role }}</p>
+        <p class="profile-intro__role"><i>{{ role }}</i></p>
         <span v-if="lookingForWork" class="profile-intro__availability">
           <span class="profile-intro__check" aria-hidden="true">✓</span>
           {{ availabilityText }}
@@ -78,7 +78,7 @@ defineProps({
 .profile-intro__name {
   margin: 0 0 0.9rem;
   font-family: var(--font-heading);
-  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-size: clamp(2rem, 3vw, 3rem);
   font-weight: 500;
   line-height: 1.05;
   overflow-wrap: anywhere;
@@ -93,7 +93,8 @@ defineProps({
 
 .profile-intro__role {
   margin: 0;
-  font-size: 1.05rem;
+  color: color-mix(in srgb, var(--color-text) 60%, var(--color-muted));
+  font-size: 1.25rem;
 }
 
 .profile-intro__availability {

@@ -76,7 +76,14 @@ watch(
         :availability-text="text.availabilityText"
         :photo-placeholder="text.photoPlaceholder"
       />
-      <ProfileContacts :contacts="contacts" :title="text.contactsTitle" :pending="text.contactPending" />
+      <ProfileContacts
+        :contacts="contacts"
+        :title="text.contactsTitle"
+        :pending="text.contactPending"
+        :copy-label="text.copyEmail"
+        :copied-label="text.emailCopied"
+        :copy-failed-label="text.emailCopyFailed"
+      />
       <ProfileResume
         :url="profile.resumeUrl"
         :preview-url="profile.resumePreviewUrl"
@@ -103,8 +110,8 @@ watch(
 .home-credit {
   margin: 0;
   color: var(--color-muted);
-  font-size: 0.72rem;
-  line-height: 1.5;
+  font-size: 0.8rem;
+  line-height: 0.5;
   text-align: right;
 }
 </style>
