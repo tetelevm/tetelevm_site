@@ -4,7 +4,10 @@ from typing import Any
 
 from django import forms
 from django.contrib import admin
+from django.contrib.admin.widgets import AutocompleteSelect
 from django.http import HttpRequest
+
+from apps.projects.models import PostFile
 
 from .models import Profile
 from .profile_schema import CONTACT_KEYS, ProfileContentForm, flatten_content
@@ -17,6 +20,13 @@ class ProfileAdminForm(ProfileContentForm, forms.ModelForm):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
+        # Reuse the existing File search endpoint through its real relation.
+        file_relation = PostFile._meta.get_field("file")
+        for name in ("photoFile", "resumePreviewFile", "resumeFile"):
+            field = self.fields[name]
+            field.widget = AutocompleteSelect(
+                file_relation, admin.site, choices=field.choices
+            )
         if self.instance.pk:
             self.initial.update(flatten_content(self.instance.data))
 

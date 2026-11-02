@@ -16,12 +16,12 @@ export const profileText = {
     contactsTitle: "Контакты",
     contactPending: "Скоро",
     resumeTitle: "Резюме",
-    resumeDescription: "Опыт, навыки и проекты — в одном файле.",
+    resumeDescription: "Всё подробное - внутри",
     resumePending: "Файл скоро появится здесь",
     footerCredit: "Спасибо роботам-муравьишкам 🐜",
     contactLabels: {
       telegram: "Telegram", email: "Email", linkedin: "LinkedIn", github: "GitHub",
-      channel: "Telegram-канал", instagram: "Instagram", linktree: "Linktree",
+      channel: "Канальчик с путешествиями", instagram: "Instagram", linktree: "Linktree",
     },
   },
   en: {
@@ -29,13 +29,13 @@ export const profileText = {
     photoPlaceholder: "Photo coming soon",
     contactsTitle: "Contacts",
     contactPending: "Coming soon",
-    resumeTitle: "Résumé",
-    resumeDescription: "Experience, skills, and projects — in one file.",
+    resumeTitle: "Resume",
+    resumeDescription: "All the details are inside",
     resumePending: "The file will be here soon",
-    footerCredit: "Thanks to the tiny ant robots 🐜",
+    footerCredit: "Thanks to the ant robots 🐜",
     contactLabels: {
       telegram: "Telegram", email: "Email", linkedin: "LinkedIn", github: "GitHub",
-      channel: "Telegram channel", instagram: "Instagram", linktree: "Linktree",
+      channel: "Travel channel (ru)", instagram: "Instagram", linktree: "Linktree",
     },
   },
 }
