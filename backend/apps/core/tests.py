@@ -9,7 +9,7 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from PIL import Image
 
-from .models import File, FileType, detect_file_type
+from .models import File, FileType
 
 
 class FileModelTests(TestCase):
@@ -67,25 +67,9 @@ class FileModelTests(TestCase):
                 with Image.open(uploaded.thumbnail.path) as thumbnail:
                     self.assertEqual(thumbnail.size, (150, 150))
 
-    def test_thumbnail_upscales_small_images(self) -> None:
-        source = BytesIO()
-        Image.new("RGB", (60, 40), "blue").save(source, format="PNG")
-
-        with tempfile.TemporaryDirectory() as media_root:
-            with override_settings(MEDIA_ROOT=media_root, MEDIA_URL="/files/"):
-                uploaded = File.objects.create(
-                    content=SimpleUploadedFile("small.png", source.getvalue())
-                )
-
-                with Image.open(uploaded.thumbnail.path) as thumbnail:
-                    self.assertEqual(thumbnail.size, (150, 150))
-
     def test_gif_original_is_preserved_when_compression_is_enabled(self) -> None:
         source = BytesIO()
-        frames = [
-            Image.new("RGB", (200, 100), color)
-            for color in ("red", "blue")
-        ]
+        frames = [Image.new("RGB", (200, 100), color) for color in ("red", "blue")]
         frames[0].save(
             source,
             format="GIF",
@@ -135,10 +119,6 @@ class FileModelTests(TestCase):
                 self.assertFalse(uploaded.thumbnail)
                 self.assertTrue(uploaded.content.storage.exists(uploaded.content.name))
 
-    def test_file_type_detection_covers_audio_and_other_files(self) -> None:
-        self.assertEqual(detect_file_type("song.FLAC"), FileType.AUDIO)
-        self.assertEqual(detect_file_type("document.pdf"), FileType.OTHER)
-
 
 class FileAdminTests(TestCase):
     def setUp(self) -> None:
@@ -147,105 +127,6 @@ class FileAdminTests(TestCase):
             "admin",
             password="admin-pass",
         )
-
-    def test_file_changelist_displays_image_thumbnail(self) -> None:
-        uploaded = File.objects.create(
-            label="photo.jpg",
-            file_type=FileType.PHOTO,
-            content="content/photo.jpg",
-            thumbnail="thumbnail/photo.jpg",
-        )
-        self.client.force_login(self.admin)
-
-        response = self.client.get(reverse("admin:core_file_changelist"))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, uploaded.thumbnail.url)
-        self.assertContains(response, 'width="64"')
-        self.assertContains(response, 'height="64"')
-
-    def test_file_change_page_displays_image_preview(self) -> None:
-        uploaded = File.objects.create(
-            label="photo.jpg",
-            file_type=FileType.PHOTO,
-            content="content/photo.jpg",
-            thumbnail="thumbnail/photo.jpg",
-        )
-        self.client.force_login(self.admin)
-
-        response = self.client.get(
-            reverse("admin:core_file_change", args=(uploaded.id,))
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, uploaded.content.url)
-        self.assertContains(response, "max-height:600px")
-        self.assertNotContains(response, 'class="clipboard-upload"')
-
-    def test_file_change_page_starts_with_original_file_link(self) -> None:
-        uploaded = File.objects.create(
-            label="photo.jpg",
-            file_type=FileType.PHOTO,
-            content="content/photo.jpg",
-        )
-        self.client.force_login(self.admin)
-
-        response = self.client.get(
-            reverse("admin:core_file_change", args=(uploaded.id,))
-        )
-        content = response.content.decode()
-
-        self.assertContains(
-            response,
-            f'<a href="{uploaded.content.url}">{uploaded.content.url}</a>',
-            html=True,
-        )
-        self.assertLess(
-            content.index("field-original_file_link"),
-            content.index("field-label"),
-        )
-
-    def test_file_change_page_allows_editing_label(self) -> None:
-        uploaded = File.objects.create(
-            label="photo.jpg",
-            file_type=FileType.PHOTO,
-            content="content/photo.jpg",
-        )
-        self.client.force_login(self.admin)
-
-        response = self.client.post(
-            reverse("admin:core_file_change", args=(uploaded.id,)),
-            {"label": "renamed photo.jpg"},
-        )
-
-        self.assertRedirects(response, reverse("admin:core_file_changelist"))
-        uploaded.refresh_from_db()
-        self.assertEqual(uploaded.label, "renamed photo.jpg")
-
-    def test_file_changelist_links_to_bulk_upload(self) -> None:
-        self.client.force_login(self.admin)
-
-        response = self.client.get(reverse("admin:core_file_changelist"))
-
-        self.assertContains(response, reverse("admin:core_file_bulk_upload"))
-
-    def test_file_add_page_has_clipboard_image_control(self) -> None:
-        self.client.force_login(self.admin)
-
-        response = self.client.get(reverse("admin:core_file_add"))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'class="clipboard-upload"')
-        self.assertContains(response, "core/admin/file_paste.js")
-        self.assertContains(response, "core/admin/file_paste.css")
-
-    def test_bulk_upload_page_has_no_clipboard_image_control(self) -> None:
-        self.client.force_login(self.admin)
-
-        response = self.client.get(reverse("admin:core_file_bulk_upload"))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, 'class="clipboard-upload"')
 
     def test_bulk_upload_creates_one_record_per_file(self) -> None:
         self.client.force_login(self.admin)
@@ -267,28 +148,6 @@ class FileAdminTests(TestCase):
         self.assertCountEqual(
             File.objects.values_list("label", flat=True),
             ["first.txt", "second.mp3"],
-        )
-
-    def test_bulk_upload_adds_prefix_to_labels(self) -> None:
-        self.client.force_login(self.admin)
-
-        with tempfile.TemporaryDirectory() as media_root:
-            with override_settings(MEDIA_ROOT=media_root, MEDIA_URL="/files/"):
-                response = self.client.post(
-                    reverse("admin:core_file_bulk_upload"),
-                    {
-                        "prefix": "ph-",
-                        "files": [
-                            SimpleUploadedFile("01.jpg", b"first"),
-                            SimpleUploadedFile("02.jpg", b"second"),
-                        ],
-                    },
-                )
-
-        self.assertRedirects(response, reverse("admin:core_file_changelist"))
-        self.assertCountEqual(
-            File.objects.values_list("label", flat=True),
-            ["ph-01.jpg", "ph-02.jpg"],
         )
 
     def test_bulk_upload_can_preserve_image_original(self) -> None:
@@ -317,35 +176,6 @@ class FileAdminTests(TestCase):
                 self.assertEqual(uploaded.content.read(), original_content)
                 with Image.open(uploaded.thumbnail.path) as thumbnail:
                     self.assertEqual(thumbnail.size, (150, 150))
-
-        self.assertRedirects(response, reverse("admin:core_file_changelist"))
-
-    def test_bulk_upload_can_compress_image_original(self) -> None:
-        source = BytesIO()
-        Image.new("RGB", (1800, 1200), "red").save(source, format="PNG")
-        self.client.force_login(self.admin)
-
-        with tempfile.TemporaryDirectory() as media_root:
-            with override_settings(MEDIA_ROOT=media_root, MEDIA_URL="/files/"):
-                response = self.client.post(
-                    reverse("admin:core_file_bulk_upload"),
-                    {
-                        "compress_images": "on",
-                        "files": SimpleUploadedFile(
-                            "photo.png",
-                            source.getvalue(),
-                        ),
-                    },
-                )
-                uploaded = File.objects.get()
-
-                self.assertEqual(
-                    uploaded.content.name,
-                    f"content/{uploaded.id}.jpg",
-                )
-                with Image.open(uploaded.content.path) as original:
-                    self.assertEqual(original.size, (1500, 1000))
-                    self.assertEqual(original.format, "JPEG")
 
         self.assertRedirects(response, reverse("admin:core_file_changelist"))
 

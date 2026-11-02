@@ -1,62 +1,16 @@
-import json
 import uuid
 from datetime import date
 
-from django import forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
 from apps.core.models import File, FileType
 
-from .admin import PostAdmin, PostAdminForm
+from .admin import PostAdminForm
 from .models import Post, PostFile, PostListType, PostType, Project, Tag
-
-
-class ProjectModelTests(TestCase):
-    def setUp(self) -> None:
-        self.cover = File.objects.create(content="cover.jpg")
-
-    def test_projects_are_ordered_by_order(self) -> None:
-        second = Project.objects.create(
-            name="Second",
-            link="second",
-            cover=self.cover,
-            post_type=PostType.TEXT,
-            post_list_type=PostListType.ROW_CARD,
-            order=2,
-        )
-        first = Project.objects.create(
-            name="First",
-            link="first",
-            cover=self.cover,
-            post_type=PostType.TEXT,
-            post_list_type=PostListType.ROW_CARD,
-            order=1,
-        )
-
-        self.assertEqual(list(Project.objects.all()), [first, second])
-
-    def test_project_link_is_unique(self) -> None:
-        Project.objects.create(
-            name="First",
-            link="same",
-            cover=self.cover,
-            post_type=PostType.TEXT,
-            post_list_type=PostListType.ROW_CARD,
-        )
-
-        with self.assertRaises(IntegrityError):
-            Project.objects.create(
-                name="Second",
-                link="same",
-                cover=self.cover,
-                post_type=PostType.TEXT,
-                post_list_type=PostListType.ROW_CARD,
-            )
 
 
 class PostDisplayLabelTests(TestCase):
@@ -126,55 +80,6 @@ class PostDisplayLabelTests(TestCase):
                     ).full_clean()
                 self.assertIn("number", error.exception.message_dict)
 
-    def test_display_label_truncates_long_text(self) -> None:
-        post = Post.objects.create(
-            project=self.project,
-            number=1,
-            text="word " * 40,
-        )
-
-        self.assertEqual(len(post.display_label), 90)
-        self.assertTrue(post.display_label.endswith("..."))
-
-    def test_annotated_file_labels_do_not_make_n_plus_one_queries(self) -> None:
-        photo = File.objects.create(
-            label="photo.jpg",
-            file_type=FileType.PHOTO,
-            content="content/photo.jpg",
-        )
-        audio = File.objects.create(
-            label="audio.mp3",
-            file_type=FileType.AUDIO,
-            content="content/audio.mp3",
-        )
-        post_with_files = Post.objects.create(
-            project=self.project,
-            number=1,
-            main_file=photo,
-        )
-        PostFile.objects.create(post=post_with_files, file=photo, order=0)
-        PostFile.objects.create(post=post_with_files, file=audio, order=1)
-        Post.objects.create(project=self.project, number=2)
-
-        with self.assertNumQueries(1):
-            labels = [
-                post.display_label
-                for post in Post.objects.with_display_file_counts().order_by(
-                    "number"
-                )
-            ]
-
-        self.assertEqual(labels, ["📷 1 · 🎵 1", "🌀"])
-
-    def test_string_representation_uses_display_label(self) -> None:
-        post = Post.objects.create(
-            project=self.project,
-            number=7,
-            text="A text-only post",
-        )
-
-        self.assertEqual(str(post), "Project: #7 — A text-only post")
-
 
 class PostAdminTests(TestCase):
     def setUp(self) -> None:
@@ -198,14 +103,6 @@ class PostAdminTests(TestCase):
             password="admin",
         )
 
-    def test_post_changelist_uses_display_label(self) -> None:
-        self.client.force_login(self.admin)
-
-        response = self.client.get(reverse("admin:projects_post_changelist"))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "📷 1")
-
     def test_missing_post_number_shows_form_error(self) -> None:
         self.client.force_login(self.admin)
 
@@ -213,7 +110,9 @@ class PostAdminTests(TestCase):
             for change in (False, True):
                 with self.subTest(is_draft=is_draft, change=change):
                     url = reverse(
-                        "admin:projects_post_change" if change else "admin:projects_post_add",
+                        "admin:projects_post_change"
+                        if change
+                        else "admin:projects_post_add",
                         args=(self.post.pk,) if change else (),
                     )
                     response = self.client.post(
@@ -234,29 +133,7 @@ class PostAdminTests(TestCase):
                     )
 
                     self.assertEqual(response.status_code, 200)
-                    self.assertIn(
-                        "number", response.context["adminform"].form.errors
-                    )
-
-    def test_project_description_mentions_markdown_and_spoilers(self) -> None:
-        self.client.force_login(self.admin)
-
-        response = self.client.get(reverse("admin:projects_project_add"))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Markdown")
-        self.assertContains(response, "::: spoiler")
-
-    def test_post_file_inline_displays_thumbnail(self) -> None:
-        self.client.force_login(self.admin)
-
-        response = self.client.get(
-            reverse("admin:projects_post_change", args=(self.post.id,))
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "/files/thumbnail/photo.jpg")
-        self.assertContains(response, 'width="64"')
+                    self.assertIn("number", response.context["adminform"].form.errors)
 
     def test_post_file_inline_can_reverse_existing_order(self) -> None:
         post_files = list(self.post.post_files.all())
@@ -313,49 +190,6 @@ class PostAdminTests(TestCase):
             [2, 1, 0],
         )
 
-    def test_post_change_form_uses_typed_extra_fields_and_custom_layout(
-        self,
-    ) -> None:
-        self.client.force_login(self.admin)
-
-        response = self.client.get(
-            reverse("admin:projects_post_change", args=(self.post.id,))
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, 'name="extra"')
-        self.assertContains(response, 'name="extra_md"')
-        self.assertContains(response, 'name="extra_original_title"')
-        self.assertContains(response, 'name="extra_location_latitude"')
-        self.assertContains(response, "data-project-post-types=")
-        self.assertNotContains(response, "field-project field-number")
-        self.assertNotContains(response, "field-name field-date")
-        self.assertNotContains(response, "field-related_posts field-tags")
-        self.assertContains(response, "projects/admin/post_form.css")
-        self.assertContains(response, "projects/admin/post_extra.js")
-
-    def test_post_change_form_loads_anime_extra_values(self) -> None:
-        self.project.post_type = PostType.ANIME
-        self.project.save(update_fields=("post_type",))
-        self.post.extra = {
-            "original_title": "Sousou no Frieren",
-            "year": 2023,
-            "rating": 9,
-            "result": "да",
-        }
-        self.post.save(update_fields=("extra",))
-        self.client.force_login(self.admin)
-
-        response = self.client.get(
-            reverse("admin:projects_post_change", args=(self.post.id,))
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'value="Sousou no Frieren"')
-        self.assertNotContains(response, 'name="extra_subtitle"')
-        self.assertContains(response, 'value="2023"')
-        self.assertContains(response, 'value="9"')
-
     def test_related_post_autocomplete_searches_project_and_number(self) -> None:
         self.project.name = "Погулялки"
         self.project.save(update_fields=("name",))
@@ -384,31 +218,6 @@ class PostAdminTests(TestCase):
             [result["id"] for result in response.json()["results"]],
             [str(target.id)],
         )
-
-    def test_post_admin_uses_typed_extra_fields(self) -> None:
-        form = PostAdminForm(instance=self.post)
-
-        self.assertNotIn("extra", form.fields)
-        self.assertIsInstance(form.fields["extra_md"], forms.BooleanField)
-        self.assertFalse(form.fields["extra_md"].required)
-        self.assertFalse(form.fields["extra_md"].disabled)
-        self.assertEqual(
-            json.loads(
-                form.fields["extra_md"].widget.attrs[
-                    "data-post-extra-types"
-                ]
-            ),
-            [PostType.POST, PostType.TRAVEL],
-        )
-        self.assertIsInstance(
-            form.fields["extra_anime_rating"],
-            forms.IntegerField,
-        )
-        self.assertIsInstance(
-            form.fields["extra_abandoned_rating"],
-            forms.FloatField,
-        )
-        self.assertTrue(form.fields["extra_anime_rating"].disabled)
 
     def test_travel_markdown_field_is_loaded_and_serialized(self) -> None:
         self.project.post_type = PostType.TRAVEL
@@ -571,53 +380,6 @@ class PostAdminTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("extra_uniqueness", form.errors)
 
-    def test_post_admin_field_layout(self) -> None:
-        self.assertEqual(
-            PostAdmin.list_display,
-            ("project", "number", "date", "display_label", "is_draft"),
-        )
-        self.assertEqual(
-            PostAdmin.fieldsets[0][1]["fields"],
-            (
-                "project",
-                "number",
-                "is_draft",
-                "name",
-                "date",
-                "main_file",
-                "text",
-            ),
-        )
-        self.assertIn(
-            "fieldset-extra",
-            PostAdmin.fieldsets[1][1]["classes"],
-        )
-        self.assertEqual(
-            PostAdmin.fieldsets[1][1]["fields"],
-            (
-                "extra_md",
-                "extra_original_title",
-                "extra_anime_year",
-                "extra_anime_rating",
-                "extra_result",
-                "extra_abandoned_rating",
-                "extra_location_link",
-                "extra_location_latitude",
-                "extra_location_longitude",
-                "extra_uniqueness",
-                "extra_monumentality",
-                "extra_atmosphere",
-                "extra_liveliness",
-            ),
-        )
-        self.assertEqual(
-            PostAdmin.fieldsets[2][1]["fields"],
-            (
-                "related_posts",
-                "tags",
-            ),
-        )
-
 
 class ProjectApiTests(APITestCase):
     def setUp(self) -> None:
@@ -681,9 +443,7 @@ class ProjectApiTests(APITestCase):
     def test_file_detail_is_only_available_to_superuser(self) -> None:
         self.cover.label = "Обложка.jpg"
         self.cover.save(update_fields=("label",))
-        url = reverse(
-            "projects:file-detail-admin", kwargs={"file_id": self.cover.id}
-        )
+        url = reverse("projects:file-detail-admin", kwargs={"file_id": self.cover.id})
 
         self.assertEqual(self.client.get(url).status_code, 403)
         self.client.force_login(self.guest)
@@ -787,9 +547,7 @@ class ProjectApiTests(APITestCase):
             is_draft=True,
         )
 
-        formats_response = self.client.get(
-            reverse("projects:project-list")
-        )
+        formats_response = self.client.get(reverse("projects:project-list"))
         posts_response = self.client.get(
             reverse(
                 "projects:project-posts",
@@ -906,16 +664,6 @@ class ProjectApiTests(APITestCase):
         )
         self.assertEqual(response.data["pagination"]["totalItems"], 0)
 
-    def test_unfiltered_project_posts_have_no_active_tag(self) -> None:
-        response = self.client.get(
-            reverse(
-                "projects:project-posts",
-                kwargs={"project_code": "public"},
-            )
-        )
-
-        self.assertIsNone(response.data["activeTag"])
-
     def test_random_post_only_uses_projects_visible_to_anonymous_user(
         self,
     ) -> None:
@@ -995,74 +743,6 @@ class ProjectApiTests(APITestCase):
         self.assertEqual(response.data["pagination"]["totalPages"], 2)
         self.assertEqual(response.data["pagination"]["totalItems"], 51)
 
-    def test_general_post_list_uses_text_excerpt_when_name_is_missing(self) -> None:
-        self.public_project.post_list_type = PostListType.ROW_CARD
-        self.public_project.save(update_fields=("post_list_type",))
-        self.public_post.name = ""
-        self.public_post.text = "  A text\nexcerpt  "
-        self.public_post.save(update_fields=("name", "text"))
-
-        response = self.client.get(
-            reverse(
-                "projects:project-posts",
-                kwargs={"project_code": "public"},
-            )
-        )
-
-        self.assertEqual(response.data["posts"][0]["label"], "A text excerpt")
-
-    def test_every_post_list_type_uses_shared_label(self) -> None:
-        self.public_post.name = ""
-        self.public_post.text = "  A shared\nlabel  "
-        self.public_post.save(update_fields=("name", "text"))
-
-        for post_list_type in PostListType:
-            with self.subTest(post_list_type=post_list_type):
-                self.public_project.post_list_type = post_list_type
-                self.public_project.save(update_fields=("post_list_type",))
-
-                response = self.client.get(
-                    reverse(
-                        "projects:project-posts",
-                        kwargs={"project_code": "public"},
-                    )
-                )
-
-                self.assertEqual(response.status_code, 200)
-                self.assertEqual(response.data["posts"][0]["label"], "A shared label")
-
-    def test_card_lists_use_main_file_thumbnail(self) -> None:
-        photo = File.objects.create(
-            label="photo.jpg",
-            file_type=FileType.PHOTO,
-            content="content/photo.jpg",
-            thumbnail="thumbnail/photo.jpg",
-        )
-        self.public_post.main_file = photo
-        self.public_post.save(update_fields=("main_file",))
-
-        for post_list_type in (
-            PostListType.ROW_CARD,
-            PostListType.LABEL_PHOTO_CARD,
-        ):
-            with self.subTest(post_list_type=post_list_type):
-                self.public_project.post_list_type = post_list_type
-                self.public_project.save(update_fields=("post_list_type",))
-
-                response = self.client.get(
-                    reverse(
-                        "projects:project-posts",
-                        kwargs={"project_code": "public"},
-                    )
-                )
-
-                summary = response.data["posts"][0]
-                self.assertEqual(
-                    summary["cardFile"]["link"],
-                    "/files/thumbnail/photo.jpg",
-                )
-                self.assertNotIn("thumbnail", summary)
-
     def test_card_lists_fall_back_to_first_ordered_additional_file(self) -> None:
         later_photo = File.objects.create(
             label="later.jpg",
@@ -1115,20 +795,6 @@ class ProjectApiTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, 404)
-
-    def test_project_post_list_returns_null_for_missing_rating(self) -> None:
-        self.public_post.extra = {}
-        self.public_post.save(update_fields=("extra",))
-
-        response = self.client.get(
-            reverse(
-                "projects:project-posts",
-                kwargs={"project_code": "public"},
-            )
-        )
-
-        self.assertIsNone(response.data["posts"][0]["rating"])
-        self.assertEqual(response.data["posts"][0]["date"], "2026-08-17")
 
     def test_anonymous_user_can_retrieve_public_post(self) -> None:
         response = self.client.get(

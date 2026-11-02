@@ -1,263 +1,109 @@
 # Product Requirements
 
-## Purpose
+## Purpose and access
 
-This project is the site owner's personal website. It combines a personal
-presentation page with a publishing and archive area for the owner's material.
+A personal website with an author presentation and an archive of texts,
+photographs, and other material. Visitors read and view content; there is no
+public registration, commenting, or visitor publishing.
 
-The site is intended primarily for reading and viewing. It is not a social
-network, a public publishing platform, or a general-purpose CMS.
+| Role | Capabilities |
+| --- | --- |
+| Anonymous | View the home page, public formats and published posts; open guest login. |
+| Guest | Also view private formats and their published posts; sign out. Access is read-only. |
+| Administrator | Manage formats, posts, files, and the presentation through Django Admin. |
 
-## Audience and roles
+Visibility belongs to a format and is inherited by its posts. Private content
+must stay hidden from anonymous visitors in lists, direct links, metadata,
+random selection, and related-post links. Drafts are an authoring exception:
+only staff can open them directly; they never appear in public collections.
 
-### Anonymous visitor
+## Home page
 
-An anonymous visitor can:
+The home page presents Михаил Тетелев as a Python developer with a square photo,
+a short introduction, and an optional “Ищу работу, пишите!” badge. Long text
+wraps around the photo on desktop; the photo sits above it on mobile.
 
-- view the About page;
-- browse public formats;
-- view all items in public formats;
-- open the guest login page.
+Contacts have two rows: Telegram, email, LinkedIn; then GitHub, a Telegram
+channel, Instagram, and a narrow icon-only Linktree card of the same height.
+The résumé heading and left tile open the PDF in a new tab. The tile shows a
+manually uploaded preview without cropping, or “PDF” when no preview is chosen.
+Missing files or contacts show placeholders. A small gray ant-robot credit
+appears on the right before the footer.
 
-Anonymous access is read-only.
+The owner manually creates separate Russian and English “Визитки” records and
+edits their copy, captions, contacts, status, photo, PDF, and preview through
+ordinary administrative fields. Photo/preview selections must be images and
+the résumé a PDF. Changes appear on the next page load; layout stays fixed.
+The `ru/en` switch changes the presentation, navigation, and footer for the
+current visit without persisting the choice.
 
-### Guest
+## Archive
 
-A guest is a trusted visitor using shared access provided by the site owner.
-A guest can do everything available to an anonymous visitor and can also view
-private formats and their items. An authenticated guest can sign out and
-return to anonymous access.
+`/archive/` lists independent themed formats rather than a mixed post feed.
+Each format has a name, Markdown description, cover, visibility, display order,
+lifecycle status, and presentation types. Descriptions support collapsible
+spoilers. Detailed list and post presentation belongs in [PROJECT_TYPES.md](PROJECT_TYPES.md).
 
-Guest access is read-only. Guests cannot create, edit, upload, or delete
-content. Separate guest profiles are not required.
+Cards show post counts. Open formats have no status badge; paused formats show
+“на паузе” in warm yellow-orange, closed formats “завершён” in red. Private
+formats use a gray cover lock and are not dimmed. Format pages repeat the
+lifecycle status beside the count.
 
-### Administrator
+Published posts have positive numbers; draft numbers are zero or negative.
+Drafts are excluded from counts, lists, tag filtering, random selection, and
+related/adjacent navigation for every role. Staff can open drafts directly;
+the page is excluded from indexing and has no adjacent-post navigation.
 
-The administrator is the site owner. The administrator can:
+Posts can have ordered files, tags, and symmetric links to other posts.
+A tag opens the current format filtered by its code, preserving the filter
+through pagination. The active filter shows its name, or the code if unknown.
+Related posts follow the same visibility rules as the rest of the archive.
+Adjacent links find the nearest published numbers within the same format,
+skipping gaps; forward appears before back.
 
-- create and manage formats;
-- create and edit format items;
-- edit type-specific item metadata through individual validated fields instead
-  of raw JSON;
-- upload media used by the content, including many files in one operation;
-- optionally prepend one shared string to every file label during a multi-file
-  upload;
-- choose during a multi-file upload whether image originals are resized and
-  compressed; GIF originals always retain their animation and `.gif` format,
-  while thumbnails are generated in either mode;
-- paste a clipboard image into the standard administrative file-add form as an
-  alternative to selecting it through the browser;
-- edit the label of an uploaded file without renaming its stored content;
-- open the stored original from a direct path link shown first on the file's
-  administrative change page;
-- see generated image thumbnails directly in the administrative file list and
-  post-file inlines, and a larger preview on an image file's change page;
-- mark formats as public or private;
-- find related posts in the administrative selector by format name and post
-  number, including combined queries such as `погулялки #10`;
-- open Django Admin from a staff-only icon in the public site header;
-- retrieve all tag codes and names, or a file's ID and label, through
-  read-only API endpoints available only to a superuser;
-- retrieve every published post number and its tag codes for a format through
-  a read-only API endpoint available only to a superuser, including posts with
-  no tags and excluding drafts;
-- manage the site through an administrative interface.
+`/archive/random/` opens a random visible published post tagged `star`.
+Unknown URLs and missing content return a real localized 404 page with a
+language switch and a link to random visible material.
 
-## Main areas
+## Login and authoring
 
-### About
+The visitor login matches the site design and creates a standard session.
+The header logo reveals login/logout after three quick activations; `/login/`
+remains directly accessible. Staff also have a link to Django Admin.
 
-The root page presents the site owner. It may contain biographical information,
-contacts, photographs, and other personal presentation blocks.
+The administrator can:
 
-Most of this page is expected to be relatively static. Individual parts may be
-made editable when there is a practical need.
+- manage formats, published posts, drafts, tags, related posts, and ordered files;
+- edit type-specific metadata through validated fields rather than raw JSON;
+- upload files individually, paste a clipboard image, or upload many files with
+  an optional label prefix and image-compression choice;
+- edit file labels without changing stored paths, and inspect originals/previews;
+- find files unused by posts or covers and delete selected records normally;
+- confirm removal of unreferenced physical files and rebuilding of post-file
+  labels; these maintenance operations are reserved for the site owner;
+- export tag/file metadata through superuser-only read APIs.
 
-Until the presentation content is ready, the page shows a short localized
-notice that it is still under construction.
+GIF originals retain their animation. Image compression can be disabled during
+bulk upload; thumbnails are generated in either mode. Deleting a database file
+record does not immediately delete its stored bytes. Profile references do not
+protect files from cleanup: the owner attaches them to a service post.
 
-The About page provides a compact `ru/en` language switch in its header. It
-switches the construction notice, main navigation labels, and footer between
-Russian and English for the current page visit; the selection is not persisted.
+## Shared presentation and discovery
 
-### Content
+The interface works on desktop and mobile. Media preserves its natural aspect
+ratio in detail views; carousels stop at either end and leave browser keyboard
+shortcuts intact. Card previews use the main file, or the first ordered
+additional file when the main file is absent. Every page ends with a year footer.
 
-The Content area contains material created by the site owner, including
-articles, notes, photographs, anime write-ups, long-form text, and media
-publications.
-Anime write-up bodies are always displayed as Markdown.
+Post labels prefer the name, then a text excerpt, then attached-file counts,
+with a neutral fallback for empty posts. Page-specific titles and social
+metadata follow visibility and draft rules. The sitemap includes the home,
+archive, and public format pages, excluding private formats and individual
+posts. Crawler rules advertise the sitemap and allow public Telegram previews.
 
-The public section is named “Archive” and is available at `/archive/`. Its
-landing page shows formats, not a single feed mixing unrelated items. Each
-format is an independent collection with its own list of material and may use
-a presentation suited to its purpose.
-The Archive landing page metadata describes it as an archive of the owner's
-formats, texts, photographs, and other material.
+## HTTP status playground
 
-Search engines can discover the home page, Archive landing page, and public
-format pages through a sitemap. Private formats and individual posts are not
-listed. Crawler instructions point to that sitemap and discourage crawling of
-the administrative and API routes. They explicitly allow Telegram's link
-preview bot to access public pages.
-
-Public pages expose page-specific browser titles and social-link metadata.
-Format metadata uses the format's localized name, description, and cover.
-Post metadata uses its name when present or its format and number otherwise;
-its description uses a text excerpt or attached-file counts, and its image uses
-the stored main photo with the site favicon as a fallback.
-
-Opening `/archive/random/` selects a random post tagged with the special
-`star` code from the material visible to the current visitor and opens that
-post. Anonymous visitors are never sent to private formats; authenticated
-guests and administrators may receive either public or private starred posts.
-
-Unknown public URLs and missing formats or posts show a localized not-found
-page instead of redirecting to the home page. It offers a `ru/en` switch and a
-link that opens a random starred post visible to the current visitor. The response uses
-the real HTTP 404 status and is excluded from search indexing. Switching the
-language also updates the document language, page title, description, and
-social metadata for the current visit.
-
-### Login
-
-The site provides a login page matching its own interface. Its main purpose is
-to give trusted visitors access to private formats. Ordinary visitors should
-not be directed to an administrative login screen. Valid guest and administrator
-credentials create a normal site session; authenticated visitors can sign out
-from the public interface.
-
-The shared header shows the site logo on every page. Three quick activations of
-the logo reveal the login or logout control in its place. The login URL remains
-directly accessible.
-
-## Content organization
-
-Content follows this hierarchy:
-
-```text
-Content -> Format -> Item
-```
-
-A format determines:
-
-- the collection to which an item belongs;
-- a Markdown description shown above its material, including optional
-  click-to-expand spoiler blocks;
-- whether the collection is public or private;
-- the general presentation of its material.
-
-Format cards communicate lifecycle status separately from visibility. Open
-formats have no status label, paused formats show “на паузе” in a warm
-yellow-orange color, and closed formats show “завершён” in red. Private
-formats are not dimmed; a small gray lock in the top-left corner of the cover
-communicates their visibility without a written status label.
-The format page repeats a paused or closed status beside its material count,
-using the same warm or red status color; open formats show only the count.
-Each format card shows its total number of posts in a small circle at the
-bottom-left of its cover.
-
-An item contains the actual material, such as text, images, video, or a
-combination of media. The supported format presentation types and their visual
-behavior are specified in `docs/PROJECT_TYPES.md`.
-
-An abandoned-building post may include linked latitude and longitude. When all
-location values are present, the coordinates appear as an external map link
-directly below the post title and above its text.
-An anime post may also store its release year in metadata. When present, the
-year appears in parentheses immediately after the original title on the post
-page.
-General posts display their body as plain text by default. An optional boolean
-flag enables Markdown rendering for an individual general post.
-Travel posts provide the same optional Markdown flag for their text body. It
-does not change the travel image carousel or its file selection.
-Posts may be connected to any number of other posts through symmetric
-relationships. Detail pages show every related post visible to the current
-visitor as a row card; links to private content remain hidden from anonymous
-visitors.
-Posts can be marked as drafts in Django Admin. A draft always has a zero or
-negative number, while a published post always has a positive number. Drafts are
-excluded from format lists and counts, tag filters, random selection, adjacent
-navigation, and related-post blocks for every role. Anonymous visitors and
-authenticated guests receive a not-found response for a draft's direct URL;
-staff administrators can open that URL, and its page is excluded from search
-indexing. A draft page has no adjacent-post navigation but may show its own
-relationships to ordinary published posts.
-Post tags are links to the current format with a `tag=<code>` query parameter.
-Opening one shows only posts in that format carrying the selected tag; list
-pagination retains the filter. The active filter appears between the format
-description and its posts using the same tag-chip presentation as post tags. It
-shows the tag's configured name when the code exists and the requested code as
-a fallback.
-Long pagination controls show the first three pages, the last three pages, and
-the current page with two neighboring pages on either side. Omitted ranges are
-represented by an ellipsis, while touching ranges are joined without one.
-At the bottom of every post detail page, navigation links point to the nearest
-lower-numbered and higher-numbered posts in the same format. Missing numbers
-are skipped, and a link is omitted at the corresponding format boundary. The
-forward link to the higher-numbered post appears first on the left, while the
-back link to the lower-numbered post appears second on the right; on mobile they
-keep that top-to-bottom order. The
-visible label excerpt is limited to 80 characters and wraps even when it
-contains no natural break points. Each entire neighboring-post link is enclosed
-in a frame. Post body text also remains within the content width when it
-contains a long uninterrupted string.
-
-Every post has a shared label available to list and administrative displays. It
-uses the post name when available, otherwise the beginning of its text,
-otherwise a summary of attached file types. A completely empty post uses a
-neutral fallback symbol. Image-only format presentations may omit the visible
-label while retaining it as the image's accessible description.
-
-## Visibility
-
-Visibility is defined at format level:
-
-- public formats and all their items are available without authentication;
-- private formats and all their items are hidden from anonymous visitors;
-- authenticated guests can view both public and private formats.
-
-Items do not have independent audience visibility settings. The draft flag is
-an authoring-state exception visible by direct URL only to staff administrators.
-Per-item audience permissions should only be introduced if a future product
-requirement needs them.
-
-## Interaction model
-
-The site is consumption-oriented. The initial product does not include:
-
-- public registration;
-- comments;
-- likes or reactions;
-- visitor-created content;
-- editing by guests;
-- separate guest accounts or profiles.
-
-These features should not be assumed merely because they are common on blogs or
-publishing platforms.
-
-## User experience
-
-The public interface must be usable and visually coherent on desktop and mobile
-devices. Detailed visual design and the presentation of individual format
-types will be defined separately as the corresponding content is designed.
-Standalone media frames and carousels show images without cropping and follow
-their natural aspect ratio. Carousels resize when one gallery mixes portrait
-and landscape media.
-Post detail pages load the stored image original directly. Separate generated
-medium-sized previews are not retained; square thumbnails remain available for
-list cards and administrative lists.
-Structured post files use their stored media type to select an image, video,
-audio, or download-link presentation. Embedded Markdown media infers the same
-presentation from the URL extension used in image syntax.
-Carousel navigation stops at the first and last item and does not capture the
-keyboard arrow keys used by browser shortcuts. While the next image loads, the
-carousel retains the current frame's size and then resizes directly to the new
-aspect ratio, avoiding an intermediate collapse that disrupts page scrolling.
-Post card lists use a single framed surface for the image and, when present,
-its caption and rating. Image-only cards keep the same frame without an empty
-caption area.
-Every post-card presentation uses the main file as its preview source. When it
-is missing, the first ordered additional file used by the post carousel becomes
-the shared card preview source; non-image files still leave image preview slots
-empty.
-Every public page ends with a small footer showing the current year.
+`/r/<code>/` serves public synthetic HTTP examples and jokes, including redirects
+and selected nonstandard statuses. It supports GET/HEAD, does not change site
+data, and is not cached or indexed. Unsupported codes return 404. Individual
+response bodies and protocol examples are defined in the handlers.

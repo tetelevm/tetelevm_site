@@ -9,6 +9,15 @@ related by a common subject and may have its own form of presentation—from pho
 galleries and short notes to detailed stories about travels, places, and
 interests.
 
+## Local development
+
+Run `docker compose up -d --build`. The site opens at `http://localhost:5173`
+and Django Admin at `http://localhost:8000/_admin/`. Create an administrator with
+`docker compose exec backend python manage.py createsuperuser`.
+
+See [product rules](docs/BUSINESS.md), [architecture](docs/TECHNICAL.md),
+[format presentation](docs/PROJECT_TYPES.md), and [deployment/backups](docs/DEPLOYMENT.md).
+
 ## Site export
 
 Install the dependencies from `backend/requirements.txt`, then copy the script's
@@ -32,3 +41,10 @@ directory. A relative `TARGET` is resolved from the current working directory.
 Values are read literally, without environment variable interpolation; quote
 values containing spaces or an inline `#` comment marker. Process environment
 variables do not override this configuration.
+
+## Editing the home page
+
+Create or edit the `ru` and `en` records at `/_admin/core/profile/`.
+Upload the photo, PDF, and optional preview image to the file library, then
+select them in the profile form. Enter email as a plain address. Content
+changes appear on the next page load; layout changes require code changes.

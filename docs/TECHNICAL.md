@@ -1,736 +1,157 @@
 # Technical Architecture
 
-## Scope and status
+## Stack and boundaries
 
-The repository contains a working Django REST Framework, Vue, Vue Router, Vite,
-PostgreSQL, and Docker Compose application. The first frontend prototype is
-implemented and builds successfully. Domain models and read-only project API
-endpoints, project-grid integration, session authentication, media processing,
-and a single-server production deployment exist.
+A single-server Django/DRF, PostgreSQL, Vue 3, Vue Router, and Vite application.
+Django owns persistence, authorization, domain rules, media, and administration;
+Vue owns public routing and presentation. Django Admin is the authoring interface.
+Frontend filtering is never an authorization boundary.
 
-This document describes the intended architecture. A capability mentioned here
-should not be treated as already implemented unless it exists in the codebase.
+| Path | Responsibility |
+| --- | --- |
+| `backend/apps/core/` | Files, session API, profile, maintenance, HTTP examples. |
+| `backend/apps/projects/` | Formats, posts, tags, administration, and read APIs. |
+| `frontend/src/` | Pages, shared components, explicit presentation mappings. |
+| `media/` | Persistent uploads, ignored by Git. |
+| `deploy/`, `compose*.yaml` | Development and production containers. |
+| `scripts/` | Export and operator maintenance routines, not application logic. |
 
-## Repository layout
-
-```text
-/
-├── backend/       Django, REST API, administration, and backend tests
-├── frontend/      Vue application and frontend tests
-├── media/         Persistent uploaded media (contents ignored by Git)
-├── deploy/        Container and production deployment configuration
-├── docs/          Product and technical documentation
-├── scripts/       Maintenance and operational automation
-├── compose.yaml   Local development orchestration
-├── AGENTS.md      Instructions for coding agents
-└── README.md      Project overview and setup
-```
-
-The `scripts/` directory is reserved for repository-level maintenance and
-operational tasks, such as backups, restores, data imports, release helpers, or
-deployment automation. Application code and reusable Django or Vue logic do not
-belong there. Scripts should be added only when a real repeated operation needs
-automation.
-The backend image copies this directory to `/app/scripts`, making its modules
-importable from Django shell while keeping one-off maintenance routines separate
-from management commands.
-`tidy_media.py` contains explicit operator-invoked functions for compacting
-published post numbers in their current order or by ascending date (undated
-posts last, then existing number), rebuilding per-project file labels in batches,
-listing or deleting database file records unused by posts, and removing physical
-media files that have no database field reference.
-`download_site.py` is a standalone client configured by `scripts/.env`, loaded
-with `python-dotenv` from the script's directory. It reads `SITE_URL`, `TARGET`,
-`USERNAME`, `PASSWORD`, and comma-separated `PROJECTS` without variable
-interpolation or process-environment overrides. All five settings are required;
-missing values stop the script before any requests. Relative target paths are
-resolved from the working directory. The local configuration is ignored by Git
-and excluded from Docker images; `scripts/.env.example` documents the format.
-It uses a `requests.Session` for the site's CSRF-protected login
-and subsequent downloads. It exports all tags to `<target>/tags.json` through
-the superuser-only tag API,
-then requests the superuser-only post-tag map for each format. It overwrites
-`<target>/<slug>/info/tag_list.json` with that map, saves the format's Markdown
-description to `info/description.md`, and downloads only post
-numbers absent from `info/saved_posts.txt`, appending each number after the post
-is saved. Each format directory also receives its cover converted to `main.jpg`
-and an `images/` directory. `info/saved_posts.txt` lists saved post numbers one
-per line. An explicit slug-to-saver registry selects one dataclass per format.
-Each saver's `from_post` extracts its fields from the API post and the actual
-local names and types of downloaded media. Its `file` and `text` properties
-describe the output, and `write` saves it. The `leksebi`, `gancdebi`,
-`ikhvomedia`, and `nacherchebi` savers write post text to numbered `.txt` files.
-`natserebi` writes `<number>.md` with a title, body, italic date, and a relative
-link to its main image in `images/`.
-`nomrebi`, `nakhalebi`, `sakhlugeba`, and `karebi` each have a dedicated saver
-that updates a single `<target>/<slug>/posts.md`, ordered by post number and
-separated by Markdown horizontal rules. The shared `CombinedMarkdown` writer
-stores sections in `info/combined_entries.json` so forced re-exports replace
-the old section without duplicates. `nadzerpi` writes `<number>.md` with a dated
-main image, divider, and additional photos. `mokhetiale` and `mitovebuli` each write one
-Markdown file per year (`xxx.md` for undated posts), with their own section
-formatting and ordered photo links. Dates and emphasized post numbers use
-Markdown italics, while `mitovebuli` uses bold for its overall rating. The
-shared `YearlyMarkdown` writer keeps
-sections in `info/year_entries.json` to replace re-exported posts, including
-posts whose year changes. `publika` writes `<number>.md` with a title, italic
-date, and body. When the body contains Markdown images, its saver requests the
-paired negative-number draft, downloads the draft's attached files, and replaces
-image URLs with relative `images/` links while retaining alt text and image
-titles. `shenishvnebi` and `chasatseri` each use their own saver to write
-numbered sections in yearly Markdown files (`xxx.md` when undated), containing
-an optional name, italic date, text, main media, and additional attachments.
-For Markdown text (`extra.md`), they use the same negative-number draft lookup
-and image rewrite. Draft-only files are not appended again after the body, and
-published media already linked inside the body is not duplicated. Non-photo
-attachments use ordinary Markdown file links. `animeebi` has a dedicated saver
-that groups numbered sections by `post number // 1000` into `<group>.md`.
-Each section contains the post number, title, optional original title and
-release year, bold rating, Markdown body, recommendation result, and up to three
-additional photos. Its main image is downloaded and listed in `info/photos.json`
-but not repeated in the Markdown body. `info/animeebi_entries.json` records the
-sections so re-exporting a post replaces its section and can move it to a new
-group. Unmatched local images cause the export to fail so a post is not marked
-as saved with broken links. Formats without dedicated savers retain the raw
-detail JSON.
-Shared export steps write `info/related.json` as
-`{post_number: ["project/related_number"]}` and `info/photos.json` as
-`{post_number: {"main": filename_or_null, "files": [filenames]}}`. Originals
-from `mainFile` and `files` are downloaded to `images/` under labels returned by
-the superuser-only file API. Existing saved posts missing metadata are fetched
-again to fill it (and their text is rewritten when photo
-metadata is missing). Removing a number from `saved_posts.txt` forces a fresh
-export of that post, overwriting its related/photo entries and downloaded files.
-
-The project is a monorepo. It is deliberately optimized for clarity and simple
-operation rather than independent service deployment or high traffic.
-Anime release year is an optional integer in `Post.extra.year`, edited through
-the dedicated Django Admin field and included in the existing post `extra` API.
-
-## Production deployment
-
-Production is designed for one low-traffic Debian or Ubuntu VPS. The separate
-`compose.prod.yaml` runs PostgreSQL, Django under a single Gunicorn worker with
-two threads, and Caddy. Caddy is the only publicly exposed service. It obtains
-and renews TLS certificates, serves the built Vue application and persistent
-media, serves collected Django static files, and proxies API and admin requests
-to Django. PostgreSQL and Gunicorn do not publish host ports.
-
-The production frontend image builds Vue once with Vite and copies the output
-into the Caddy image; Node and the Vite development server do not run in
-production. PostgreSQL data, collected static files, and Caddy state use named
-volumes. Uploaded media remains a bind-mounted repository-root `media/`
-directory so it can be backed up and restored alongside the database.
-
-Production configuration is supplied by an ignored `.env.production` file.
-HTTPS-related Django settings remain environment-driven so local development
-continues to use HTTP. Operational commands and backup requirements are in
-`docs/DEPLOYMENT.md`.
-
-## System boundaries
-
-The Vue application is the public user interface. It communicates with Django
-through a small REST API.
-
-Django is responsible for:
-
-- persistence and domain rules;
-- authentication state and authorization;
-- project and content visibility;
-- administrative content management;
-- media metadata and file handling;
-- exposing safe data through the REST API.
-
-Vue is responsible for:
-
-- public routing and presentation;
-- the custom guest login experience;
-- responsive desktop and mobile layouts;
-- rendering projects and items according to their presentation type.
-
-The shared public header loads the session state once. When `isStaff` is true,
-it shows a localized icon link to `/_admin/`; Django continues to enforce staff
-authorization at the destination.
-
-Frontend filtering is presentation logic, not a security boundary.
-
-## Backend
-
-The backend uses Python, Django, Django REST Framework, PostgreSQL, and Django
-Admin.
-User-facing backend labels use Django gettext localization, with Russian
-translations stored in the repository and compiled during development or
-deployment builds.
-
-Backend domain code is grouped into two Django applications: `core` contains
-shared models such as uploaded files, while `projects` contains projects and
-their content items.
-
-Django Admin is the primary authoring interface. A broad write API is therefore
-unnecessary. The REST API should remain small and be expanded in response to
-actual frontend use cases.
-
-The post admin excludes the raw `extra` JSON field and exposes explicit virtual
-form fields for the supported type-specific metadata. `PostAdminForm` selects
-the applicable fields from the chosen project's `post_type`, applies numeric
-ranges and required-field validation, and serializes the cleaned values back
-into `Post.extra`. Anime and abandoned-building ratings use separate form
-fields because one is an integer from 1 through 10 and the other is a float
-from 1 through 5, although both remain `extra.rating` in storage. Known fields
-from other post types are removed when saving; unrecognized top-level and
-nested location keys are retained to avoid accidental data loss.
-
-A small admin script receives the project-to-post-type map from a data attribute
-on the project widget's inner `<select>`, then enables and marks required only
-the relevant metadata fields as the project changes. The attribute is assigned
-to the inner widget explicitly because Django Admin wraps related fields in a
-`RelatedFieldWidgetWrapper`. All supported metadata controls remain visible
-together in one dedicated fieldset, with inapplicable fields disabled. Every
-post field occupies its own form row.
-Dedicated admin CSS makes the name input wider, caps the related-post
-autocomplete at 700 pixels, and keeps both autocomplete fields responsive on
-mobile.
-
-For general and travel posts the Markdown checkbox writes a JSON boolean; each
-detail component uses `MarkdownContent` for its text only when the value is
-`true` and otherwise keeps the plain-text renderer. Travel carousel selection
-is independent of this flag. Abandoned posts store `latitude`,
-`longitude`, and `link` below a nested `location` key. Their Vue detail
-component renders complete locations as an `http(s)` external link and ignores
-incomplete or unsafe values.
-The anime subtitle field has been retired. Admin saves discard its legacy
-`subtitle` key from post metadata.
-
-Relations to potentially large collections use Django Admin's built-in AJAX
-autocomplete widgets. They keep the default 20-result pages and load further
-results on scroll. File choices are searchable by their editable label and ordered
-by newest upload first. The main file changelist displays existing image
-thumbnails inline at 64 by 64 pixels and leaves the preview cell empty for
-non-image files. An image file's change page shows its aspect-ratio-preserving
-stored original within a 600-pixel-high administrative frame. A saved file's
-`label` can be edited as display
-metadata without renaming or moving stored content. Its change page starts with
-a read-only, clickable `content.url` for the stored original; during initial
-upload it is still derived from the browser-provided filename. The standard
-file-add form has a focusable clipboard area whose browser-side paste handler converts one
-clipboard image into a named `File` object and assigns it to the native content
-input before normal multipart submission. The file changelist also links to an admin-only bulk upload
-form that accepts multiple browser-selected files and creates one `File` record
-per upload using the model's media-processing path. A checked-by-default option
-normalizes image originals through the usual 1500-pixel JPEG conversion; when
-unchecked, the uploaded original bytes and extension are retained while a
-thumbnail derivative is still generated. Its optional prefix
-is prepended to each resulting `label` after processing and therefore
-does not affect stored UUID paths or file-type detection. The post changelist
-places the project column before the post number and display label. Saved `PostFileInline`
-rows show 64-pixel thumbnails and use
-`select_related("file")` to avoid per-row queries; post choices are ordered by
-descending database ID.
-Post choices and the post changelist use the same derived display label as the
-public lists. Post search also covers the project name and exact post number;
-an isolated hash before digits is removed so combined autocomplete queries such
-as `погулялки #10` use Django Admin's normal per-term matching.
-
-Expected read capabilities include:
-
-- current authentication state when needed by the interface;
-- projects visible to the current user;
-- details and items for a selected project;
-- individual item details when required by a project type.
-
-Three read-only administrative endpoints are restricted to `is_superuser` by a
-backend permission class: `GET /_api/tags/` returns a `{code: name}` object for
-all tags; `GET /_api/files/<uuid>/` returns a file's `id` and `label`; and
-`GET /_api/formats/<slug>/post-tags/` returns `{post_number: [tag_codes]}` for
-every published post in the format, including empty lists for untagged posts.
-Missing files or formats return 404. They use the existing Django session.
+Product rules are in [BUSINESS.md](BUSINESS.md), visual type specifications in
+[PROJECT_TYPES.md](PROJECT_TYPES.md), and operating procedures in
+[DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Authentication and authorization
 
-Use Django's standard user and session authentication. The initial account model
-contains:
+Use standard Django users and session cookies: a shared non-staff guest account
+and the owner's staff/superuser account. Login/logout use CSRF tokens obtained
+from `/_api/auth/csrf/` and sent in `X-CSRFToken`. All state-changing requests,
+including administrative maintenance, require CSRF protection.
 
-- anonymous visitors with access to public content;
-- one non-staff shared guest account with access to private content;
-- the site owner's staff or superuser account for administration.
+Backend querysets restrict anonymous reads to public projects. Authenticated
+guests can read private content but cannot write. Superuser-only export APIs
+check permissions on the backend. The header loads the session to render its
+login/logout and staff controls.
 
-Do not introduce JWT or a custom authentication framework without a client or
-deployment requirement that makes session authentication unsuitable.
+## Domain and administration
 
-Authorization must be enforced in backend API views. Anonymous API
-requests must not reveal private projects or items belonging to them. The
-frontend renders only the projects returned by the backend and must not be
-responsible for filtering private data.
+The public term is “format”; Python models remain `Project`/`project`.
+A project owns visibility, lifecycle status, order, cover, and independent
+`post_type` and `post_list_type` choices. Status does not affect authorization.
 
-CSRF protection is required for login, logout, and every state-changing
-operation. The frontend obtains a token from `/_api/auth/csrf/` and sends it in
-the `X-CSRFToken` header for login and logout. Current project endpoints are
-read-only. Future session-authenticated writes must use the same protection.
-Development frontend origins are supplied through
-`DJANGO_CSRF_TRUSTED_ORIGINS`; production should set this variable to its real
-HTTPS origin when the frontend and backend are not seen as the same origin.
+`Post` belongs to one project, has a unique number within it, optional text,
+date/name/main file, JSON `extra`, tags, symmetric related posts, and additional
+files ordered through `PostFile`. Model validation and a database constraint
+require positive published numbers and non-positive draft numbers.
+`PostQuerySet.published()` is used for lists, counts, filtering, random selection,
+and navigation. Only staff detail/metadata reads may include drafts.
 
-## Content domain
+`PostFile` order uniqueness is deferred until transaction commit so existing
+positions can be swapped in Admin. Preserve this when changing inline saves.
+`Post.display_label` supplies shared labels; queryset annotations supply file
+counts and nearest adjacent posts without per-item lookups. List serializers
+expose card summaries instead of full post bodies/metadata. The format-post API
+paginates by 48 and applies `tag` filtering before pagination.
 
-The public product term is “format”. The existing Django model, database table,
-relations, and internal Python names remain `Project`/`project` to avoid a
-data migration that would not change behavior. API URLs and administrative
-translations use “format”. The visitor-facing section is named Archive and
-uses `/archive/`; `/formats/`, `/projects/`, and `/_api/projects/` remain
-compatibility aliases.
+`PostAdminForm` exposes validated typed fields for `extra`, enabling the subset
+for the selected post type. Saves remove known fields of other types while
+preserving unknown metadata; legacy anime `subtitle` is discarded.
+File/post selectors use Django autocomplete. Administrative file labels are
+independent of stored paths.
 
-The content domain currently uses these models:
+## Profile
 
-```text
-Project
-    name
-    description: optional short text
-    link: unique string
-    cover -> File
-    post_type: fixed presentation type
-    post_list_type: fixed presentation type
-    is_public
-    status: open | paused | closed
-    order
+`core.Profile` stores one JSON record per unique `ru`/`en` language, created
+manually in Admin. `ProfileContentForm` defines the fixed schema and validates
+image/PDF selections, HTTP(S) contact URLs, and plain email addresses;
+`ProfileAdminForm` exposes ordinary fields instead of raw JSON.
 
-Tag
-    code: unique string
-    name
+The public profile API resolves file IDs to URLs and email to `mailto:`.
+Missing files yield null URLs; absent/unsupported languages return 404.
+It reads the database without caching. JSON references do not participate in
+file deletion or orphan detection; service-post attachments retain these files.
 
-Post
-    project -> Project
-    number: unique within project; non-positive for drafts and positive otherwise
-    is_draft: administrative authoring state
-    optional date
-    link: /archive/<format link>/<number>/
-    optional name and text
-    optional main_file -> File
-    extra: JSON
-    related_posts -> Post (symmetric many-to-many)
-    files -> File through ordered PostFile
-    tags -> Tag
-```
+## Routes
 
-A project is an independent content collection. It owns the visibility and
-presentation context inherited by its posts. Detail presentation types use the
-explicit `post`, `photo`, `travel`, `text`, `text_md`, `door`, `anime`,
-`plasticine`, and `abandoned` choices. List presentation is independent and
-uses reusable card choices: `row_card`, `photo_card`, `label_photo_card`, and
-`rated_photo_card`. A post belongs to exactly one project; its number determines
-its position and is unique within that project.
-`PostQuerySet.published()` is the shared backend boundary for excluding drafts.
-Lists, counts, tag filters, random selection, related-post prefetches, and
-adjacent navigation always use it. Direct detail and metadata queries omit this
-filter only for `is_staff` users; draft metadata is marked `noindex`. Django
-Admin retains the unfiltered default manager. Model validation and a database
-check constraint require non-positive draft numbers and positive published
-numbers.
-Additional post files are connected through `PostFile`, which stores their
-order. Its per-post order uniqueness constraint is deferred until transaction
-commit so Django Admin can swap existing positions without a transient
-uniqueness conflict; duplicate final positions remain invalid. Post
-relationships use Django's implicit self-referential many-to-many
-table and are symmetric: adding either side makes the other side related too.
-Avoid a generic page builder or universal CMS schema without a demonstrated
-need.
+| Route | Purpose |
+| --- | --- |
+| `/`, `/login/` | Profile and visitor login. |
+| `/archive/`, `/archive/<format>/`, `/archive/<format>/<n>/` | Formats and posts. |
+| `/archive/random/` | Redirect to a visible starred post. |
+| `/_api/profile/<language>/` | Localized profile. |
+| `/_api/formats/`, `/_api/formats/<format>/`, `/_api/formats/<format>/<n>/` | Read APIs. |
+| `/_api/random-post/` | Canonical link to a random visible published `star` post. |
+| `/_api/auth/{csrf,session,login,logout}/` | Session API. |
+| `/_api/page-meta/` | Server-rendered titles and social metadata for a path. |
+| `/_api/tags/`, `/_api/files/<uuid>/`, `/_api/formats/<format>/post-tags/` | Superuser export metadata. |
+| `/_admin/`, `/_static/`, `/files/` | Administration, Django static assets, media. |
+| `/robots.txt`, `/sitemap.xml` | Search discovery. |
+| `/r/<code>/` | Synthetic responses implemented in `core/http_status/`. |
 
-`Post.display_label` is the single source for list and administrative labels. It
-prefers a trimmed name, then a whitespace-normalized 90-character text excerpt,
-then counts of unique files by media type, and finally `🌀`. A custom
-`PostQuerySet.with_display_file_counts()` method annotates the four per-type
-counts. List API and admin querysets opt into it explicitly, avoiding per-post
-queries without adding aggregation overhead to unrelated post queries.
-`PostQuerySet.with_adjacent_post_ids()` uses correlated subqueries scoped by
-`project_id` to annotate the nearest lower-numbered and higher-numbered post
-IDs from published posts. Gaps in numbering therefore require no special
-handling. The detail view suppresses both annotations when the current post is
-a draft.
+`/formats/`, `/projects/`, and `/_api/projects/` remain compatibility aliases.
+Unknown public URLs use the real 404 status. Caddy injects Django page metadata
+into the frontend HTML; missing content triggers its 404 template, and drafts
+visible to staff receive `noindex`. Metadata and sitemap queries must preserve
+visibility restrictions.
 
-Project status describes its lifecycle and does not control authorization.
-Project cards show no badge for `open`, a warm yellow-orange “на паузе” badge
-for `paused`, and a red “завершён” badge for `closed`. Private cards remain
-dimmed but do not display a visibility badge. Visibility for anonymous and
-authenticated visitors continues to depend only on `is_public`.
+## Media and maintenance
 
-The backend should expose an explicit presentation type. The frontend should
-map that type to a known Vue component. Keep this mapping simple and visible in
-the codebase.
+Files have UUID paths, editable labels, and extension-derived media types.
+Originals live under `content/`, thumbnails under `thumbnail/`. Default image
+processing applies EXIF orientation, strips metadata, and creates a JPEG original
+bounded to 1500px plus a centered 150px square JPEG thumbnail. Bulk upload can
+preserve original bytes; GIF originals always retain their bytes and animation.
+`link`/`link_full` point to originals; `link_small` prefers the thumbnail.
+Detail media uses originals, not separate medium-sized previews.
 
-## User-facing routes
-
-The intended routes are:
-
-```text
-/                               About
-/login/                         Guest login
-/archive/                       Formats visible to the visitor
-/archive/random/                Open a random visible post tagged `star`
-/archive/<format>/              Items in a format
-/archive/<format>/<item>/       Item detail when the format needs one
-/robots.txt                    Crawler rules and sitemap location
-/sitemap.xml                   Home, Formats, and public format URLs
-/<unknown path>                 Localized not-found page
-```
-
-Exact identifiers and slug behavior remain deferred. The Content landing page
-must remain format-oriented rather than becoming a global mixed feed.
-
-Django generates `robots.txt` and `sitemap.xml`; Caddy proxies both exact
-paths to Django before its Vue history fallback. The sitemap queryset always
-filters on `Project.is_public` and does not vary with the requesting session,
-so authenticated sitemap requests cannot expose private project URLs.
-
-The built Vue index contains a Caddy `httpInclude` template action. For public
-page requests, Caddy asks Django's `/_api/page-meta/` endpoint for the title,
-canonical URL, description, and Open Graph and Twitter tags before returning
-the SPA shell. This makes metadata available to clients that do not execute
-JavaScript. The same shell renders the Google site-verification token at
-request time from the web container's `GOOGLE_SITE_VERIFICATION` environment
-variable, keeping the token out of the image. Vue maintains the same tags after
-client-side navigation. The
-metadata endpoint applies normal project visibility rules and escapes both HTML
-and Caddy template delimiters in database content.
-Caddy explicitly forwards `X-Forwarded-Proto: https` to Django. This includes
-template subrequests, whose internal transport is HTTP; without the forwarded
-public scheme, Django's production HTTPS redirect would return an unrendered
-301 response to `httpInclude` instead of metadata.
-Missing public resources make that template raise a Caddy 404; its error route
-serves the same Vue shell while preserving the status and adds an
-`X-Robots-Tag: noindex` header. Vue also maintains localized `html.lang`, title,
-description, Open Graph locale, and robots metadata as language and routes
-change on the client.
-
-## Internal routes
-
-Internal and operational HTTP routes use an underscore prefix to distinguish
-them from the public site structure. Current routes are:
-
-```text
-/_admin/                       Django Admin
-/_api/auth/csrf/               CSRF token and cookie
-/_api/auth/session/            Current authentication state
-/_api/auth/login/              Session login
-/_api/auth/logout/             Session logout
-/_api/page-meta/               Server-rendered metadata for a public path
-/_api/random-post/             Link to a random visible post tagged `star`
-/_api/formats/                 Formats visible to the current visitor
-/_api/formats/<format>/        Format metadata and paginated posts (`?page=N`)
-/_api/formats/<format>/<n>/    Individual post
-/_static/                      Django-managed static assets
-```
-
-The format-post endpoint accepts an optional `tag=<code>` query parameter and
-applies it to the backend queryset before pagination. Tag links use the public
-`/archive/<format>/?tag=<code>` URL, and frontend pagination preserves the
-active query parameter. The response exposes `activeTag` as `null` without a
-filter or as `{code, name}` with one; an unknown code is used as its own display
-name. The format page renders it between the description and post list.
-
-Future internal endpoints should follow the same `/_name/` convention. Public
-pages such as `/`, `/login/`, and `/archive/` do not use this prefix.
-
-The random-post endpoint filters for `Tag.code == "star"` and applies the same
-project-visibility queryset as the other read APIs before selecting a post. The
-Vue random route replaces its own history entry with the returned canonical
-post link, so refresh and sharing use the selected post URL rather than drawing
-another random result.
-
-## Media
-
-Initial uploads are managed through Django Admin and stored in the repository
-root `media/` directory, whose contents are ignored by Git. Compose mounts it at
-`/media` in the backend container. Production deployment must preserve this
-directory independently of container replacement.
-
-Uploaded files are represented by the `File` model. Its editable `label` starts
-with the browser-provided upload name, while stored paths remain UUID-based.
-The model stores `file_type` as `photo`, `video`, `audio`, or `other`.
-The type is detected from the extension when a new file is uploaded. Stored
-files use the model UUID and are separated by role:
-non-image originals use `content/<UUID>.<extension>`, normalized image originals
-use `content/<UUID>.jpg`, and image thumbnails use `thumbnail/<UUID>.jpg`.
-Image originals are normally normalized to metadata-free JPEG at 90 percent
-quality and constrained to 1500 pixels on each axis without upscaling. Bulk
-upload can explicitly retain the uploaded original instead. GIF uploads always
-retain their original bytes and `.gif` extension even when image compression is
-enabled, preserving animation; they still receive a static JPEG thumbnail.
-Thumbnails are metadata-free 150-by-150 JPEGs produced with a centered square
-crop and are upscaled when the source is smaller. Replacing an uploaded image
-regenerates the normalized original and thumbnail. `link` and `link_full`
-point to the stored original for every file, while `link_small` uses an image
-thumbnail when available and otherwise falls back to the original. Django
-serves these URLs only in debug mode; production
-must serve `MEDIA_ROOT` at `/files/` through the reverse proxy.
-The Vite development server also proxies `/files/` to Django. Project cards
-render covers in a square container and center-crop non-square images.
-
-External embeds or media providers may be added when a concrete content type
-requires them. They are not part of the initial infrastructure.
+`find_orphan_files` finds records unused as covers, main files, or attachments,
+including drafts. `tidy_media` deletes physical files with no `File.content` or
+`File.thumbnail` reference, retaining database records and `.gitkeep`.
+`relabel_project_files` assigns format/number/position labels without changing
+paths, processing main files first; shared files take the last processed label.
+Mutating maintenance views require a staff superuser, confirmation, and POST.
 
 ## Frontend
 
-The frontend uses Vue, Vue Router, and Vite. Public pages, including login,
-belong to Vue. Different project types may use different components, but the
-application should not become a runtime page-builder.
+`MainLayout`, `AppHeader`, and `AppFooter` provide the shared shell and centered
+800px content area. `ProjectGrid`/`ProjectCard` own format cards. Keep these
+boundaries unless a concrete design change requires restructuring them.
+`config/postTypes.js` explicitly maps list/detail type codes to components.
+Detail types compose shared post layout/header/footer and media blocks;
+list adapters supply data to reusable card/row components.
 
-The production bundle self-hosts the Sofia Sans variable font for page and post
-headings and IBM Plex Mono for captions and compact metadata. Body copy,
-controls, project cards, and post-list rows retain the regular interface
-sans-serif stack. Global CSS font tokens keep those semantic roles consistent
-and avoid runtime requests to third-party font services.
+`MarkdownContent` uses `markdown-it` with raw HTML disabled and supports native
+collapsible spoilers. Embedded media is selected by URL extension; links and
+captions are escaped. `MediaFile`, `MediaCarousel`, and the shared lightbox
+handle structured attachments. Images preserve aspect ratio; a carousel retains
+its current size until the next image loads.
 
-Every detail component passes its post to `PostLayout`, which renders the
-shared conditional `PostHeader` once. Name and date appear when present; anime
-adds its original title and rating, while abandoned-building posts add
-their rating. Type components retain only body presentation and optional
-header-adjacent content such as abandoned-building coordinates.
+The profile page fetches the selected language and aborts superseded requests.
+Profile components receive content via props; `config/profile.js` retains only
+the contact layout. A float provides portrait wrapping above 600px; the
+`before-footer` slot holds the credit. Language selection is page-local.
+Global CSS supplies the dark/lime palette and bundled Sofia Sans/IBM Plex Mono.
 
-Markdown post text is rendered client-side with `markdown-it`. The `text_md`
-type always uses it, while the general `post` type opts in per item through
-`extra.md === true`. Embedded raw HTML is disabled; Markdown-generated markup
-is styled by the dedicated `MarkdownContent` component. The
-`markdown-it-container` plugin provides safe `::: spoiler [title]` containers,
-rendered as native `details` and `summary` elements while their body continues
-to support Markdown. Project descriptions reuse the same `MarkdownContent`
-component in `PageSubheader`, including spoiler support and raw-HTML blocking.
-Markdown images use delegated click and keyboard handlers to open the shared
-lightbox, including images nested inside collapsed spoiler containers.
-The shared URL classifier mirrors backend file-extension groups. Markdown image
-syntax uses it to emit an image, native video or audio player, or file link;
-query strings and fragments do not affect classification. Because Markdown is
-inserted through `v-html`, it emits trusted renderer-owned native elements
-rather than Vue component tags, which Vue would not mount there.
-Non-empty image-token labels remain accessible text and also render in an
-escaped, visible caption below embedded images, videos, and audio players.
+## Development, production, and verification
 
-The current router implements:
+`compose.yaml` runs Vite, Django's development server, and PostgreSQL. Vite
+proxies API and media requests. Its dependency volume is refreshed by `npm install`
+on startup. `compose.prod.yaml` runs PostgreSQL, Gunicorn (one worker, two threads),
+and Caddy. Only Caddy exposes public ports; it serves built Vue, media, static
+assets, TLS, and backend proxies. Migrations and static collection run before
+Gunicorn starts. Database/static/Caddy state use volumes; uploads use `media/`.
+Secrets belong in environment files excluded from Git. See [DEPLOYMENT.md](DEPLOYMENT.md).
 
-```text
-/                About-page construction notice
-/archive/                       Formats loaded from the REST API
-/archive/:format/               Format posts loaded from the REST API
-/archive/:format/:postNumber/   Individual post loaded from the REST API
-/login/          Session login
-```
+Backend tests use pytest with pytest-django, including existing Django TestCases.
+Prioritize authorization, sessions/CSRF, draft visibility, domain invariants,
+file preservation, and destructive maintenance. Avoid exhaustive checks of
+cosmetic HTML, simple framework behavior, and the HTTP joke playground.
+Frontend verification uses `npm run build`.
 
-The shared frontend building blocks are:
+The export client `scripts/download_site.py` uses a CSRF-protected session and
+superuser metadata APIs; setup is in [README.md](../README.md#site-export).
+Explicit saver mappings produce per-format exports. `info/saved_posts.txt`
+tracks incremental progress; removing a number forces its re-export.
+Operator helpers are copied into `/app/scripts` in the backend image.
 
-- `MainLayout` for the global background, shared header, and centered
-  800-pixel content container;
-- `AppFooter` for the shared current-year footer;
-- `AppHeader` for navigation and a page-specific action slot;
-- `LanguageSwitch` for the About-page `ru/en` control;
-- `HeaderAccessAction` for the site logo and concealed login/logout control;
-- `LoginLink` for the login/logout icon revealed by the header logo;
-- `ProjectGrid` for a responsive grid of at most three cards per row;
-- `ProjectCard` for post counts, lifecycle-status badges, and visually dimmed
-  private states.
-- `PostCardList` for rendering framed square-image cards with an optional
-  caption and rating section inside `list-types`;
-- `PostRowList` for rendering rows with a media slot, label, and date inside
-  `list-types`;
-- `PostLayout` for the shared conditional header, vertical composition, and
-  spacing of detail posts;
-- `PostHeader` for optional title, date, type-specific title metadata, and
-  overall rating;
-- `PostTitle` for shared detail-title and original-title typography;
-- `PlainPostText` for consistently styled plain-text post bodies;
-- `PostImage` for aspect-ratio-preserving natural-size or framed standalone
-  images, optionally using the shared lightbox;
-- `MediaFile` for selecting image, video, audio, or file-link presentation from
-  API media metadata with URL-extension fallback;
-- `MarkdownContent` for styled, HTML-disabled Markdown rendering.
-- `PostTag` for non-interactive tag labels on post detail pages;
-- `PostConnections` for adapting related-post summaries to `PostRowList` and
-  rendering tags;
-- `PostFooter` for composing related posts, tags, and adjacent navigation after
-  every detail-type body;
-- `PostNavigation` for the previous and next post links at the bottom of every
-  detail page;
-- `PostFileList` for non-image and non-video file links using original names.
-- `PageStatus`, `PageSubheader`, and `PaginationNav` for shared page-level
-  feedback, secondary navigation, and pagination presentation.
-
-Frontend components are grouped by responsibility rather than kept in one flat
-directory:
-
-```text
-components/
-├── auth/                 concealed login/logout controls
-├── common/               reusable page-level UI
-├── layout/               global header, footer, and page shell
-├── media/                lightbox and bounded, adaptive media carousel
-├── posts/
-│   ├── blocks/           reusable detail-post building blocks
-│   ├── lists/            base card and row renderers
-│   ├── list-types/       type-specific list data adapters
-│   └── types/            detail-post compositions
-└── projects/             project cards, grid, and header action
-```
-
-`MediaCarousel` records the loaded active item's intrinsic aspect ratio. It
-keeps that ratio as the stage reservation while the next item loads, then
-updates the stage once from the new image or video dimensions. This avoids an
-intermediate zero-height layout without adding media dimensions to the API.
-
-Detail post responses expose `relatedPosts` as an array containing each visible
-published related post's ID, number, model-generated link, display label,
-optional photo thumbnail, and date. Drafts are excluded even for staff, while a
-draft's own response may still contain its published relations. The relation
-prefetch applies the normal project-visibility rules, annotates display-label
-file counts, and prefetches thumbnail candidates so rendering multiple related
-cards does not cause N+1 queries. Results use project order followed by descending post number. The
-`PostPage` passes these summaries through the shared `PostRowList` renderer.
-`PostFooter` composes that result with the post's tags and adjacent-post
-navigation after every type-specific body; it does not reconstruct backend
-routes.
-The detail queryset also annotates adjacent post IDs. The view loads both
-adjacent objects together with annotated display-label counts and exposes them
-as nullable `previousPost` and `nextPost` summaries containing `number`, `link`,
-and `label`; both are null for a draft detail. `PostPage` renders those summaries below the type-specific content,
-using the current project name in the link text. `PostNavigation` truncates only
-the visible label portion to 80 Unicode characters, retains the full value in
-the accessible link label, permits breaks inside uninterrupted strings, and
-frames each complete link rather than its arrow alone. It renders `nextPost`
-first on the left and `previousPost` second on the right, retaining the same
-order when the layout collapses to one column. `PlainPostText` and
-`MarkdownContent` apply the same overflow protection to post bodies.
-
-Projects are returned in ascending explicit project order. Posts within a
-project are returned by descending post number, with the highest-numbered item
-first.
-
-The project-posts page fetches a project and its posts from the REST API, then
-uses an explicit mapping from the project's `postListType` code to a component in
-`components/posts/list-types`: `row_card` uses `RowCard`, `photo_card` uses
-`PhotoCard`, `label_photo_card` uses `LabelPhotoCard`, and `rated_photo_card`
-uses `RatedPhotoCard`. Each adapter receives the project's `posts`
-array and maps the relevant fields into display data for `PostCardList` or
-`PostRowList`. Those two base renderers live beside the adapters and do not
-inspect API post shapes. List entries contain only the fields required by the
-adapters;
-they do not expose `extra`, additional files, tags, or detail-page metadata.
-Every list response includes the model-derived `label`. List `cardFile` data
-includes the stored `mediaType` so presentation types can distinguish photos,
-videos, audio, and other files without filename parsing.
-The image-only `photo_card` adapter uses the label for accessible image text but
-passes no visible caption to `PostCardList`. `plasticine` now shares the visible
-label presentation used by `door`.
-Post dates come from the optional model field rather than `extra`. PostgreSQL
-extracts only `rating` from `extra` for its dedicated list field. General post
-lists use the same display-file summary as every other list type. The post
-queryset annotates a selected file ID with the database-side priority
-`main_file`, first ordered `PostFile.file`, then null. Further subquery
-annotations resolve its thumbnail-or-file link and media type, and the shared
-list serializer exposes those scalar values as `cardFile` without loading or
-choosing related files in Python. Image slots render the result only when its
-media type is `photo`. All list types use one list serializer and standard
-square thumbnails.
-Project posts use
-page-number pagination with 48 posts per page;
-the response includes the current page, page size, total pages, and total posts.
-The frontend keeps the selected page in the URL query string and renders numeric
-page controls.
-
-The individual-post page selects its component through an explicit mapping from
-the API's `postType` value. Both list and detail mappings live together in
-`frontend/src/config/postTypes.js`, keeping the supported type registry explicit.
-Concrete type components compose shared presentation blocks while retaining
-their own data selection and type-specific markup. This is deliberately a set
-of static Vue compositions, not a runtime page-builder. Concrete list and post
-presentation behavior is specified in `docs/PROJECT_TYPES.md`.
-
-Projects come from the REST API. Anonymous users never receive private projects;
-authenticated guests receive them with `isPublic: false` so their cards can be
-dimmed. The separate `status` field controls the lifecycle badge. Project list
-and project-post querysets annotate their post total as `post_count`; the shared
-serializer exposes it as `postCount`, and the project card renders it on the
-bottom-left of the cover. Because aggregation drops Django's implicit model
-ordering, the annotated query explicitly reapplies ascending `order` and `id`.
-The authorization queryset remains unannotated.
-
-The login form uses Django session authentication with CSRF protection and
-redirects successful logins to the project grid. The header action reflects the
-current session and provides logout. The About-page language switch stores its
-selection only in component state. It translates that page's construction
-notice, navigation labels, and footer, but does not persist the selection or
-translate project content.
-
-Global frontend styling uses a dark editorial palette defined through CSS
-custom properties, a compact pill-based header, serif display headings, and a
-system sans-serif text stack. Cards use square center-cropped covers, restrained
-motion, visible focus states, and responsive grids. Page-specific styles remain
-scoped to Vue components. The favicon is stored in
-`frontend/public/favicon.ico`.
-
-On project and post pages, the current project name appears beside the site
-logo in the header. Three quick logo activations replace it with the session
-action. A compact subheader row directly below contains the back link and, on
-project lists, the total item count and optional short project description.
-
-Frontend testing should be proportional to the amount of meaningful client-side
-logic. Static presentation does not require exhaustive component tests.
-
-## Testing
-
-Use pytest and pytest-django for backend tests unless a concrete constraint
-requires another tool. Prioritize behavior with security or domain significance:
-
-- anonymous users cannot retrieve private projects or their items;
-- guests can retrieve private projects and remain read-only;
-- guest users cannot obtain staff or administrative capabilities;
-- visibility is applied consistently to every item in a project;
-- REST API views enforce authorization;
-- login, logout, and session behavior work correctly;
-- core model invariants are preserved.
-
-## Development and deployment
-
-Local development uses the root `compose.yaml` with three services:
-
-- `frontend` for the Vite development server;
-- `backend` for the Django development server;
-- `db` for PostgreSQL.
-
-The frontend service runs `npm install` before Vite because `node_modules` is a
-persistent Docker volume. This keeps newly added package dependencies in sync
-without requiring manual volume removal.
-
-The production target is a conventional VPS using Docker Compose, persistent
-PostgreSQL and media volumes, and a reverse proxy that terminates HTTPS and
-routes traffic to the frontend and backend. The production application server,
-reverse proxy, static asset strategy, backups, and release procedure remain to
-be selected and implemented.
-
-Secrets and production credentials must be supplied through environment
-configuration and must never be committed to the repository.
-
-## Deliberate non-goals
-
-The initial architecture does not require horizontal scaling, Kubernetes,
-Redis, Celery, message brokers, separate services for content types, complex
-RBAC, per-item access rules, or a generic CMS/page-builder. Revisit these
-choices only when a concrete requirement makes one of them useful.
-
-## Deferred decisions
-
-The following are intentionally unresolved:
-
-- exact Django model fields and remaining API response fields;
-- storage for heterogeneous item content;
-- detailed visual design and SEO strategy;
-- external media and embed support;
-- production application server and reverse proxy;
-- backup and deployment procedures;
-- which About-page fields, if any, should be editable.
-
-## Suggested next stage
-
-The next coherent milestone is backend-driven Projects and authentication:
-
-1. define the minimal `Project` model and Django Admin configuration;
-2. expose only projects visible to the current user through the REST API;
-3. add authorization tests before exposing any private project data or items;
-4. replace the temporary array in `ProjectsPage.vue` with a REST API request;
-5. implement session login and logout with correct CSRF handling;
-6. connect the login form and header state to the authenticated session.
+Keep the architecture proportional to a personal site: no Redis, Celery, JWT,
+complex RBAC, page builder, or orchestration platform without a concrete need.

@@ -1,107 +1,50 @@
 # Production deployment
 
-This deployment targets one low-traffic Debian or Ubuntu VPS with a public IP.
-It uses Docker Compose, PostgreSQL, Gunicorn, and Caddy. Caddy automatically
-obtains and renews the HTTPS certificate.
-
-## Before deployment
-
-The server must have:
-
-- Docker Engine with the Compose plugin;
-- Git;
-- inbound TCP ports 80 and 443 open;
-- inbound UDP port 443 open for HTTP/3 (optional, but supported by the Compose
-  file);
-- an inbound SSH port restricted as appropriate;
-- a DNS `A` record pointing the chosen hostname to the server's public IPv4.
-
-Do not publish the database or Gunicorn ports. Docker-published ports can
-interact unexpectedly with host firewall rules, so verify the effective rules
-from another machine.
+One Debian/Ubuntu VPS runs Docker Compose, PostgreSQL, Gunicorn, and Caddy.
+Install Docker Engine/Compose and Git, point the domain's DNS `A` record at the
+server, and allow TCP 80/443 (optionally UDP 443 for HTTP/3). Keep SSH restricted;
+database and Gunicorn ports must not be publicly exposed.
 
 ## First deployment
-
-Clone the repository and enter it:
 
 ```bash
 git clone <repository-url> tetelevm_site
 cd tetelevm_site
-```
-
-Create the production environment file:
-
-```bash
 cp .env.production.example .env.production
 chmod 600 .env.production
-```
-
-Generate independent secrets:
-
-```bash
 openssl rand -base64 48
 openssl rand -base64 36
 ```
 
-Edit `.env.production` and replace every example value. `DOMAIN` and
-`DJANGO_ALLOWED_HOSTS` contain a hostname such as `example.com`, while
-`DJANGO_CSRF_TRUSTED_ORIGINS` contains the complete HTTPS origin such as
-`https://example.com`. Do not add URL paths or trailing slashes. Set
-`GOOGLE_SITE_VERIFICATION` to the verification token supplied by Google Search
-Console; use only the `content` value, not the complete `<meta>` element.
-
-Ensure the persistent media directory exists, then build and start the stack:
+Replace example credentials with independent secrets. `DOMAIN` and
+`DJANGO_ALLOWED_HOSTS` take hostnames; `DJANGO_CSRF_TRUSTED_ORIGINS` takes the
+full HTTPS origin, without a path or trailing slash. `GOOGLE_SITE_VERIFICATION`
+is the Search Console token, not its complete HTML element.
 
 ```bash
 mkdir -p media
 docker compose -f compose.prod.yaml config --quiet
 docker compose -f compose.prod.yaml up -d --build
-```
-
-Inspect container state and startup logs:
-
-```bash
 docker compose -f compose.prod.yaml ps
 docker compose -f compose.prod.yaml logs --tail=100 backend web
-```
-
-Caddy can obtain a certificate only after DNS points to the server and ports 80
-and 443 are reachable. DNS propagation can delay the first successful attempt;
-Caddy retries automatically.
-
-Run Django's production checks:
-
-```bash
 docker compose -f compose.prod.yaml exec backend python manage.py check --deploy
 ```
 
-Review every warning. Create the administrator only after HTTPS works:
-
-The example deliberately does not enable HSTS for every subdomain or browser
-preloading, so Django reports those two advisory warnings. Enabling either is a
-domain-wide commitment and is unnecessary for this small deployment. A weak
-secret warning means `DJANGO_SECRET_KEY` was not replaced correctly and must be
-fixed.
+Caddy obtains TLS certificates once DNS and ports are reachable. Review Django's
+checks: HSTS subdomain/preload warnings are expected with the example settings;
+a weak secret warning must be fixed. Once HTTPS works, create the administrator:
 
 ```bash
 docker compose -f compose.prod.yaml exec backend python manage.py createsuperuser
 ```
 
-Verify the public page, `/archive/`, `/_admin/`, login/logout, and media loading.
-Also verify anonymous, guest, and administrator visibility.
+Check the home, archive, media, login/logout, and administration. Verify
+anonymous, guest, and administrator visibility. Check exposed ports from another
+machine; Docker port publishing can interact with host firewall rules.
 
-Repository maintenance scripts are available in the backend container under
-`/scripts`. A script intended for Django shell input can be run with:
+## Updates and routine operation
 
-```bash
-docker compose -f compose.prod.yaml exec -T backend \
-  sh -c 'python manage.py shell < /scripts/<script-name>.py'
-```
-
-## Deploying an update
-
-Back up the database and media before an update that changes models or file
-handling. Then fetch the reviewed code and rebuild:
+Back up the database and media before changes to models or file handling.
 
 ```bash
 git pull --ff-only
@@ -110,39 +53,31 @@ docker compose -f compose.prod.yaml ps
 docker compose -f compose.prod.yaml logs --tail=100 backend web
 ```
 
-The backend applies migrations and collects Django static files before Gunicorn
-starts. With one backend container this keeps the release procedure simple.
+The backend applies migrations and collects static assets before Gunicorn starts.
+Periodically check `df -h` and `docker system df`, install security updates, and
+prune unused build cache only after confirming the deployment works. Services
+use `restart: unless-stopped` and return after Docker starts.
 
-Remove unused build cache occasionally, after confirming the current deployment
-works:
+Operator scripts are available under `/app/scripts` in the backend container:
 
 ```bash
-docker builder prune
+docker compose -f compose.prod.yaml exec -T backend \
+  sh -c 'python manage.py shell < /app/scripts/<script-name>.py'
 ```
 
-## Backups
+## Backups and restore
 
-A useful backup must leave the VPS. Server snapshots are helpful but are not a
-replacement for independent database and media copies.
-
-Create a PostgreSQL dump:
+Back up both database and uploaded media, keep dated copies off the VPS, and
+test restoration. Treat backups as private data.
 
 ```bash
 docker compose -f compose.prod.yaml exec -T db sh -c \
   'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB"' > tetelevm.sql
-```
-
-Archive uploaded media:
-
-```bash
 tar -czf tetelevm-media.tar.gz media
 ```
 
-Copy both files to another machine or backup service. Protect them as private
-data. Keep more than one dated generation and periodically test restoration.
-
-To restore into an empty database, start the database first and pass the dump to
-`psql`:
+Restore into an empty database, on a separate server or an explicitly verified
+target; restoration overwrites application data:
 
 ```bash
 docker compose -f compose.prod.yaml up -d db
@@ -150,19 +85,5 @@ docker compose -f compose.prod.yaml exec -T db sh -c \
   'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < tetelevm.sql
 ```
 
-Restore the media archive into the repository root before starting the complete
-stack. Restoration overwrites application data and therefore should be tested
-on a separate server or after explicitly confirming the target.
-
-## Routine checks
-
-Occasionally check disk usage and service state:
-
-```bash
-df -h
-docker system df
-docker compose -f compose.prod.yaml ps
-```
-
-Install Debian security updates regularly. Reboot when required; all services
-use `restart: unless-stopped` and return after Docker starts.
+Restore the media archive into the repository root before starting the full
+stack. Preserve PostgreSQL/Caddy volumes and `media/` across container replacement.
