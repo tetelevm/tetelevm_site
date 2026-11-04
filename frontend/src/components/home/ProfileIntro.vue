@@ -1,4 +1,6 @@
 <script setup>
+import MarkdownContent from "../posts/blocks/MarkdownContent.vue"
+
 defineProps({
   name: { type: String, required: true },
   role: { type: String, required: true },
@@ -28,7 +30,9 @@ defineProps({
           {{ availabilityText }}
         </span>
       </div>
-      <p class="profile-intro__about">{{ about }}</p>
+      <div class="profile-intro__about">
+        <MarkdownContent :source="about" />
+      </div>
     </div>
   </section>
 </template>
@@ -121,6 +125,12 @@ defineProps({
   font-size: 0.96rem;
   line-height: 1.8;
   overflow-wrap: anywhere;
+}
+
+.profile-intro__about :deep(.markdown-content) {
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 @media (max-width: 600px) {
