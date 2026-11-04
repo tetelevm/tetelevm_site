@@ -12,7 +12,7 @@ def status_response(request: HttpRequest, code: int) -> HttpResponse:
         if code in group.STATUS_CODES:
             response = (
                 group.make_response(code, request)
-                if group is success else group.make_response(code)
+                if group in (success, client_errors) else group.make_response(code)
             )
             break
     else:
