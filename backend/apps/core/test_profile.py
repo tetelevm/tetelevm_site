@@ -27,7 +27,7 @@ def profile() -> Profile:
         "photoFile": None,
         "resumeFile": None,
         "contacts": {
-            key: {"label": key, "value": "", "url": ""}
+            key: {"value": "", "url": ""}
             for key in (
                 "telegram",
                 "email",
@@ -60,6 +60,8 @@ def test_public_read_only_api(client: Client, role: str, profile: Profile) -> No
     assert response.json()["name"] == "Михаил Тетелев"
     assert response.json()["photoUrl"] is None
     assert response.json()["resumePreviewUrl"] is None
+    assert "availabilityText" not in response.json()
+    assert "label" not in response.json()["contacts"]["telegram"]
     for method in ("post", "put", "patch", "delete"):
         assert (
             getattr(client, method)(
@@ -91,12 +93,24 @@ def test_admin_structured_form_permissions(
     client: Client, role: str, profile: Profile
 ) -> None:
     login_role(client, role)
+    search = client.get(
+        reverse("admin:autocomplete"),
+        {
+            "app_label": "projects",
+            "model_name": "postfile",
+            "field_name": "file",
+            "term": "private file",
+        },
+    )
+    assert search.status_code == (200 if role == "admin" else 302)
     url = reverse("admin:core_profile_change", args=[profile.pk])
     response = client.get(url)
     assert response.status_code == (200 if role == "admin" else 302)
     if role == "admin":
         fields = response.context["adminform"].form.fields
         assert "data" not in fields
+        assert "footerCredit" not in fields
+        assert "telegram_label" not in fields
         assert {
             "name",
             "photoFile",
@@ -104,7 +118,6 @@ def test_admin_structured_form_permissions(
             "resumePreviewFile",
             "telegram_url",
             "lookingForWork",
-            "footerCredit",
         } <= fields.keys()
     data = flatten_content(profile.data)
     data.update(
@@ -212,3 +225,55 @@ def test_profile_media_can_be_retained_by_service_post(
         == 302
     )
     assert client.get(reverse("profile", args=["ru"])).json()["resumeUrl"] is None
+
+
+def test_profile_file_selectors_load_choices_on_demand(
+    client: Client, profile: Profile
+) -> None:
+    photos = File.objects.bulk_create(
+        [
+            File(
+                label=f"Candidate {index:02}",
+                content=f"content/{index}.jpg",
+                file_type=FileType.PHOTO,
+            )
+            for index in range(21)
+        ]
+    )
+    pdf = File.objects.create(label="Resume PDF", content="content/resume.pdf")
+    profile.data.update(
+        photoFile=str(photos[0].pk),
+        resumePreviewFile=str(photos[0].pk),
+        resumeFile=str(pdf.pk),
+    )
+    profile.save()
+    login_role(client, "admin")
+    response = client.get(reverse("admin:core_profile_change", args=[profile.pk]))
+    form = response.context["adminform"].form
+    for name, selected in (
+        ("photoFile", photos[0]),
+        ("resumePreviewFile", photos[0]),
+        ("resumeFile", pdf),
+    ):
+        html = str(form[name])
+        assert "admin-autocomplete" in html
+        assert selected.label in html
+        assert photos[1].label not in html
+        assert html.count("<option ") == 2
+    params = {
+        "app_label": "projects",
+        "model_name": "postfile",
+        "field_name": "file",
+        "term": "Candidate",
+    }
+    response = client.get(reverse("admin:autocomplete"), params)
+    assert len(response.json()["results"]) == 20
+    assert response.json()["pagination"]["more"] is True
+    response = client.get(reverse("admin:autocomplete"), {**params, "page": 2})
+    assert len(response.json()["results"]) == 1
+    response = client.get(
+        reverse("admin:autocomplete"), {**params, "term": "Candidate 07"}
+    )
+    assert [result["id"] for result in response.json()["results"]] == [
+        str(photos[7].pk)
+    ]

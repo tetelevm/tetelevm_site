@@ -63,7 +63,12 @@ independent of stored paths.
 `core.Profile` stores one JSON record per unique `ru`/`en` language, created
 manually in Admin. `ProfileContentForm` defines the fixed schema and validates
 image/PDF selections, HTTP(S) contact URLs, and plain email addresses;
-`ProfileAdminForm` exposes ordinary fields instead of raw JSON.
+`ProfileAdminForm` exposes editable content instead of raw JSON. Its three file
+selectors reuse Django Admin file autocomplete and initially load only selected
+options. Interface
+captions and contact labels live in the frontend RU/EN dictionary in
+`frontend/src/config/profile.js`.
+The biography uses the shared `MarkdownContent` renderer with profile typography.
 
 The public profile API resolves file IDs to URLs and email to `mailto:`.
 Missing files yield null URLs; absent/unsupported languages return 404.
@@ -126,10 +131,11 @@ handle structured attachments. Images preserve aspect ratio; a carousel retains
 its current size until the next image loads.
 
 The profile page fetches the selected language and aborts superseded requests.
-Profile components receive content via props; `config/profile.js` retains only
-the contact layout. A float provides portrait wrapping above 600px; the
+Profile components receive content via props; `config/profile.js` defines
+the contact layout and localized interface text. A float provides portrait wrapping above 600px; the
 `before-footer` slot holds the credit. Language selection is page-local.
 Global CSS supplies the dark/lime palette and bundled Sofia Sans/IBM Plex Mono.
+Contact icons use Iconify Vue with bundled Remix Icon and Simple Icons SVG data.
 
 ## Development, production, and verification
 

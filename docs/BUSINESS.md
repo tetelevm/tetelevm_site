@@ -21,19 +21,23 @@ only staff can open them directly; they never appear in public collections.
 
 The home page presents Михаил Тетелев as a Python developer with a square photo,
 a short introduction, and an optional “Ищу работу, пишите!” badge. Long text
-wraps around the photo on desktop; the photo sits above it on mobile.
+wraps around the photo on desktop; the photo sits above it on mobile. The
+biography supports Markdown, with embedded raw HTML disabled.
 
 Contacts have two rows: Telegram, email, LinkedIn; then GitHub, a Telegram
 channel, Instagram, and a narrow icon-only Linktree card of the same height.
+Email keeps its mail link and has a separate button to copy the plain address.
 The résumé heading and left tile open the PDF in a new tab. The tile shows a
 manually uploaded preview without cropping, or “PDF” when no preview is chosen.
 Missing files or contacts show placeholders. A small gray ant-robot credit
 appears on the right before the footer.
 
 The owner manually creates separate Russian and English “Визитки” records and
-edits their copy, captions, contacts, status, photo, PDF, and preview through
+edits the name, profession, biography, contact addresses, status, photo, PDF,
+and preview through
 ordinary administrative fields. Photo/preview selections must be images and
-the résumé a PDF. Changes appear on the next page load; layout stays fixed.
+the résumé a PDF. Changes appear on the next page load. Interface captions and
+contact labels are fixed on the frontend in Russian and English.
 The `ru/en` switch changes the presentation, navigation, and footer for the
 current visit without persisting the choice.
 
@@ -105,5 +109,20 @@ posts. Crawler rules advertise the sitemap and allow public Telegram previews.
 
 `/r/<code>/` serves public synthetic HTTP examples and jokes, including redirects
 and selected nonstandard statuses. It supports GET/HEAD, does not change site
-data, and is not cached or indexed. Unsupported codes return 404. Individual
+data, and is not cached or indexed. `/r/405/` returns a synthetic 405 for both
+GET and HEAD. `/r/411/` returns 200 when the request includes Content-Length
+(including zero), or 411 asking for the header when it is absent.
+Both `/r/412/` and `/r/428/` ask for a condition with status 428 when none of
+If-Match, If-None-Match, If-Modified-Since, or If-Unmodified-Since is present.
+When any is present, they return a synthetic 412 saying the conditions cannot
+be met, without evaluating their values.
+`/r/416/` returns a synthetic 416 when Range is present in the request,
+regardless of its value, or 200 otherwise. The 416 response includes
+Content-Range: bytes */0 to illustrate an empty resource.
+`/r/417/` returns 200 without Expect, or a synthetic 417 saying the expectations
+cannot be met when the header is present, regardless of its value.
+`/r/449/` returns 449 with a fresh random Ms-Echo-Request value when
+Ms-Echo-Reply is absent. When Ms-Echo-Reply is present, it returns a synthetic
+400 regardless of the header value; no challenge is stored or validated.
+Unsupported codes return 404. Individual
 response bodies and protocol examples are defined in the handlers.
