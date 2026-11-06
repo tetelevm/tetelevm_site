@@ -19,16 +19,20 @@ only staff can open them directly; they never appear in public collections.
 
 ## Home page
 
-The home page presents Михаил Тетелев as a Python developer with a square photo,
-a short introduction, and an optional “Ищу работу, пишите!” badge. Long text
-wraps around the photo on desktop; the photo sits above it on mobile. The
-biography supports Markdown, with embedded raw HTML disabled.
+The home page presents Михаил Тетелев as a Python developer with a vertical
+portrait (width to height 3:5), a short introduction, and an optional
+“Ищу работу, пишите!” badge. On desktop, the name, profession, badge, and
+biography share a single column beside the photo, without wrapping beneath it.
+The photo sits above that block on mobile. The biography supports Markdown,
+with embedded raw HTML disabled.
 
 Contacts have two rows: Telegram, email, LinkedIn; then GitHub, a Telegram
 channel, Instagram, and a narrow icon-only Linktree card of the same height.
 Email keeps its mail link and has a separate button to copy the plain address.
 The résumé heading and left tile open the PDF in a new tab. The tile shows a
 manually uploaded preview without cropping, or “PDF” when no preview is chosen.
+Each language's profile has an editable PDF download filename in Admin;
+an empty name defaults to `resume.pdf`.
 Missing files or contacts show placeholders. A small gray ant-robot credit
 appears on the right before the footer.
 

@@ -71,6 +71,13 @@ captions and contact labels live in the frontend RU/EN dictionary in
 The biography uses the shared `MarkdownContent` renderer with profile typography.
 
 The public profile API resolves file IDs to URLs and email to `mailto:`.
+The résumé URL points to `/_api/profile/<language>/resume/`, which streams only
+that profile's selected PDF using Django `FileResponse` and an inline
+`Content-Disposition` with the filename from `Profile.data.resumeFilename`
+(UTF-8 for non-ASCII names), falling back to `resume.pdf` when empty or absent.
+The profile form validates a plain PDF filename and exposes it in Admin;
+the existing JSON field stores it without a schema migration.
+The response is not cached; stored UUID paths are unchanged.
 Missing files yield null URLs; absent/unsupported languages return 404.
 It reads the database without caching. JSON references do not participate in
 file deletion or orphan detection; service-post attachments retain these files.
@@ -132,8 +139,10 @@ its current size until the next image loads.
 
 The profile page fetches the selected language and aborts superseded requests.
 Profile components receive content via props; `config/profile.js` defines
-the contact layout and localized interface text. A float provides portrait wrapping above 600px; the
-`before-footer` slot holds the credit. Language selection is page-local.
+the contact layout and localized interface text. `ProfileIntro` uses a grid with
+a 3:5 portrait and a text column above 600px, stacking the portrait above the
+text on smaller screens. The `before-footer` slot holds the credit.
+Language selection is page-local.
 Global CSS supplies the dark/lime palette and bundled Sofia Sans/IBM Plex Mono.
 Contact icons use Iconify Vue with bundled Remix Icon and Simple Icons SVG data.
 

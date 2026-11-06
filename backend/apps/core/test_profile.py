@@ -1,18 +1,21 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from pathlib import Path
+from urllib.parse import quote
 
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.test import Client
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client, override_settings
 from django.urls import reverse
 
 from apps.projects.models import Post, PostFile, Project
 
 from .maintenance import find_orphan_files
 from .models import File, FileType, Profile
-from .profile_schema import flatten_content
+from .profile_schema import ProfileContentForm, flatten_content
 
 pytestmark = pytest.mark.django_db
 
@@ -115,6 +118,7 @@ def test_admin_structured_form_permissions(
             "name",
             "photoFile",
             "resumeFile",
+            "resumeFilename",
             "resumePreviewFile",
             "telegram_url",
             "lookingForWork",
@@ -126,6 +130,7 @@ def test_admin_structured_form_permissions(
         photoFile="",
         resumeFile="",
         resumePreviewFile="",
+        resumeFilename="Новое_резюме.pdf",
     )
     data.pop("lookingForWork")
     response = client.post(url, data)
@@ -135,6 +140,9 @@ def test_admin_structured_form_permissions(
         "Новое имя" if role == "admin" else "Михаил Тетелев"
     )
     assert profile.data["lookingForWork"] is (role != "admin")
+    assert profile.data.get("resumeFilename", "") == (
+        "Новое_резюме.pdf" if role == "admin" else ""
+    )
 
 
 def test_admin_csrf_and_validation(profile: Profile) -> None:
@@ -182,7 +190,7 @@ def test_file_types_and_urls(client: Client, profile: Profile) -> None:
     profile.save()
     data = client.get(reverse("profile", args=["ru"])).json()
     assert data["photoUrl"] == photo.link
-    assert data["resumeUrl"] == resume.link
+    assert data["resumeUrl"] == reverse("profile-resume", args=["ru"])
     assert data["resumePreviewUrl"] == photo.link
     assert data["contacts"]["email"]["url"] == "mailto:hello@example.com"
     profile.data["resumePreviewFile"] = str(resume.pk)
@@ -195,6 +203,76 @@ def test_file_types_and_urls(client: Client, profile: Profile) -> None:
     profile.data.update(photoFile=None, resumeFile=str(photo.pk))
     with pytest.raises(ValidationError):
         profile.save()
+
+
+@pytest.mark.parametrize("role", ["anonymous", "guest", "admin"])
+@pytest.mark.parametrize(
+    ("language", "filename"),
+    [
+        ("ru", "Михаил_Тетелев_CV.pdf"),
+        ("en", "Mikhail_Tetelev_CV.pdf"),
+        ("ru", ""),
+    ],
+)
+def test_resume_filename_and_public_access(
+    client: Client, profile: Profile, tmp_path: Path,
+    role: str, language: str, filename: str,
+) -> None:
+    login_role(client, role)
+    pdf_bytes = b"%PDF-1.4\nTest resume"
+    with override_settings(MEDIA_ROOT=tmp_path):
+        pdf = File.objects.create(
+            content=SimpleUploadedFile("original.pdf", pdf_bytes)
+        )
+        profile.language = language
+        profile.data["resumeFile"] = str(pdf.pk)
+        profile.data["resumeFilename"] = filename
+        profile.save()
+        url = client.get(reverse("profile", args=[language])).json()["resumeUrl"]
+        assert url == reverse("profile-resume", args=[language])
+        response = client.get(url)
+        assert response.status_code == 200
+        assert response["Content-Type"] == "application/pdf"
+        filename = filename or "resume.pdf"
+        disposition = (
+            f'inline; filename="{filename}"' if filename.isascii()
+            else f"inline; filename*=utf-8''{quote(filename)}"
+        )
+        assert response["Content-Disposition"] == disposition
+        assert response["Cache-Control"] == "no-store"
+        assert b"".join(response.streaming_content) == pdf_bytes
+        head = client.head(url)
+        assert head.status_code == 200
+        assert head["Content-Disposition"] == disposition
+        assert b"".join(head.streaming_content) == b""
+        assert client.post(url).status_code == 405
+
+
+@pytest.mark.parametrize(
+    "filename", ["../resume.pdf", "folder\\resume.pdf", "resume\n.pdf", "resume.txt"]
+)
+def test_resume_filename_validation(profile: Profile, filename: str) -> None:
+    data = flatten_content(profile.data)
+    data["resumeFilename"] = filename
+    form = ProfileContentForm(data=data)
+    assert not form.is_valid()
+    assert "resumeFilename" in form.errors
+
+
+def test_missing_resume_returns_404(
+    client: Client, profile: Profile, tmp_path: Path,
+) -> None:
+    url = reverse("profile-resume", args=["ru"])
+    assert client.get(url).status_code == 404
+    assert client.get(reverse("profile-resume", args=["en"])).status_code == 404
+    assert client.get(reverse("profile-resume", args=["de"])).status_code == 404
+    with override_settings(MEDIA_ROOT=tmp_path):
+        pdf = File.objects.create(content="content/missing.pdf")
+        profile.data["resumeFile"] = str(pdf.pk)
+        profile.save()
+        assert client.get(url).status_code == 404
+        pdf.delete()
+        assert client.get(url).status_code == 404
 
 
 def test_profile_media_can_be_retained_by_service_post(

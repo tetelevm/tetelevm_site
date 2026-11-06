@@ -46,5 +46,7 @@ variables do not override this configuration.
 
 Create or edit the `ru` and `en` records at `/_admin/core/profile/`.
 Upload the photo, PDF, and optional preview image to the file library, then
-select them in the profile form. Enter email as a plain address. Content
+select them in the profile form. Enter email as a plain address.
+In the résumé section, set the download filename (including `.pdf`) separately
+for each language; an empty value uses `resume.pdf`. Content
 changes appear on the next page load; layout changes require code changes.
