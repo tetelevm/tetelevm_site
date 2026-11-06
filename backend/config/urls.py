@@ -1,5 +1,5 @@
 from apps.core.http_status import status_response
-from apps.core.profile import ProfileView
+from apps.core.profile import ProfileView, profile_resume
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -10,6 +10,9 @@ from .sitemaps import sitemaps
 from .views import page_meta, robots_txt
 
 urlpatterns = [
+    path(
+        "_api/profile/<str:language>/resume/", profile_resume, name="profile-resume"
+    ),
     path("_api/profile/<str:language>/", ProfileView.as_view(), name="profile"),
     path("_api/auth/", include("apps.core.urls")),
     path("_api/page-meta/", page_meta, name="page-meta"),

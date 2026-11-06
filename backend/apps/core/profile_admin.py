@@ -76,6 +76,7 @@ class ProfileAdmin(admin.ModelAdmin):
                 {
                     "fields": (
                         "resumeFile",
+                        "resumeFilename",
                         "resumePreviewFile",
                     )
                 },

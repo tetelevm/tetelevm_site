@@ -35,6 +35,12 @@ class ProfileContentForm(forms.Form):
     resumeFile = forms.ModelChoiceField(
         label="PDF-резюме", queryset=File.objects.none(), required=False
     )
+    resumeFilename = forms.CharField(
+        label="Имя файла при скачивании",
+        max_length=255,
+        required=False,
+        help_text="С расширением .pdf. Если не указано, используется resume.pdf.",
+    )
 
     for key in CONTACT_KEYS:
         locals()[f"{key}_value"] = forms.CharField(
@@ -69,6 +75,20 @@ class ProfileContentForm(forms.Form):
             content__iendswith=".pdf"
         ).order_by("label")
 
+    def clean_resumeFilename(self) -> str:
+        filename = self.cleaned_data["resumeFilename"]
+        if filename and (
+            not filename.lower().endswith(".pdf")
+            or any(
+                char in "/\\" or ord(char) < 32 or ord(char) == 127
+                for char in filename
+            )
+        ):
+            raise forms.ValidationError(
+                "Укажите имя с расширением .pdf без пути и управляющих символов."
+            )
+        return filename
+
     def as_content(self) -> dict[str, Any]:
         data = self.cleaned_data
         return {
@@ -76,6 +96,7 @@ class ProfileContentForm(forms.Form):
             "lookingForWork": data["lookingForWork"],
             "photoFile": str(data["photoFile"].pk) if data["photoFile"] else None,
             "resumeFile": str(data["resumeFile"].pk) if data["resumeFile"] else None,
+            "resumeFilename": data["resumeFilename"],
             "resumePreviewFile": str(data["resumePreviewFile"].pk)
             if data["resumePreviewFile"]
             else None,
@@ -95,6 +116,7 @@ def flatten_content(data: dict[str, Any]) -> dict[str, Any]:
             "photoFile",
             "resumePreviewFile",
             "resumeFile",
+            "resumeFilename",
         )
     }
     contacts = data.get("contacts", {})

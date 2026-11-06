@@ -39,14 +39,15 @@ defineProps({
 
 <style scoped>
 .profile-intro {
-  display: flow-root;
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  align-items: start;
+  gap: 2rem;
 }
 
 .profile-intro__portrait {
-  float: left;
   width: 11rem;
-  margin: 0 2rem 1rem 0;
-  aspect-ratio: 1;
+  aspect-ratio: 3 / 5;
   overflow: hidden;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-medium);
@@ -134,10 +135,13 @@ defineProps({
 }
 
 @media (max-width: 600px) {
+  .profile-intro {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
   .profile-intro__portrait {
-    float: none;
     width: 8rem;
-    margin: 0 0 1.5rem;
   }
 }
 </style>
